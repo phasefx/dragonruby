@@ -6,10 +6,17 @@ class PhaseFX
   
   def initialize args
     @args = args
+    @args.state.rotation = 0
+    @args.state.x = 0
+    @args.state.y = 0
   end
 
   def serialize
-    {}
+    {
+      :rotation => @args.state.rotation,
+      :x => @args.state.x,
+      :y => @args.state.y
+    }
   end
 
   def inspect
@@ -24,12 +31,18 @@ class PhaseFX
   # collect input
 
   def input
+    if @args.inputs.mouse.click then
+      @args.state.x = @args.inputs.mouse.click.point.x
+      @args.state.y = @args.inputs.mouse.click.point.y
+    end
+
   end
 
   #############################################################################
   # handle the game logic
 
   def logic
+    @args.state.rotation -= 0.5
   end
 
   #############################################################################
@@ -40,7 +53,29 @@ class PhaseFX
   end
    
   def render_something
-    @args.outputs.labels << [100, 100, "@", 255, 0, 0]
+    #@args.outputs.sprites << [100, 100,    32,     64, "sprites/circle-blue.png"]
+    #@args.outputs.labels << [@args.state.x, @args.state.y, "@", 255, 0, 0]
+    #@args.outputs.sprites << [ @args.state.x-64, @args.state.y-50, 128, 101, 'dragonruby.png', @args.state.rotation ]
+    @args.outputs.sprites << {
+      x: @args.state.x-64,
+      y: @args.state.y-50,
+      w: 128,
+      h: 101,
+      path: "dragonruby.png",
+      angle: @args.state.rotation,
+      a: 255,
+      r: @args.state.rotation.abs.mod(255),
+      g: 255,
+      b: 255,
+      tile_x:  0,
+      tile_y:  0,
+      tile_w: -1,
+      tile_h: -1,
+      flip_vertically: false,
+      flip_horizontally: false,
+      angle_anchor_x: 0.5,
+      angle_anchor_y: 0.5
+    }
   end
 
 
@@ -48,9 +83,9 @@ class PhaseFX
   # game loop
 
   def tick
+    render
     input
     logic
-    render
   end
 
 end
