@@ -9,6 +9,7 @@ class PhaseFX
     @args.state.rotation = 0
     @args.state.x = 0
     @args.state.y = 0
+    @args.state.sprite_idx = 1
   end
 
   def serialize
@@ -35,14 +36,27 @@ class PhaseFX
       @args.state.x = @args.inputs.mouse.click.point.x
       @args.state.y = @args.inputs.mouse.click.point.y
     end
-
+    if @args.inputs.keyboard.key_held.right
+      @args.state.rotation -= 1
+    end
+    if @args.inputs.keyboard.key_held.left
+      @args.state.rotation += 1
+    end
+    if @args.inputs.keyboard.key_down.up
+        @args.state.sprite_idx += 1
+        puts "sprite_idx #{@args.state.sprite_idx}"
+    end
+    if @args.inputs.keyboard.key_down.down
+        @args.state.sprite_idx -= 1
+        puts "sprite_idx #{@args.state.sprite_idx}"
+    end
   end
 
   #############################################################################
   # handle the game logic
 
   def logic
-    @args.state.rotation -= 0.5
+    #@args.state.rotation -= 0.5
   end
 
   #############################################################################
@@ -61,10 +75,12 @@ class PhaseFX
       y: @args.state.y-50,
       w: 128,
       h: 101,
-      path: "dragonruby.png",
+      path: "sprites/DungeonAssetPack/SpriteFolder/Monsters/monster#{@args.state.sprite_idx}.png",
+      #path: "dragonruby.png",
       angle: @args.state.rotation,
       a: 255,
-      r: @args.state.rotation.abs.mod(255),
+      #r: @args.state.rotation.abs.mod(255),
+      r: 255,
       g: 255,
       b: 255,
       tile_x:  0,
