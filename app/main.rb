@@ -8,7 +8,7 @@ class PhaseFX
     @args = args
     @args.state.rotation = 0
     @args.state.rotated_on = 0
-    @args.state.player = {}
+    @args.state.player = { :intend_x => 0, :intend_y => 0}
     @args.state.player.x = @args.grid.rect[2].idiv(2)
     @args.state.player.y = @args.grid.rect[3].idiv(2)
     @args.state.sprite_idx = 1
@@ -43,24 +43,19 @@ class PhaseFX
     ###########################################################################
     # mouse
 
+    if @args.inputs.mouse.button_right then rotate_right end
+    if @args.inputs.mouse.button_left then rotate_left end
+
     if @args.inputs.mouse.click
-      @args.state.x = @args.inputs.mouse.click.point.x
-      @args.state.y = @args.inputs.mouse.click.point.y
+      #@args.state.x = @args.inputs.mouse.click.point.x
+      #@args.state.y = @args.inputs.mouse.click.point.y
     end
 
     ###########################################################################
     # arrow keys
 
-    if @args.inputs.keyboard.key_held.right
-      @args.state.rotation -= 1
-      if @args.state.rotation < -360 then @args.state.rotation += 360 end
-      @args.state.rotated_on = @args.state.tick_count
-    end
-    if @args.inputs.keyboard.key_held.left
-      @args.state.rotation += 1
-      if @args.state.rotation > 360 then @args.state.rotation -= 360 end
-      @args.state.rotated_on = @args.state.tick_count
-    end
+    if @args.inputs.keyboard.key_held.right then rotate_right end
+    if @args.inputs.keyboard.key_held.left then rotate_left end
     if @args.inputs.keyboard.key_down.up
         @args.state.sprite_idx += 1
         puts "sprite_idx #{@args.state.sprite_idx}"
@@ -80,10 +75,10 @@ class PhaseFX
     ###########################################################################
     # WASD
 
-    if @args.inputs.keyboard.key_held.w then @args.state.player.y += 10 end
-    if @args.inputs.keyboard.key_held.s then @args.state.player.y -= 10 end
-    if @args.inputs.keyboard.key_held.a then @args.state.player.x -= 10 end
-    if @args.inputs.keyboard.key_held.d then @args.state.player.x += 10 end
+    if @args.inputs.keyboard.key_held.w then intend_move_up end
+    if @args.inputs.keyboard.key_held.s then intend_move_down end
+    if @args.inputs.keyboard.key_held.a then intend_move_left end
+    if @args.inputs.keyboard.key_held.d then intend_move_right end
 
     ###########################################################################
     # misc
@@ -94,17 +89,71 @@ class PhaseFX
   #############################################################################
   # handle the game logic
 
-  def logic
+  def intend_move_left
+    @args.state.player[:intend_x] = -1;
+  end
+
+  def intend_move_right
+    @args.state.player[:intend_x] = 1;
+  end
+
+  def intend_move_up
+    @args.state.player[:intend_y] = 1;
+  end
+
+  def intend_move_down
+    @args.state.player[:intend_y] = -1;
+  end
+
+  def move_left
+    @args.state.player.x -= 10
+    puts "move_left #{@args.state.player.x}"
+  end
+
+  def move_right
+    @args.state.player.x += 10
+    puts "move_right #{@args.state.player.x}"
+  end
+
+  def move_up
+    @args.state.player.y += 10
+  end
+
+  def move_down
+    @args.state.player.y -= 10
+  end
+
+  def rotate_left
+    if @args.state.rotation < 45 then @args.state.rotation += 1 else @args.state.rotation += 10 end
+    if @args.state.rotation > 270 then @args.state.rotation -= 360 end
+    @args.state.rotated_on = @args.state.tick_count
+  end
+
+  def rotate_right
+    if @args.state.rotation > -45 then @args.state.rotation -= 1 else @args.state.rotation -= 10 end
+    if @args.state.rotation < -270 then @args.state.rotation += 360 end
+    @args.state.rotated_on = @args.state.tick_count
+  end
+
+  def intents
+    if @args.state.player[:intend_x] > 0 then move_right end
+    if @args.state.player[:intend_x] < 0 then move_left end
+    if @args.state.player[:intend_y] > 0 then move_up end
+    if @args.state.player[:intend_y] < 0 then move_down end
+    @args.state.player[:intend_x] = 0
+    @args.state.player[:intend_y] = 0
+  end
+
+  def iterate
 
     # slowly level out any rotation
-    if @args.state.rotation > 0 and
-        @args.state.tick_count > @args.state.rotated_on + 10
-      then @args.state.rotation -= 0.5 end
-    if @args.state.rotation < 0 and
-        @args.state.tick_count > @args.state.rotated_on + 10
-      then @args.state.rotation += 0.5 end
+    if @args.state.rotation > 0 and @args.state.tick_count > @args.state.rotated_on + 10 then @args.state.rotation -= 0.5 end
+    if @args.state.rotation < 0 and @args.state.tick_count > @args.state.rotated_on + 10 then @args.state.rotation += 0.5 end
 
-  end # of logic
+    # handle intended movement
+    intents
+
+  end # of iterate
 
   #############################################################################
   # audio stuff
@@ -174,7 +223,7 @@ class PhaseFX
   def tick
     render
     input
-    logic
+    iterate
   end # of tick
 
 end # of class PhaseFX
