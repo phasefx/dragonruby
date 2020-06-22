@@ -1,4 +1,5 @@
 $gtk.reset
+$gtk.set_window_title "PhaseFX"
 
 class PhaseFX
   #############################################################################
@@ -6,7 +7,7 @@ class PhaseFX
   
   def initialize args
     @args = args
-    @args.state.players = [{
+    @args.state.actors = [{
       :intend_x => 0,
       :intend_y => 0,
       :speed_x => 10,
@@ -19,10 +20,11 @@ class PhaseFX
       :h => 101,
       :rotation => 0,
       :rotated_on => 0,
-      :sprite_idx => 1
+      :sprite_idx => 1,
+      :sprite_type => :monster
     }]
     @args.state.sprite_path = {
-      :monsters => "sprites/DungeonAssetPack/SpriteFolder/Monsters/"
+      :monster => "sprites/DungeonAssetPack/SpriteFolder/Monsters/monster"
     }
     @args.state.keyup_delay = 10
     render_background
@@ -31,7 +33,7 @@ class PhaseFX
 
   def serialize
     {
-      :player => @args.state.players[0]
+      :actors => @args.state.actors
     }
   end # of serialize
 
@@ -43,33 +45,41 @@ class PhaseFX
     serialize.to_s
   end # of to_s
 
+  def state
+    puts "state called"
+  end
+
   #############################################################################
   # collect input
 
   def input
 
+    player1 = @args.state.actors[0]
+    mouse = @args.inputs.mouse
+    keyboard = @args.inputs.keyboard
+
     ###########################################################################
     # mouse
 
-    if @args.inputs.mouse.button_right then rotate_right end
-    if @args.inputs.mouse.button_left then rotate_left end
+    if mouse.button_right then rotate_right end
+    if mouse.button_left then rotate_left end
 
-    if @args.inputs.mouse.click
-      #@args.state.x = @args.inputs.mouse.click.point.x
-      #@args.state.y = @args.inputs.mouse.click.point.y
+    if mouse.click
+      #@args.state.x = mouse.click.point.x
+      #@args.state.y = mouse.click.point.y
     end
 
     ###########################################################################
     # arrow keys
 
-    if @args.inputs.keyboard.key_held.right then rotate_right end
-    if @args.inputs.keyboard.key_held.left then rotate_left end
-    if @args.inputs.keyboard.key_down.up then @args.state.players[0][:sprite_idx] += 1 end
-    if @args.inputs.keyboard.key_down.down then @args.state.players[0][:sprite_idx] -= 1 end
-    if @args.inputs.keyboard.key_down.pagedown then @args.state.players[0][:sprite_idx] = 1 end
-    if @args.inputs.keyboard.key_down.pageup then @args.state.players[0][:rotation] = 0 end
-    if @args.state.players[0][:sprite_idx] < 1 then @args.state.players[0][:sprite_idx] = 1 end
-    if @args.state.players[0][:sprite_idx] > 15 then @args.state.players[0][:sprite_idx] = 15 end
+    if keyboard.key_held.right then rotate_right end
+    if keyboard.key_held.left then rotate_left end
+    if keyboard.key_down.up then player1[:sprite_idx] += 1 end
+    if keyboard.key_down.down then player1[:sprite_idx] -= 1 end
+    if keyboard.key_down.pagedown then player1[:sprite_idx] = 1 end
+    if keyboard.key_down.pageup then player1[:rotation] = 0 end
+    if player1[:sprite_idx] < 1 then player1[:sprite_idx] = 1 end
+    if player1[:sprite_idx] > 15 then player1[:sprite_idx] = 15 end
 
     ###########################################################################
     # WASD
@@ -81,17 +91,17 @@ class PhaseFX
     key_a = false
     key_s = false
     key_d = false
-    if @args.inputs.keyboard.key_down.truthy_keys.length > 0 then
-      @args.inputs.keyboard.key_down.truthy_keys.each do |truth|
-        #if truth == :shift then key_shift = true ; @args.state.players[0][:keypress_on] = @args.state.tick_count ; end
-        if truth == :w then key_w = true ; key_y_axis = true ; @args.state.players[0][:keypress_on] = @args.state.tick_count ; end
-        if truth == :a then key_a = true ; key_x_axis = true ; @args.state.players[0][:keypress_on] = @args.state.tick_count ; end
-        if truth == :s then key_s = true ; key_y_axis = true ; @args.state.players[0][:keypress_on] = @args.state.tick_count ; end
-        if truth == :d then key_d = true ; key_x_axis = true ; @args.state.players[0][:keypress_on] = @args.state.tick_count ; end
+    if keyboard.key_down.truthy_keys.length > 0 then
+      keyboard.key_down.truthy_keys.each do |truth|
+        #if truth == :shift then key_shift = true ; player1[:keypress_on] = @args.state.tick_count ; end
+        if truth == :w then key_w = true ; key_y_axis = true ; player1[:keypress_on] = @args.state.tick_count ; end
+        if truth == :a then key_a = true ; key_x_axis = true ; player1[:keypress_on] = @args.state.tick_count ; end
+        if truth == :s then key_s = true ; key_y_axis = true ; player1[:keypress_on] = @args.state.tick_count ; end
+        if truth == :d then key_d = true ; key_x_axis = true ; player1[:keypress_on] = @args.state.tick_count ; end
       end
     end
-    if @args.inputs.keyboard.key_up.truthy_keys.length > 0 then
-      @args.inputs.keyboard.key_up.truthy_keys.each do |truth|
+    if keyboard.key_up.truthy_keys.length > 0 then
+      keyboard.key_up.truthy_keys.each do |truth|
         #if truth == :shift then key_shift = false end
         if truth == :w then key_w = false end
         if truth == :a then key_a = false end
@@ -101,24 +111,24 @@ class PhaseFX
     end
 
     if key_w then
-      intend_move_up key_shift ? 2 : 1
-    elsif !key_y_axis && !@args.inputs.keyboard.key_held.w && !@args.inputs.keyboard.key_held.s && @args.state.tick_count > @args.state.players[0][:keypress_on] + @args.state.keyup_delay then
-      intend_move_up 0
+      intend_move_up player1, key_shift ? 2 : 1
+    elsif !key_y_axis && !keyboard.key_held.w && !keyboard.key_held.s && @args.state.tick_count > player1[:keypress_on] + @args.state.keyup_delay then
+      intend_move_up player1, 0
     end
     if key_a then
-      intend_move_left key_shift ? 2 : 1
-    elsif !key_x_axis && !@args.inputs.keyboard.key_held.a && !@args.inputs.keyboard.key_held.d && @args.state.tick_count > @args.state.players[0][:keypress_on] + @args.state.keyup_delay then
-      intend_move_left 0
+      intend_move_left player1, key_shift ? 2 : 1
+    elsif !key_x_axis && !keyboard.key_held.a && !keyboard.key_held.d && @args.state.tick_count > player1[:keypress_on] + @args.state.keyup_delay then
+      intend_move_left player1, 0
     end
     if key_s then
-      intend_move_down key_shift ? 2 : 1
-    elsif !key_y_axis && !@args.inputs.keyboard.key_held.w && !@args.inputs.keyboard.key_held.s && @args.state.tick_count > @args.state.players[0][:keypress_on] + @args.state.keyup_delay then
-      intend_move_down 0
+      intend_move_down player1, key_shift ? 2 : 1
+    elsif !key_y_axis && !keyboard.key_held.w && !keyboard.key_held.s && @args.state.tick_count > player1[:keypress_on] + @args.state.keyup_delay then
+      intend_move_down player1, 0
     end
     if key_d then
-      intend_move_right key_shift ? 2 : 1
-    elsif !key_x_axis && !@args.inputs.keyboard.key_held.a && !@args.inputs.keyboard.key_held.d && @args.state.tick_count > @args.state.players[0][:keypress_on] + @args.state.keyup_delay then
-      intend_move_right 0
+      intend_move_right player1, key_shift ? 2 : 1
+    elsif !key_x_axis && !keyboard.key_held.a && !keyboard.key_held.d && @args.state.tick_count > player1[:keypress_on] + @args.state.keyup_delay then
+      intend_move_right player1, 0
     end
 
     ###########################################################################
@@ -130,95 +140,108 @@ class PhaseFX
   #############################################################################
   # handle the game logic
 
-  def intend_move_left relative_speed
+  def intend_move_left actor, relative_speed
     puts "intend_move_left #{relative_speed}" if relative_speed != 0
-    @args.state.players[0][:intend_x] = -relative_speed;
+    actor[:intend_x] = -relative_speed;
   end
 
-  def intend_move_right relative_speed
+  def intend_move_right actor, relative_speed
     puts "intend_move_right #{relative_speed}" if relative_speed != 0
-    @args.state.players[0][:intend_x] = relative_speed;
+    actor[:intend_x] = relative_speed;
   end
 
-  def intend_move_up relative_speed
-    @args.state.players[0][:intend_y] = relative_speed;
+  def intend_move_up actor, relative_speed
+    actor[:intend_y] = relative_speed;
   end
 
-  def intend_move_down relative_speed
-    @args.state.players[0][:intend_y] = -relative_speed;
+  def intend_move_down actor, relative_speed
+    actor[:intend_y] = -relative_speed;
   end
 
-  def player_collision?
-    @args.state.players[0][:proposed_rect] = [ @args.state.players[0].x, @args.state.players[0].y, @args.state.players[0].w, @args.state.players[0].h ];
-    #puts "proposed_rect = #{@args.state.players[0][:proposed_rect]}"
+  def actor_collision?
+    #player1 = @args.state.actors[0]
+    #player1[:proposed_rect] = [ player1.x, player1.y, player1.w, player1.h ];
+    #puts "proposed_rect = #{player1[:proposed_rect]}"
     return false;
   end
 
-  def move_left relative_speed
+  def move_left actor, relative_speed
     #puts "move_left #{relative_speed}"
-    @args.state.players[0].x -= @args.state.players[0][:speed_x] * relative_speed.abs
-    if @args.state.players[0].x < @args.grid.rect[0] - @args.state.players[0].w.half then
-      @args.state.players[0].x = @args.grid.rect[2] + @args.state.players[0].w.half
+    actor.x -= actor[:speed_x] * relative_speed.abs
+    if actor.x < @args.grid.rect[0] - actor.w.half then
+      actor.x = @args.grid.rect[2] + actor.w.half
     end
-    @args.state.players[0][:collision_x] = player_collision?
+    actor[:collision_x] = actor_collision?
   end
 
-  def move_right relative_speed
+  def move_right actor, relative_speed
     #puts "move_right #{relative_speed}"
-    @args.state.players[0].x += @args.state.players[0][:speed_x] * relative_speed.abs
-    if @args.state.players[0].x > @args.grid.rect[2] + @args.state.players[0].w.half then
-      @args.state.players[0].x = @args.grid.rect[0] - @args.state.players[0].w.half
+    actor.x += actor[:speed_x] * relative_speed.abs
+    if actor.x > @args.grid.rect[2] + actor.w.half then
+      actor.x = @args.grid.rect[0] - actor.w.half
     end
-    @args.state.players[0][:collision_x] = player_collision?
+    actor[:collision_x] = actor_collision?
   end
 
-  def move_up relative_speed
-    @args.state.players[0].y += @args.state.players[0][:speed_y] * relative_speed.abs
-    @args.state.players[0][:collision_y] = player_collision?
+  def move_up actor, relative_speed
+    actor.y += actor[:speed_y] * relative_speed.abs
+    actor[:collision_y] = actor_collision?
   end
 
-  def move_down relative_speed
-    @args.state.players[0].y -= @args.state.players[0][:speed_y] * relative_speed.abs
-    @args.state.players[0][:collision_y] = player_collision? || @args.state.players[0].y < 0;
+  def move_down actor, relative_speed
+    actor.y -= actor[:speed_y] * relative_speed.abs
+    actor[:collision_y] = actor_collision? || actor.y < 0;
   end
 
-  def rotate_left
-    if @args.state.players[0][:rotation] < 45 then @args.state.players[0][:rotation] += 2 else @args.state.players[0][:rotation] += 10 end
-    if @args.state.players[0][:rotation] > 270 then @args.state.players[0][:rotation] -= 360 end
-    @args.state.players[0][:rotated_on] = @args.state.tick_count
+  def rotate_left actor
+    if actor[:rotation] < 45 then actor[:rotation] += 2 else actor[:rotation] += 10 end
+    if actor[:rotation] > 270 then actor[:rotation] -= 360 end
+    actor[:rotated_on] = @args.state.tick_count
   end
 
-  def rotate_right
-    if @args.state.players[0][:rotation] > -45 then @args.state.players[0][:rotation] -= 2 else @args.state.players[0][:rotation] -= 10 end
-    if @args.state.players[0][:rotation] < -270 then @args.state.players[0][:rotation] += 360 end
-    @args.state.players[0][:rotated_on] = @args.state.tick_count
+  def rotate_right actor
+    if actor[:rotation] > -45 then actor[:rotation] -= 2 else actor[:rotation] -= 10 end
+    if actor[:rotation] < -270 then actor[:rotation] += 360 end
+    actor[:rotated_on] = @args.state.tick_count
   end
 
   def intents
-    saved_x = @args.state.players[0].x
-    saved_y = @args.state.players[0].y
-    if @args.state.players[0][:intend_x] > 0 then move_right @args.state.players[0][:intend_x] end
-    if @args.state.players[0][:intend_x] < 0 then move_left @args.state.players[0][:intend_x] end
-    if @args.state.players[0][:intend_y] > 0 then move_up @args.state.players[0][:intend_y] end
-    if @args.state.players[0][:intend_y] < 0 then move_down @args.state.players[0][:intend_y] end
-    #@args.state.players[0][:intend_x] = 0
-    #@args.state.players[0][:intend_y] = 0
-    if @args.state.players[0][:collision_x] then
-      @args.state.players[0].x = saved_x
+    @args.state.actors.each do |actor|
+      actor[:saved_x] = actor.x
+      actor[:saved_y] = actor.y
+      if actor[:intend_x] > 0 then move_right actor, actor[:intend_x] end
+      if actor[:intend_x] < 0 then move_left actor, actor[:intend_x] end
+      if actor[:intend_y] > 0 then move_up actor, actor[:intend_y] end
+      if actor[:intend_y] < 0 then move_down actor, actor[:intend_y] end
+      #actor[:intend_x] = 0
+      #actor[:intend_y] = 0
+      if actor[:collision_x] then
+        actor.x = actor[:saved_x]
+      end
+      if actor[:collision_y] then
+        actor.y = actor[:saved_y]
+      end
     end
-    if @args.state.players[0][:collision_y] then
-      @args.state.players[0].y = saved_y
-    end
+  end
+
+  def movement
   end
 
   def iterate
 
-    # slowly level out any rotation
-    if @args.state.players[0][:rotation] > 0 and @args.state.tick_count > @args.state.players[0][:rotated_on] + 10 then @args.state.players[0][:rotation] -= 0.5 end
-    if @args.state.players[0][:rotation] < 0 and @args.state.tick_count > @args.state.players[0][:rotated_on] + 10 then @args.state.players[0][:rotation] += 0.5 end
+    @args.state.actors.each do |actor|
+      # slowly level out any rotation
+      if actor[:rotation] > 0 and @args.state.tick_count > actor[:rotated_on] + 10 then actor[:rotation] -= 0.5 end
+      if actor[:rotation] < 0 and @args.state.tick_count > actor[:rotated_on] + 10 then actor[:rotation] += 0.5 end
+    end
+
+    # gravity
 
     # handle intended movement
     intents
+
+    # handle resolved movement
+    movement
 
   end # of iterate
 
@@ -234,11 +257,10 @@ class PhaseFX
  
   def render
     # render_background -> done once in init
-    render_something
+    @args.state.actors.each_with_index {|actor,idx| render_actor actor,idx }
   end # of render
   
   def render_background
-    puts "inside render_background"
     # for the static_ variants, you only want to push into these once, unless
     # you're going to manually clear with each tick
     #@args.outputs.static_solids.clear;
@@ -254,21 +276,25 @@ class PhaseFX
     }.solid
   end # of render_background
 
-  def render_something
-    path = "#{@args.state.sprite_path[:monsters]}monster#{@args.state.players[0][:sprite_idx]}.png"
+  def render_actor actor, idx
+    mouse = @args.inputs.mouse
+    keyboard = @args.inputs.keyboard
+    path = "#{@args.state.sprite_path[actor[:sprite_type]]}#{actor[:sprite_idx]}.png"
     face_left = false
-    if @args.inputs.keyboard.directional_vector then
-      face_left = @args.inputs.keyboard.directional_vector[0] < 0
-    elsif
-      face_left = @args.inputs.mouse.x < @args.state.players[0].x
+    if idx == 0 then # 0 is the player
+      if keyboard.directional_vector then
+        face_left = keyboard.directional_vector[0] < 0
+      elsif
+        face_left = mouse.x < actor.x
+      end
     end
     @args.outputs.primitives << {
-      x: @args.state.players[0].x-64,
-      y: @args.state.players[0].y-50,
-      w: 128,
-      h: 101,
+      x: actor.x-actor.w.half,
+      y: actor.y-actor.h.half,
+      w: actor.w,
+      h: actor.h,
       path: path,
-      angle: @args.state.players[0][:rotation],
+      angle: actor[:rotation],
       a: 255,
       r: 255,
       g: 255,
@@ -282,7 +308,7 @@ class PhaseFX
       angle_anchor_x: 0.5,
       angle_anchor_y: 0.5
     }.sprite
-  end # of render_something
+  end # of render_actor
 
   #############################################################################
   # game loop
@@ -301,5 +327,5 @@ end # of class PhaseFX
 def tick args
   args.state.game ||= PhaseFX.new args
   args.state.game.tick
-  #puts "60 ticks..." if args.state.tick_count % 60 == 0
+  puts "60 ticks..." if args.state.tick_count % 60 == 0
 end # of tick
