@@ -217,6 +217,14 @@ class PhaseFX
     actor[:rotated_on] = @args.state.tick_count
   end
 
+  def intelligence
+    @args.state.actors.each_with_index do |actor,idx|
+      if idx > 0 then
+        intend_move_left actor, 1
+      end
+    end
+  end
+
   def gravity
   end
 
@@ -246,7 +254,7 @@ class PhaseFX
     end
   end
 
-  def iterate
+  def physics
 
     @args.state.actors.each do |actor|
       # slowly level out any rotation
@@ -258,7 +266,7 @@ class PhaseFX
     proposed_movement
     actual_movement
 
-  end # of iterate
+  end # of physics
 
   #############################################################################
   # audio stuff
@@ -341,7 +349,8 @@ class PhaseFX
   def tick
     render
     input
-    iterate
+    intelligence
+    physics
   end # of tick
 
 end # of class PhaseFX
