@@ -9,7 +9,9 @@ initialize	main.rb	/^  def initialize args$/;"	f	class:PhaseFX
 input	main.rb	/^  def input$/;"	f	class:PhaseFX
 inspect	main.rb	/^  def inspect$/;"	f	class:PhaseFX
 logic	main.rb	/^  def logic$/;"	f	class:PhaseFX
+play_bg_music	main.rb	/^  def play_bg_music$/;"	f	class:PhaseFX
 render	main.rb	/^  def render$/;"	f	class:PhaseFX
+render_background	main.rb	/^  def render_background$/;"	f	class:PhaseFX
 render_something	main.rb	/^  def render_something$/;"	f	class:PhaseFX
 serialize	main.rb	/^  def serialize$/;"	f	class:PhaseFX
 tick	main.rb	/^  def tick$/;"	f	class:PhaseFX
