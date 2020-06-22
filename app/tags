@@ -8,17 +8,18 @@ PhaseFX	main.rb	/^class PhaseFX$/;"	c
 initialize	main.rb	/^  def initialize args$/;"	f	class:PhaseFX
 input	main.rb	/^  def input$/;"	f	class:PhaseFX
 inspect	main.rb	/^  def inspect$/;"	f	class:PhaseFX
-intend_move_down	main.rb	/^  def intend_move_down$/;"	f	class:PhaseFX
-intend_move_left	main.rb	/^  def intend_move_left$/;"	f	class:PhaseFX
-intend_move_right	main.rb	/^  def intend_move_right$/;"	f	class:PhaseFX
-intend_move_up	main.rb	/^  def intend_move_up$/;"	f	class:PhaseFX
+intend_move_down	main.rb	/^  def intend_move_down relative_speed$/;"	f	class:PhaseFX
+intend_move_left	main.rb	/^  def intend_move_left relative_speed$/;"	f	class:PhaseFX
+intend_move_right	main.rb	/^  def intend_move_right relative_speed$/;"	f	class:PhaseFX
+intend_move_up	main.rb	/^  def intend_move_up relative_speed$/;"	f	class:PhaseFX
 intents	main.rb	/^  def intents$/;"	f	class:PhaseFX
 iterate	main.rb	/^  def iterate$/;"	f	class:PhaseFX
-move_down	main.rb	/^  def move_down$/;"	f	class:PhaseFX
-move_left	main.rb	/^  def move_left$/;"	f	class:PhaseFX
-move_right	main.rb	/^  def move_right$/;"	f	class:PhaseFX
-move_up	main.rb	/^  def move_up$/;"	f	class:PhaseFX
+move_down	main.rb	/^  def move_down relative_speed$/;"	f	class:PhaseFX
+move_left	main.rb	/^  def move_left relative_speed$/;"	f	class:PhaseFX
+move_right	main.rb	/^  def move_right relative_speed$/;"	f	class:PhaseFX
+move_up	main.rb	/^  def move_up relative_speed$/;"	f	class:PhaseFX
 play_bg_music	main.rb	/^  def play_bg_music$/;"	f	class:PhaseFX
+player_collision?	main.rb	/^  def player_collision?$/;"	f	class:PhaseFX
 render	main.rb	/^  def render$/;"	f	class:PhaseFX
 render_background	main.rb	/^  def render_background$/;"	f	class:PhaseFX
 render_something	main.rb	/^  def render_something$/;"	f	class:PhaseFX
