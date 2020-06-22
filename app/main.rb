@@ -19,6 +19,7 @@ class PhaseFX
       :collision_y => false,
       :x => @args.grid.rect[2].half,
       :y => @args.grid.rect[3].half,
+      :z => 1,
       :proposed_x => @args.grid.rect[2].half,
       :proposed_y => @args.grid.rect[3].half,
       :w => 128,
@@ -28,13 +29,13 @@ class PhaseFX
       :gravity? => true,
       :sprite_idx => 1,
       :sprite_type => :monster
-    }].concat(level_001)
+    }].concat(level_001).concat(level_001)
     @args.state.sprite_path = {
       :monster => "sprites/DungeonAssetPack/SpriteFolder/Monsters/monster"
     }
     @args.state.keyup_delay = 10
     render_background
-    play_bg_music
+    #play_bg_music
   end # of initialize
 
   def serialize
@@ -167,7 +168,7 @@ class PhaseFX
   def actor_collision? idx
 
     actor = @args.state.actors[idx]
-    other_actors = @args.state.actors.select.with_index { |v,i| i != idx }
+    other_actors = @args.state.actors.select.with_index { |oa,i| i != idx }.select { |oa| oa[:z] == actor[:z] }
 
     collision = other_actors.any? { |oa|
       [oa[:proposed_x], oa[:proposed_y], oa.w, oa.h].intersect_rect? [actor[:proposed_x], actor[:proposed_y], actor.w, actor.h] }
