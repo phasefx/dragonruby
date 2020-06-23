@@ -19,7 +19,8 @@ class PhaseFX
       :collision_y => false,
       :x => @args.grid.rect[2].half,
       :y => @args.grid.rect[3].half,
-      :z => 1,
+      :render_z => 1,
+      :collision_z => 1,
       :proposed_x => @args.grid.rect[2].half,
       :proposed_y => @args.grid.rect[3].half,
       :w => 128,
@@ -27,6 +28,7 @@ class PhaseFX
       :rotation => 0,
       :rotated_on => 0,
       :gravity? => true,
+      :player? => true,
       :sprite_idx => 1,
       :sprite_type => :monster
     }].concat(level_001).concat(level_001)
@@ -34,6 +36,7 @@ class PhaseFX
       :monster => "sprites/DungeonAssetPack/SpriteFolder/Monsters/monster"
     }
     @args.state.keyup_delay = 10
+    @args.state[:wireframe?] = false
     render_background
     #play_bg_music
   end # of initialize
@@ -141,6 +144,12 @@ class PhaseFX
     ###########################################################################
     # misc
 
+    if keyboard.key_down.g then
+      @args.state[:reset_desired?] = true
+    end
+    if keyboard.key_down.b then
+      @args.state[:wireframe?] = ! @args.state[:wireframe?]
+    end
 
   end # of input
 
@@ -168,7 +177,7 @@ class PhaseFX
   def actor_collision? idx
 
     actor = @args.state.actors[idx]
-    other_actors = @args.state.actors.select.with_index { |oa,i| i != idx }.select { |oa| oa[:z] == actor[:z] }
+    other_actors = @args.state.actors.select.with_index { |oa,i| i != idx }.select { |oa| oa[:collision_z] == actor[:collision_z] }
 
     collision = other_actors.any? { |oa|
       [oa[:proposed_x], oa[:proposed_y], oa.w, oa.h].intersect_rect? [actor[:proposed_x], actor[:proposed_y], actor.w, actor.h] }
@@ -321,7 +330,7 @@ class PhaseFX
       g: 0,
       b: 0,
       a: 128
-    }
+    } if @args.state[:wireframe?]
     @args.outputs.primitives << {
       x: actor.x-actor.w.half,
       y: actor.y-actor.h.half,
@@ -363,4 +372,5 @@ def tick args
   args.state.game ||= PhaseFX.new args
   args.state.game.tick
   #puts "60 ticks..." if args.state.tick_count % 60 == 0
+  $gtk.reset seed: rand(Time.now.sec) if args.state[:reset_desired?]
 end # of tick
