@@ -230,7 +230,7 @@ class PhaseFX
     @args.state.actors.each_with_index do |actor,idx|
       case actor[:ai_routine]
         when :player then input actor, idx
-        when :horizontal then intend_move_left actor, actor[:ai_dir]
+        when :horizontal then intend_move_left actor, actor[:ai_hdir]
       end
     end
   end
@@ -311,24 +311,31 @@ class PhaseFX
 
   def render_actor actor, idx
     path = "#{@args.state.sprite_path[actor[:sprite_type]]}#{actor[:sprite_idx]}.png"
-    face_left = false
-    if idx == 0 then # 0 is the player
+    face_left = actor[:intend_x_dir] < 0
+    if actor[:player?] then
       if @kb.directional_vector then
         face_left = @kb.directional_vector[0] < 0
       elsif
         face_left = @mouse.x < actor.x
       end
     end
-    @args.outputs.borders << {
-      x: actor.x-actor.w.half,
-      y: actor.y-actor.h.half,
-      w: actor.w,
-      h: actor.h,
-      r: 255,
-      g: 0,
-      b: 0,
-      a: 128
-    } if @args.state[:wireframe?]
+    if @args.state[:wireframe?]
+      @args.outputs.borders << {
+        x: actor.x-actor.w.half,
+        y: actor.y-actor.h.half,
+        w: actor.w,
+        h: actor.h,
+        r: 255,
+        g: 0,
+        b: 0,
+        a: 128
+      }
+      @args.outputs.labels << {
+        x: actor.x-actor.w.half,
+        y: actor.y-actor.h.half,
+        text: 'collision-z: ' + actor[:collision_z].to_s
+      }
+    end
     @args.outputs.primitives << {
       x: actor.x-actor.w.half,
       y: actor.y-actor.h.half,
