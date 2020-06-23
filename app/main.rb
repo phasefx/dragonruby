@@ -34,7 +34,7 @@ class PhaseFX
       :ai_routine => :player,
       :sprite_idx => 1,
       :sprite_type => :monster
-    }].concat(level_001).concat(level_001)
+    }].concat(level_001).concat(level_001).sort { |a,b| a[:render_z] <=> b[:render_z] }
     @args.state.sprite_path = {
       :monster => "sprites/DungeonAssetPack/SpriteFolder/Monsters/monster"
     }
