@@ -10,6 +10,8 @@ class PhaseFX
   
   def initialize args
     @args = args
+    @kb = @args.inputs.keyboard
+    @mouse = @args.inputs.mouse
     @args.state.actors = [{
       :intend_x_dir => 0,
       :intend_y_dir => 0,
@@ -65,29 +67,26 @@ class PhaseFX
 
   def input actor, idx
 
-    mouse = @args.inputs.mouse
-    keyboard = @args.inputs.keyboard
-
     ###########################################################################
     # mouse
 
-    if mouse.button_right then rotate_right actor end
-    if mouse.button_left then rotate_left actor end
+    if @mouse.button_right then rotate_right actor end
+    if @mouse.button_left then rotate_left actor end
 
-    if mouse.click
-      #@args.state.x = mouse.click.point.x
-      #@args.state.y = mouse.click.point.y
+    if @mouse.click
+      #@args.state.x = @mouse.click.point.x
+      #@args.state.y = @mouse.click.point.y
     end
 
     ###########################################################################
     # arrow keys
 
-    if keyboard.key_held.right then rotate_right actor end
-    if keyboard.key_held.left then rotate_left actor end
-    if keyboard.key_down.up then actor[:sprite_idx] += 1 end
-    if keyboard.key_down.down then actor[:sprite_idx] -= 1 end
-    if keyboard.key_down.pagedown then actor[:sprite_idx] = 1 end
-    if keyboard.key_down.pageup then actor[:rotation] = 0 end
+    if @kb.key_held.right then rotate_right actor end
+    if @kb.key_held.left then rotate_left actor end
+    if @kb.key_down.up then actor[:sprite_idx] += 1 end
+    if @kb.key_down.down then actor[:sprite_idx] -= 1 end
+    if @kb.key_down.pagedown then actor[:sprite_idx] = 1 end
+    if @kb.key_down.pageup then actor[:rotation] = 0 end
     if actor[:sprite_idx] < 1 then actor[:sprite_idx] = 1 end
     if actor[:sprite_idx] > 15 then actor[:sprite_idx] = 15 end
 
@@ -101,8 +100,8 @@ class PhaseFX
     key_a = false
     key_s = false
     key_d = false
-    if keyboard.key_down.truthy_keys.length > 0 then
-      keyboard.key_down.truthy_keys.each do |truth|
+    if @kb.key_down.truthy_keys.length > 0 then
+      @kb.key_down.truthy_keys.each do |truth|
         #if truth == :shift then key_shift = true ; actor[:keypress_on] = @args.state.tick_count ; end
         if truth == :w then key_w = true ; key_y_axis = true ; actor[:keypress_on] = @args.state.tick_count ; end
         if truth == :a then key_a = true ; key_x_axis = true ; actor[:keypress_on] = @args.state.tick_count ; end
@@ -110,8 +109,8 @@ class PhaseFX
         if truth == :d then key_d = true ; key_x_axis = true ; actor[:keypress_on] = @args.state.tick_count ; end
       end
     end
-    if keyboard.key_up.truthy_keys.length > 0 then
-      keyboard.key_up.truthy_keys.each do |truth|
+    if @kb.key_up.truthy_keys.length > 0 then
+      @kb.key_up.truthy_keys.each do |truth|
         #if truth == :shift then key_shift = false end
         if truth == :w then key_w = false end
         if truth == :a then key_a = false end
@@ -122,32 +121,32 @@ class PhaseFX
 
     if key_w then
       intend_move_up actor, key_shift ? 2 : 1
-    elsif !key_y_axis && !keyboard.key_held.w && !keyboard.key_held.s && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+    elsif !key_y_axis && !@kb.key_held.w && !@kb.key_held.s && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
       intend_move_up actor, 0
     end
     if key_a then
       intend_move_left actor, key_shift ? 2 : 1
-    elsif !key_x_axis && !keyboard.key_held.a && !keyboard.key_held.d && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+    elsif !key_x_axis && !@kb.key_held.a && !@kb.key_held.d && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
       intend_move_left actor, 0
     end
     if key_s then
       intend_move_down actor, key_shift ? 2 : 1
-    elsif !key_y_axis && !keyboard.key_held.w && !keyboard.key_held.s && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+    elsif !key_y_axis && !@kb.key_held.w && !@kb.key_held.s && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
       intend_move_down actor, 0
     end
     if key_d then
       intend_move_right actor, key_shift ? 2 : 1
-    elsif !key_x_axis && !keyboard.key_held.a && !keyboard.key_held.d && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+    elsif !key_x_axis && !@kb.key_held.a && !@kb.key_held.d && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
       intend_move_right actor, 0
     end
 
     ###########################################################################
     # misc
 
-    if keyboard.key_down.g then
+    if @kb.key_down.g then
       @args.state[:reset_desired?] = true
     end
-    if keyboard.key_down.b then
+    if @kb.key_down.b then
       @args.state[:wireframe?] = ! @args.state[:wireframe?]
     end
 
@@ -311,15 +310,13 @@ class PhaseFX
   end # of render_background
 
   def render_actor actor, idx
-    mouse = @args.inputs.mouse
-    keyboard = @args.inputs.keyboard
     path = "#{@args.state.sprite_path[actor[:sprite_type]]}#{actor[:sprite_idx]}.png"
     face_left = false
     if idx == 0 then # 0 is the player
-      if keyboard.directional_vector then
-        face_left = keyboard.directional_vector[0] < 0
+      if @kb.directional_vector then
+        face_left = @kb.directional_vector[0] < 0
       elsif
-        face_left = mouse.x < actor.x
+        face_left = @mouse.x < actor.x
       end
     end
     @args.outputs.borders << {
