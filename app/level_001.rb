@@ -18,6 +18,8 @@ def level_001
       :rotated_on => 0,
       :gravity? => false,
       :player? => false,
+      :ai_routine => :horizontal,
+      :ai_dir => rand(3) - 1,
       :sprite_idx => 2,
       :sprite_type => :monster
     }]

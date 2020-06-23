@@ -29,6 +29,7 @@ class PhaseFX
       :rotated_on => 0,
       :gravity? => true,
       :player? => true,
+      :ai_routine => :player,
       :sprite_idx => 1,
       :sprite_type => :monster
     }].concat(level_001).concat(level_001)
@@ -38,7 +39,7 @@ class PhaseFX
     @args.state.keyup_delay = 10
     @args.state[:wireframe?] = false
     render_background
-    #play_bg_music
+    play_bg_music
   end # of initialize
 
   def serialize
@@ -62,17 +63,16 @@ class PhaseFX
   #############################################################################
   # collect input
 
-  def input
+  def input actor, idx
 
-    player1 = @args.state.actors[0]
     mouse = @args.inputs.mouse
     keyboard = @args.inputs.keyboard
 
     ###########################################################################
     # mouse
 
-    if mouse.button_right then rotate_right player1 end
-    if mouse.button_left then rotate_left player1 end
+    if mouse.button_right then rotate_right actor end
+    if mouse.button_left then rotate_left actor end
 
     if mouse.click
       #@args.state.x = mouse.click.point.x
@@ -82,14 +82,14 @@ class PhaseFX
     ###########################################################################
     # arrow keys
 
-    if keyboard.key_held.right then rotate_right player1 end
-    if keyboard.key_held.left then rotate_left player1 end
-    if keyboard.key_down.up then player1[:sprite_idx] += 1 end
-    if keyboard.key_down.down then player1[:sprite_idx] -= 1 end
-    if keyboard.key_down.pagedown then player1[:sprite_idx] = 1 end
-    if keyboard.key_down.pageup then player1[:rotation] = 0 end
-    if player1[:sprite_idx] < 1 then player1[:sprite_idx] = 1 end
-    if player1[:sprite_idx] > 15 then player1[:sprite_idx] = 15 end
+    if keyboard.key_held.right then rotate_right actor end
+    if keyboard.key_held.left then rotate_left actor end
+    if keyboard.key_down.up then actor[:sprite_idx] += 1 end
+    if keyboard.key_down.down then actor[:sprite_idx] -= 1 end
+    if keyboard.key_down.pagedown then actor[:sprite_idx] = 1 end
+    if keyboard.key_down.pageup then actor[:rotation] = 0 end
+    if actor[:sprite_idx] < 1 then actor[:sprite_idx] = 1 end
+    if actor[:sprite_idx] > 15 then actor[:sprite_idx] = 15 end
 
     ###########################################################################
     # WASD
@@ -103,11 +103,11 @@ class PhaseFX
     key_d = false
     if keyboard.key_down.truthy_keys.length > 0 then
       keyboard.key_down.truthy_keys.each do |truth|
-        #if truth == :shift then key_shift = true ; player1[:keypress_on] = @args.state.tick_count ; end
-        if truth == :w then key_w = true ; key_y_axis = true ; player1[:keypress_on] = @args.state.tick_count ; end
-        if truth == :a then key_a = true ; key_x_axis = true ; player1[:keypress_on] = @args.state.tick_count ; end
-        if truth == :s then key_s = true ; key_y_axis = true ; player1[:keypress_on] = @args.state.tick_count ; end
-        if truth == :d then key_d = true ; key_x_axis = true ; player1[:keypress_on] = @args.state.tick_count ; end
+        #if truth == :shift then key_shift = true ; actor[:keypress_on] = @args.state.tick_count ; end
+        if truth == :w then key_w = true ; key_y_axis = true ; actor[:keypress_on] = @args.state.tick_count ; end
+        if truth == :a then key_a = true ; key_x_axis = true ; actor[:keypress_on] = @args.state.tick_count ; end
+        if truth == :s then key_s = true ; key_y_axis = true ; actor[:keypress_on] = @args.state.tick_count ; end
+        if truth == :d then key_d = true ; key_x_axis = true ; actor[:keypress_on] = @args.state.tick_count ; end
       end
     end
     if keyboard.key_up.truthy_keys.length > 0 then
@@ -121,24 +121,24 @@ class PhaseFX
     end
 
     if key_w then
-      intend_move_up player1, key_shift ? 2 : 1
-    elsif !key_y_axis && !keyboard.key_held.w && !keyboard.key_held.s && @args.state.tick_count > player1[:keypress_on] + @args.state.keyup_delay then
-      intend_move_up player1, 0
+      intend_move_up actor, key_shift ? 2 : 1
+    elsif !key_y_axis && !keyboard.key_held.w && !keyboard.key_held.s && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+      intend_move_up actor, 0
     end
     if key_a then
-      intend_move_left player1, key_shift ? 2 : 1
-    elsif !key_x_axis && !keyboard.key_held.a && !keyboard.key_held.d && @args.state.tick_count > player1[:keypress_on] + @args.state.keyup_delay then
-      intend_move_left player1, 0
+      intend_move_left actor, key_shift ? 2 : 1
+    elsif !key_x_axis && !keyboard.key_held.a && !keyboard.key_held.d && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+      intend_move_left actor, 0
     end
     if key_s then
-      intend_move_down player1, key_shift ? 2 : 1
-    elsif !key_y_axis && !keyboard.key_held.w && !keyboard.key_held.s && @args.state.tick_count > player1[:keypress_on] + @args.state.keyup_delay then
-      intend_move_down player1, 0
+      intend_move_down actor, key_shift ? 2 : 1
+    elsif !key_y_axis && !keyboard.key_held.w && !keyboard.key_held.s && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+      intend_move_down actor, 0
     end
     if key_d then
-      intend_move_right player1, key_shift ? 2 : 1
-    elsif !key_x_axis && !keyboard.key_held.a && !keyboard.key_held.d && @args.state.tick_count > player1[:keypress_on] + @args.state.keyup_delay then
-      intend_move_right player1, 0
+      intend_move_right actor, key_shift ? 2 : 1
+    elsif !key_x_axis && !keyboard.key_held.a && !keyboard.key_held.d && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+      intend_move_right actor, 0
     end
 
     ###########################################################################
@@ -229,8 +229,9 @@ class PhaseFX
 
   def intelligence
     @args.state.actors.each_with_index do |actor,idx|
-      if idx > 0 then
-        intend_move_left actor, 1
+      case actor[:ai_routine]
+        when :player then input actor, idx
+        when :horizontal then intend_move_left actor, actor[:ai_dir]
       end
     end
   end
@@ -358,7 +359,6 @@ class PhaseFX
 
   def tick
     render
-    input
     intelligence
     physics
   end # of tick
