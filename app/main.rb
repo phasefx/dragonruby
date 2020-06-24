@@ -41,7 +41,7 @@ class PhaseFX
     @args.state.keyup_delay = 10
     @args.state[:wireframe?] = false
     render_background
-    play_bg_music
+    #play_bg_music
   end # of initialize
 
   def serialize
@@ -143,8 +143,11 @@ class PhaseFX
     ###########################################################################
     # misc
 
-    if @kb.key_down.g then
+    if @kb.key_down.r then
       @args.state[:reset_desired?] = true
+    end
+    if @kb.key_down.g then
+      @args.state[:gravity?] = ! @args.state[:gravity?]
     end
     if @kb.key_down.b then
       @args.state[:wireframe?] = ! @args.state[:wireframe?]
@@ -210,6 +213,11 @@ class PhaseFX
   def move_down actor, idx, relative_speed
     actor[:proposed_y] -= actor[:speed_y] * relative_speed.abs
     actor[:collision_y] = actor_collision? idx # || actor[:proposed_y] < 0;
+    if (!actor[:collision_y]) then
+      if actor[:proposed_y] < 0 then
+        actor[:collision_y] = true
+      end
+    end
   end
 
   def rotate_left actor
@@ -235,7 +243,12 @@ class PhaseFX
     end
   end
 
-  def gravity
+  def forces
+    @args.state.actors.each_with_index do |actor,idx|
+      if @args.state[:gravity?] && actor[:gravity?] then
+        move_down actor, idx, -2
+      end
+    end
   end
 
   def proposed_movement
@@ -272,7 +285,7 @@ class PhaseFX
       if actor[:rotation] < 0 and @args.state.tick_count > actor[:rotated_on] + 10 then actor[:rotation] += 0.5 end
     end
 
-    gravity
+    forces
     proposed_movement
     actual_movement
 
@@ -291,6 +304,9 @@ class PhaseFX
   def render
     # render_background -> done once in init
     @args.state.actors.each_with_index {|actor,idx| render_actor actor,idx }
+    if @args.state[:wireframe?] then
+      #:x => @args.grid.rect[2].half,
+    end
   end # of render
   
   def render_background
