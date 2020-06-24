@@ -12,7 +12,7 @@ class PhaseFX
     @args = args
     @kb = @args.inputs.keyboard
     @mouse = @args.inputs.mouse
-    @args.state.actors = [{
+    @args.state.player = {
       :intend_x_dir => 0,
       :intend_y_dir => 0,
       :speed_x => 10,
@@ -34,14 +34,20 @@ class PhaseFX
       :ai_routine => :player,
       :sprite_idx => 1,
       :sprite_type => :monster
-    }].concat(level_001).concat(level_001).sort { |a,b| a[:render_z] <=> b[:render_z] }
+    }
+    @args.state.actors = []
+      .concat([@args.state.player])
+      .concat(level_001)
+      .concat(level_001)
+      .sort { |a,b| a[:render_z] <=> b[:render_z] }
     @args.state.sprite_path = {
       :monster => "sprites/DungeonAssetPack/SpriteFolder/Monsters/monster"
     }
     @args.state.keyup_delay = 10
     @args.state[:wireframe?] = false
+    @args.state[:gravity?] = true
     render_background
-    #play_bg_music
+    play_bg_music
   end # of initialize
 
   def serialize
@@ -246,7 +252,7 @@ class PhaseFX
   def forces
     @args.state.actors.each_with_index do |actor,idx|
       if @args.state[:gravity?] && actor[:gravity?] then
-        move_down actor, idx, -2
+        move_down actor, idx, -1
       end
     end
   end
@@ -306,6 +312,7 @@ class PhaseFX
     @args.state.actors.each_with_index {|actor,idx| render_actor actor,idx }
     if @args.state[:wireframe?] then
       #:x => @args.grid.rect[2].half,
+      @args.outputs.labels << [ @args.grid.rect[0], @args.grid.rect[3], "Player (#{@args.state.player.x},#{@args.state.player.y})" ]
     end
   end # of render
   
