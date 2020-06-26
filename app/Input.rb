@@ -90,6 +90,14 @@ module Input
     if @kb.key_down.b then
       @state[:wireframe?] = ! @state[:wireframe?]
     end
+    if @kb.key_down.m then
+      @state[:music?] = ! @state[:music?]
+      if @state[:music?]
+        play_bg_music
+      else
+        stop_bg_music
+      end
+    end
 
   end # of input
 end # of Input

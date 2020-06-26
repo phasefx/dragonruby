@@ -25,10 +25,10 @@ class Game
     @state[:keyup_delay] = 10
     @state[:wireframe?] = false
     @state[:gravity?] = true
-    @state[:music?] = true
+    @state[:music?] = false
     load_actors
     render_background
-    play_bg_music
+    play_bg_music if @state[:music?]
   end # of initialize
 
   def serialize
