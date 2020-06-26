@@ -1,7 +1,7 @@
 LEVEL_001 = 'app/level_001.rb'
 require LEVEL_001
 
-class PhaseFX
+class Game
   #############################################################################
   # setup
   
@@ -387,4 +387,4 @@ class PhaseFX
     physics
   end # of tick
 
-end # of class PhaseFX
+end # of class Game
