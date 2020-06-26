@@ -5,8 +5,8 @@ module Render
  
   def render
     # render_background -> done once in init
-    @args.state.actors.each_with_index {|actor,idx| render_actor actor,idx }
-    if @args.state[:wireframe?] then
+    @state[:actors].each_with_index {|actor,idx| render_actor actor,idx }
+    if @state[:wireframe?] then
       #:x => @args.grid.rect[2].half,
       @args.outputs.labels << [ @args.grid.rect[0], @args.grid.rect[3], "Player (#{@args.state.player.x},#{@args.state.player.y})" ]
     end
@@ -38,7 +38,7 @@ module Render
         face_left = @mouse.x < actor.x
       end
     end
-    if @args.state[:wireframe?]
+    if @state[:wireframe?]
       @args.outputs.borders << {
         x: actor.x-actor.w.half,
         y: actor.y-actor.h.half,

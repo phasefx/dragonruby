@@ -59,22 +59,22 @@ module Input
 
     if key_w then
       intend_move_up actor, key_shift ? 2 : 1
-    elsif !key_y_axis && !@kb.key_held.w && !@kb.key_held.s && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+    elsif !key_y_axis && !@kb.key_held.w && !@kb.key_held.s && @args.state.tick_count > actor[:keypress_on] + @state[:keyup_delay] then
       intend_move_up actor, 0
     end
     if key_a then
       intend_move_left actor, key_shift ? 2 : 1
-    elsif !key_x_axis && !@kb.key_held.a && !@kb.key_held.d && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+    elsif !key_x_axis && !@kb.key_held.a && !@kb.key_held.d && @args.state.tick_count > actor[:keypress_on] + @state[:keyup_delay] then
       intend_move_left actor, 0
     end
     if key_s then
       intend_move_down actor, key_shift ? 2 : 1
-    elsif !key_y_axis && !@kb.key_held.w && !@kb.key_held.s && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+    elsif !key_y_axis && !@kb.key_held.w && !@kb.key_held.s && @args.state.tick_count > actor[:keypress_on] + @state[:keyup_delay] then
       intend_move_down actor, 0
     end
     if key_d then
       intend_move_right actor, key_shift ? 2 : 1
-    elsif !key_x_axis && !@kb.key_held.a && !@kb.key_held.d && @args.state.tick_count > actor[:keypress_on] + @args.state.keyup_delay then
+    elsif !key_x_axis && !@kb.key_held.a && !@kb.key_held.d && @args.state.tick_count > actor[:keypress_on] + @state[:keyup_delay] then
       intend_move_right actor, 0
     end
 
@@ -82,13 +82,13 @@ module Input
     # misc
 
     if @kb.key_down.r then
-      @args.state[:reset_desired?] = true
+      @state[:reset_desired?] = true
     end
     if @kb.key_down.g then
-      @args.state[:gravity?] = ! @args.state[:gravity?]
+      @state[:gravity?] = ! @state[:gravity?]
     end
     if @kb.key_down.b then
-      @args.state[:wireframe?] = ! @args.state[:wireframe?]
+      @state[:wireframe?] = ! @state[:wireframe?]
     end
 
   end # of input

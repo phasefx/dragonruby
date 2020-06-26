@@ -27,9 +27,9 @@ module Actor
   end
 
   def load_actors
-    @args.state.player = player
-    @args.state.actors = []
-      .concat([@args.state.player])
+    @state[:player] = player
+    @state[:actors] = []
+      .concat([@state[:player]])
       .concat(m_ghost)
       .concat(m_ghost)
       .sort { |a,b| a[:render_z] <=> b[:render_z] }

@@ -23,8 +23,8 @@ module Logic
 
   def actor_collision? idx
 
-    actor = @args.state.actors[idx]
-    other_actors = @args.state.actors.select.with_index { |oa,i| i != idx }.select { |oa| oa[:collision_z] == actor[:collision_z] }
+    actor = @state[:actors][idx]
+    other_actors = @state[:actors].select.with_index { |oa,i| i != idx }.select { |oa| oa[:collision_z] == actor[:collision_z] }
 
     collision = other_actors.any? { |oa|
       [oa[:proposed_x], oa[:proposed_y], oa.w, oa.h].intersect_rect? [actor[:proposed_x], actor[:proposed_y], actor.w, actor.h] }
@@ -80,7 +80,7 @@ module Logic
   end
 
   def intelligence
-    @args.state.actors.each_with_index do |actor,idx|
+    @state[:actors].each_with_index do |actor,idx|
       case actor[:ai_routine]
         when :player then input actor, idx
         when :horizontal then intend_move_left actor, actor[:ai_hdir]
@@ -89,15 +89,15 @@ module Logic
   end
 
   def forces
-    @args.state.actors.each_with_index do |actor,idx|
-      if @args.state[:gravity?] && actor[:gravity?] then
+    @state[:actors].each_with_index do |actor,idx|
+      if @state[:gravity?] && actor[:gravity?] then
         move_down actor, idx, -1
       end
     end
   end
 
   def proposed_movement
-    @args.state.actors.each_with_index do |actor,idx|
+    @state[:actors].each_with_index do |actor,idx|
       actor[:saved_x] = actor.x
       actor[:saved_y] = actor.y
       if actor[:intend_x_dir] > 0 then move_right actor, idx, actor[:intend_x_dir] end
@@ -116,7 +116,7 @@ module Logic
   end
 
   def actual_movement
-    @args.state.actors.each do |actor|
+    @state[:actors].each do |actor|
       actor.x = actor[:proposed_x]
       actor.y = actor[:proposed_y]
     end
@@ -124,7 +124,7 @@ module Logic
 
   def physics
 
-    @args.state.actors.each do |actor|
+    @state[:actors].each do |actor|
       # slowly level out any rotation
       if actor[:rotation] > 0 and @args.state.tick_count > actor[:rotated_on] + 10 then actor[:rotation] -= 0.5 end
       if actor[:rotation] < 0 and @args.state.tick_count > actor[:rotated_on] + 10 then actor[:rotation] += 0.5 end
