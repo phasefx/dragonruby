@@ -82,7 +82,7 @@ module Input
     # misc
 
     if @kb.key_down.r then
-      @state[:reset_desired?] = true
+      @gtk_state[:reset_desired?] = true
     end
     if @kb.key_down.g then
       @state[:gravity?] = ! @state[:gravity?]

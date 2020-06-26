@@ -14,11 +14,11 @@ class Game
     @gtk_inputs = args.inputs
     @gtk_outputs = args.outputs
     @gtk_state = args.state
+    @gtk_state[:reset_desired?] = false
     @gtk_grid = args.grid
     @kb = @gtk_inputs.keyboard
     @mouse = @gtk_inputs.mouse
     @state = {}
-
     @state[:sprite_path] = {
       :monster => "sprites/DungeonAssetPack/SpriteFolder/Monsters/monster"
     }
