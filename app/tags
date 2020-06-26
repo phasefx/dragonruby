@@ -4,28 +4,41 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
-PhaseFX	main.rb	/^class PhaseFX$/;"	c
-initialize	main.rb	/^  def initialize args$/;"	f	class:PhaseFX
-input	main.rb	/^  def input$/;"	f	class:PhaseFX
-inspect	main.rb	/^  def inspect$/;"	f	class:PhaseFX
-intend_move_down	main.rb	/^  def intend_move_down relative_speed$/;"	f	class:PhaseFX
-intend_move_left	main.rb	/^  def intend_move_left relative_speed$/;"	f	class:PhaseFX
-intend_move_right	main.rb	/^  def intend_move_right relative_speed$/;"	f	class:PhaseFX
-intend_move_up	main.rb	/^  def intend_move_up relative_speed$/;"	f	class:PhaseFX
-intents	main.rb	/^  def intents$/;"	f	class:PhaseFX
-iterate	main.rb	/^  def iterate$/;"	f	class:PhaseFX
-move_down	main.rb	/^  def move_down relative_speed$/;"	f	class:PhaseFX
-move_left	main.rb	/^  def move_left relative_speed$/;"	f	class:PhaseFX
-move_right	main.rb	/^  def move_right relative_speed$/;"	f	class:PhaseFX
-move_up	main.rb	/^  def move_up relative_speed$/;"	f	class:PhaseFX
-play_bg_music	main.rb	/^  def play_bg_music$/;"	f	class:PhaseFX
-player_collision?	main.rb	/^  def player_collision?$/;"	f	class:PhaseFX
-render	main.rb	/^  def render$/;"	f	class:PhaseFX
-render_background	main.rb	/^  def render_background$/;"	f	class:PhaseFX
-render_something	main.rb	/^  def render_something$/;"	f	class:PhaseFX
-rotate_left	main.rb	/^  def rotate_left$/;"	f	class:PhaseFX
-rotate_right	main.rb	/^  def rotate_right$/;"	f	class:PhaseFX
-serialize	main.rb	/^  def serialize$/;"	f	class:PhaseFX
-tick	main.rb	/^  def tick$/;"	f	class:PhaseFX
+Actor	Actor.rb	/^module Actor$/;"	m
+Audio	Audio.rb	/^module Audio$/;"	m
+Game	Game.rb	/^class Game$/;"	c
+Input	Input.rb	/^module Input$/;"	m
+Level	Level.rb	/^module Level$/;"	m
+Logic	Logic.rb	/^module Logic$/;"	m
+Render	Render.rb	/^module Render$/;"	m
+actor_collision?	Logic.rb	/^  def actor_collision? idx$/;"	f	class:Logic
+actual_movement	Logic.rb	/^  def actual_movement$/;"	f	class:Logic
+forces	Logic.rb	/^  def forces$/;"	f	class:Logic
+initialize	Game.rb	/^  def initialize args$/;"	f	class:Game
+input	Input.rb	/^  def input actor, idx$/;"	f	class:Input
+inspect	Game.rb	/^  def inspect$/;"	f	class:Game
+intelligence	Logic.rb	/^  def intelligence$/;"	f	class:Logic
+intend_move_down	Logic.rb	/^  def intend_move_down actor, relative_speed$/;"	f	class:Logic
+intend_move_left	Logic.rb	/^  def intend_move_left actor, relative_speed$/;"	f	class:Logic
+intend_move_right	Logic.rb	/^  def intend_move_right actor, relative_speed$/;"	f	class:Logic
+intend_move_up	Logic.rb	/^  def intend_move_up actor, relative_speed$/;"	f	class:Logic
+load_actors	Actor.rb	/^  def load_actors$/;"	f	class:Actor
+m_ghost	Level.rb	/^  def m_ghost$/;"	f	class:Level
+move_down	Logic.rb	/^  def move_down actor, idx, relative_speed$/;"	f	class:Logic
+move_left	Logic.rb	/^  def move_left actor, idx, relative_speed$/;"	f	class:Logic
+move_right	Logic.rb	/^  def move_right actor, idx, relative_speed$/;"	f	class:Logic
+move_up	Logic.rb	/^  def move_up actor, idx, relative_speed$/;"	f	class:Logic
+physics	Logic.rb	/^  def physics$/;"	f	class:Logic
+play_bg_music	Audio.rb	/^  def play_bg_music$/;"	f	class:Audio
+player	Actor.rb	/^  def player$/;"	f	class:Actor
+proposed_movement	Logic.rb	/^  def proposed_movement$/;"	f	class:Logic
+render	Render.rb	/^  def render$/;"	f	class:Render
+render_actor	Render.rb	/^  def render_actor actor, idx$/;"	f	class:Render
+render_background	Render.rb	/^  def render_background$/;"	f	class:Render
+rotate_left	Logic.rb	/^  def rotate_left actor$/;"	f	class:Logic
+rotate_right	Logic.rb	/^  def rotate_right actor$/;"	f	class:Logic
+serialize	Game.rb	/^  def serialize$/;"	f	class:Game
+state	Game.rb	/^  def state$/;"	f	class:Game
+tick	Game.rb	/^  def tick$/;"	f	class:Game
 tick	main.rb	/^def tick args$/;"	f
-to_s	main.rb	/^  def to_s$/;"	f	class:PhaseFX
+to_s	Game.rb	/^  def to_s$/;"	f	class:Game
