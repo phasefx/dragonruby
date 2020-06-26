@@ -7,20 +7,20 @@ module Render
     # render_background -> done once in init
     @state[:actors].each_with_index {|actor,idx| render_actor actor,idx }
     if @state[:wireframe?] then
-      #:x => @args.grid.rect[2].half,
-      @args.outputs.labels << [ @args.grid.rect[0], @args.grid.rect[3], "Player (#{@args.state.player.x},#{@args.state.player.y})" ]
+      #:x => @gtk_grid.rect[2].half,
+      @gtk_outputs.labels << [ @gtk_grid.rect[0], @gtk_grid.rect[3], "Player (#{@state[:player][:x]},#{@state[:player][:y]})" ]
     end
   end # of render
   
   def render_background
     # for the static_ variants, you only want to push into these once, unless
     # you're going to manually clear with each tick
-    #@args.outputs.static_solids.clear;
-    @args.outputs.static_solids << {
-      x:  @args.grid.rect[0],
-      y:  @args.grid.rect[1],
-      w:  @args.grid.rect[2],
-      h:  @args.grid.rect[3],
+    #@gtk_outputs.static_solids.clear;
+    @gtk_outputs.static_solids << {
+      x:  @gtk_grid.rect[0],
+      y:  @gtk_grid.rect[1],
+      w:  @gtk_grid.rect[2],
+      h:  @gtk_grid.rect[3],
       r:    0,
       g:  255,
       b:    0,
@@ -39,7 +39,7 @@ module Render
       end
     end
     if @state[:wireframe?]
-      @args.outputs.borders << {
+      @gtk_outputs.borders << {
         x: actor.x-actor.w.half,
         y: actor.y-actor.h.half,
         w: actor.w,
@@ -49,13 +49,13 @@ module Render
         b: 0,
         a: 128
       }
-      @args.outputs.labels << {
+      @gtk_outputs.labels << {
         x: actor.x-actor.w.half,
         y: actor.y-actor.h.half,
         text: 'collision-z: ' + actor[:collision_z].to_s
       }
     end
-    @args.outputs.primitives << {
+    @gtk_outputs.primitives << {
       x: actor.x-actor.w.half,
       y: actor.y-actor.h.half,
       w: actor.w,

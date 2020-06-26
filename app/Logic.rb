@@ -35,8 +35,8 @@ module Logic
   def move_left actor, idx, relative_speed
     #puts "move_left #{relative_speed}"
     actor[:proposed_x] -= actor[:speed_x] * relative_speed.abs
-    if actor[:proposed_x] < @args.grid.rect[0] - actor.w.half then
-      actor[:proposed_x] = @args.grid.rect[2] + actor.w.half
+    if actor[:proposed_x] < @gtk_grid.rect[0] - actor.w.half then
+      actor[:proposed_x] = @gtk_grid.rect[2] + actor.w.half
     end
     actor[:collision_x] = actor_collision? idx
   end
@@ -44,8 +44,8 @@ module Logic
   def move_right actor, idx, relative_speed
     #puts "move_right #{relative_speed}"
     actor[:proposed_x] += actor[:speed_x] * relative_speed.abs
-    if actor[:proposed_x] > @args.grid.rect[2] + actor.w.half then
-      actor[:proposed_x] = @args.grid.rect[0] - actor.w.half
+    if actor[:proposed_x] > @gtk_grid.rect[2] + actor.w.half then
+      actor[:proposed_x] = @gtk_grid.rect[0] - actor.w.half
     end
     actor[:collision_x] = actor_collision? idx
   end
@@ -69,14 +69,14 @@ module Logic
     if actor[:rotation] < 45 then actor[:rotation] += 2 else actor[:rotation] += 10 end
     #actor[:rotation] += actor[:rotation]/10 + 1
     if actor[:rotation] > 270 then actor[:rotation] -= 360 end
-    actor[:rotated_on] = @args.state.tick_count
+    actor[:rotated_on] = @gtk_state.tick_count
   end
 
   def rotate_right actor
     if actor[:rotation] > -45 then actor[:rotation] -= 2 else actor[:rotation] -= 10 end
     #actor[:rotation] -= actor[:rotation]/10 + 1
     if actor[:rotation] < -270 then actor[:rotation] += 360 end
-    actor[:rotated_on] = @args.state.tick_count
+    actor[:rotated_on] = @gtk_state.tick_count
   end
 
   def intelligence
@@ -126,8 +126,8 @@ module Logic
 
     @state[:actors].each do |actor|
       # slowly level out any rotation
-      if actor[:rotation] > 0 and @args.state.tick_count > actor[:rotated_on] + 10 then actor[:rotation] -= 0.5 end
-      if actor[:rotation] < 0 and @args.state.tick_count > actor[:rotated_on] + 10 then actor[:rotation] += 0.5 end
+      if actor[:rotation] > 0 and @gtk_state.tick_count > actor[:rotated_on] + 10 then actor[:rotation] -= 0.5 end
+      if actor[:rotation] < 0 and @gtk_state.tick_count > actor[:rotated_on] + 10 then actor[:rotation] += 0.5 end
     end
 
     forces
