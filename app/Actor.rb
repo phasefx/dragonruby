@@ -12,6 +12,7 @@ module Actor
       :y => @gtk_grid.rect[3].half,
       :render_z => 1,
       :collision_z => 1,
+      :keypress_on => 0,
       :proposed_x => @gtk_grid.rect[2].half,
       :proposed_y => @gtk_grid.rect[3].half,
       :w => 128,

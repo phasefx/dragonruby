@@ -11,6 +11,7 @@ module Level
       :y => @gtk_grid.rect[3].half + 101 + rand(400),
       :render_z => rand(2),
       :collision_z => rand(2),
+      :keypress_on => 0,
       :proposed_x => @gtk_grid.rect[2].half + 128 + rand(400),
       :proposed_y => @gtk_grid.rect[3].half + 101 + rand(400),
       :w => 128,
