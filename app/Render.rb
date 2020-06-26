@@ -29,7 +29,7 @@ module Render
   end # of render_background
 
   def render_actor actor, idx
-    path = "#{@args.state.sprite_path[actor[:sprite_type]]}#{actor[:sprite_idx]}.png"
+    path = "#{@state[:sprite_path][actor[:sprite_type]]}#{actor[:sprite_idx]}.png"
     face_left = actor[:intend_x_dir] < 0
     if actor[:player?] then
       if @kb.directional_vector then

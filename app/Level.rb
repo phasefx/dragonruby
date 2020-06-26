@@ -1,4 +1,5 @@
-def level_001
+module Level
+  def m_ghost
     [{
       :intend_x_dir => 0,
       :intend_y_dir => 0,
@@ -23,4 +24,5 @@ def level_001
       :sprite_idx => 2,
       :sprite_type => :monster
     }]
+  end
 end

@@ -1,6 +1,12 @@
 $gtk.reset
 $gtk.set_window_title "PhaseFX"
 
+require 'app/Actor.rb'
+require 'app/Audio.rb'
+require 'app/Input.rb'
+require 'app/Level.rb'
+require 'app/Logic.rb'
+require 'app/Render.rb'
 require 'app/Game.rb'
 
 ###############################################################################
