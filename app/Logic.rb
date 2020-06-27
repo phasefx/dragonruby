@@ -3,66 +3,16 @@ module Logic
   #############################################################################
   # handle the game logic
 
-  def intend_move_left actor, relative_speed
-    #puts "intend_move_left #{relative_speed}" if relative_speed != 0
-    actor[:intend_x_dir] = -relative_speed;
-  end
-
-  def intend_move_right actor, relative_speed
-    #puts "intend_move_right #{relative_speed}" if relative_speed != 0
-    actor[:intend_x_dir] = relative_speed;
-  end
-
-  def intend_move_up actor, relative_speed
-    actor[:intend_y_dir] = relative_speed;
-  end
-
-  def intend_move_down actor, relative_speed
-    actor[:intend_y_dir] = -relative_speed;
-  end
-
   def actor_collision? idx
 
     actor = @state[:actors][idx]
     other_actors = @state[:actors].select.with_index { |oa,i| i != idx }.select { |oa| oa[:collision_z] == actor[:collision_z] }
 
     collision = other_actors.any? { |oa|
-      [oa[:proposed_x], oa[:proposed_y], oa.w, oa.h].intersect_rect? [actor[:proposed_x], actor[:proposed_y], actor.w, actor.h] }
+      [oa[:particle].next_position.x, oa[:particle].next_position.y, oa.w, oa.h].intersect_rect?
+      [actor[:particle].next_position.x, actor[:particle].next_position.y, actor.w, actor.h] }
 
     return collision
-  end
-
-  def move_left actor, idx, relative_speed
-    #puts "move_left #{relative_speed}"
-    actor[:proposed_x] -= actor[:speed_x] * relative_speed.abs
-    if actor[:proposed_x] < @gtk_grid.rect[0] - actor.w.half then
-      actor[:proposed_x] = @gtk_grid.rect[2] + actor.w.half
-    end
-    actor[:collision_x] = actor_collision? idx
-  end
-
-  def move_right actor, idx, relative_speed
-    #puts "move_right #{relative_speed}"
-    actor[:proposed_x] += actor[:speed_x] * relative_speed.abs
-    if actor[:proposed_x] > @gtk_grid.rect[2] + actor.w.half then
-      actor[:proposed_x] = @gtk_grid.rect[0] - actor.w.half
-    end
-    actor[:collision_x] = actor_collision? idx
-  end
-
-  def move_up actor, idx, relative_speed
-    actor[:proposed_y] += actor[:speed_y] * relative_speed.abs
-    actor[:collision_y] = actor_collision? idx
-  end
-
-  def move_down actor, idx, relative_speed
-    actor[:proposed_y] -= actor[:speed_y] * relative_speed.abs
-    actor[:collision_y] = actor_collision? idx # || actor[:proposed_y] < 0;
-    if (!actor[:collision_y]) then
-      if actor[:proposed_y] < 0 then
-        actor[:collision_y] = true
-      end
-    end
   end
 
   def rotate_left actor
@@ -83,42 +33,55 @@ module Logic
     @state[:actors].each_with_index do |actor,idx|
       case actor[:ai_routine]
         when :player then input actor, idx
-        when :horizontal then intend_move_left actor, actor[:ai_hdir]
+        when :horizontal then
+          if actor[:particle].velocity.x.abs > 0 then
+            # already moving; if we applied more impulses it would accelerate
+          else
+            set_impulse actor, actor[:ai_hdir], 0
+          end
       end
     end
   end
 
+  def set_impulse actor, x, y
+    actor[:intended_impulse] = Vector.new x, y
+    actor[:intended_on] = @gtk_state.tick_count
+  end
+
   def forces
     @state[:actors].each_with_index do |actor,idx|
+      forces_a = []
       if @state[:gravity?] && actor[:gravity?] then
-        move_down actor, idx, -1
+        forces_a << calculate_g_force(actor[:particle])
       end
+      if actor[:intended_impulse].x != 0 || actor[:intended_impulse].y !=0
+        if actor[:intended_on] > actor[:impulsed_on]
+          forces_a << Vector.new(actor[:particle].mass * actor[:intended_impulse].x)
+          forces_a << Vector.new(actor[:particle].mass * actor[:intended_impulse].y)
+          actor[:impulsed_on] = @gtk_state.tick_count
+        end
+      end
+      calculate_next_vectors actor[:particle], forces_a
     end
   end
 
   def proposed_movement
     @state[:actors].each_with_index do |actor,idx|
-      actor[:saved_x] = actor.x
-      actor[:saved_y] = actor.y
-      if actor[:intend_x_dir] > 0 then move_right actor, idx, actor[:intend_x_dir] end
-      if actor[:intend_x_dir] < 0 then move_left actor, idx, actor[:intend_x_dir] end
-      if actor[:intend_y_dir] > 0 then move_up actor, idx, actor[:intend_y_dir] end
-      if actor[:intend_y_dir] < 0 then move_down actor, idx, actor[:intend_y_dir] end
-      #actor[:intend_x_dir] = 0
-      #actor[:intend_y_dir] = 0
       if actor[:collision_x] then
-        actor[:proposed_x] = actor[:saved_x]
+        actor[:particle].next_position.x = actor[:particle].position.x
+        actor[:particle].next_velocity.x = actor[:particle].velocity.x
       end
       if actor[:collision_y] then
-        actor[:proposed_y] = actor[:saved_y]
+        actor[:particle].next_position.y = actor[:particle].position.y
+        actor[:particle].next_velocity.y = actor[:particle].velocity.y
       end
     end
   end
 
   def actual_movement
     @state[:actors].each do |actor|
-      actor.x = actor[:proposed_x]
-      actor.y = actor[:proposed_y]
+      actor[:position] = actor[:next_position]
+      actor[:velocity] = actor[:next_velocity]
     end
   end
 

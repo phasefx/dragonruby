@@ -10,24 +10,21 @@ Game	Game.rb	/^class Game$/;"	c
 Input	Input.rb	/^module Input$/;"	m
 Level	Level.rb	/^module Level$/;"	m
 Logic	Logic.rb	/^module Logic$/;"	m
+Particle	Physics.rb	/^class Particle < Struct.new(:position, :next_position, :velocity, :next_velocity, :mass)$/;"	c
+Physics	Physics.rb	/^module Physics$/;"	m
 Render	Render.rb	/^module Render$/;"	m
+Vector	Physics.rb	/^class Vector < Struct.new(:x, :y)$/;"	c
 actor_collision?	Logic.rb	/^  def actor_collision? idx$/;"	f	class:Logic
 actual_movement	Logic.rb	/^  def actual_movement$/;"	f	class:Logic
+calculate_g_force	Physics.rb	/^  def calculate_g_force particle$/;"	f	class:Physics
+calculate_next_vectors	Physics.rb	/^  def calculate_next_vectors particle, forces$/;"	f	class:Physics
 forces	Logic.rb	/^  def forces$/;"	f	class:Logic
 initialize	Game.rb	/^  def initialize args$/;"	f	class:Game
 input	Input.rb	/^  def input actor, idx$/;"	f	class:Input
 inspect	Game.rb	/^  def inspect$/;"	f	class:Game
 intelligence	Logic.rb	/^  def intelligence$/;"	f	class:Logic
-intend_move_down	Logic.rb	/^  def intend_move_down actor, relative_speed$/;"	f	class:Logic
-intend_move_left	Logic.rb	/^  def intend_move_left actor, relative_speed$/;"	f	class:Logic
-intend_move_right	Logic.rb	/^  def intend_move_right actor, relative_speed$/;"	f	class:Logic
-intend_move_up	Logic.rb	/^  def intend_move_up actor, relative_speed$/;"	f	class:Logic
 load_actors	Actor.rb	/^  def load_actors$/;"	f	class:Actor
 m_ghost	Level.rb	/^  def m_ghost$/;"	f	class:Level
-move_down	Logic.rb	/^  def move_down actor, idx, relative_speed$/;"	f	class:Logic
-move_left	Logic.rb	/^  def move_left actor, idx, relative_speed$/;"	f	class:Logic
-move_right	Logic.rb	/^  def move_right actor, idx, relative_speed$/;"	f	class:Logic
-move_up	Logic.rb	/^  def move_up actor, idx, relative_speed$/;"	f	class:Logic
 physics	Logic.rb	/^  def physics$/;"	f	class:Logic
 play_bg_music	Audio.rb	/^  def play_bg_music$/;"	f	class:Audio
 player	Actor.rb	/^  def player$/;"	f	class:Actor
@@ -38,7 +35,9 @@ render_background	Render.rb	/^  def render_background$/;"	f	class:Render
 rotate_left	Logic.rb	/^  def rotate_left actor$/;"	f	class:Logic
 rotate_right	Logic.rb	/^  def rotate_right actor$/;"	f	class:Logic
 serialize	Game.rb	/^  def serialize$/;"	f	class:Game
+set_impulse	Logic.rb	/^  def set_impulse actor, x, y$/;"	f	class:Logic
 state	Game.rb	/^  def state$/;"	f	class:Game
+stop_bg_music	Audio.rb	/^  def stop_bg_music$/;"	f	class:Audio
 tick	Game.rb	/^  def tick$/;"	f	class:Game
 tick	main.rb	/^def tick args$/;"	f
 to_s	Game.rb	/^  def to_s$/;"	f	class:Game

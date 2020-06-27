@@ -7,6 +7,7 @@ class Game
   include Input
   include Level
   include Logic
+  include Physics
   include Render
 
   def initialize args

@@ -58,24 +58,24 @@ module Input
     end
 
     if key_w then
-      intend_move_up actor, key_shift ? 2 : 1
-    elsif !key_y_axis && !@kb.key_held.w && !@kb.key_held.s && @gtk_state.tick_count > actor[:keypress_on] + @state[:keyup_delay] then
-      intend_move_up actor, 0
+      if !actor[:particle].velocity.y > 0 then
+        set_impulse actor, 0, key_shift ? 8 : 4
+      end
     end
     if key_a then
-      intend_move_left actor, key_shift ? 2 : 1
-    elsif !key_x_axis && !@kb.key_held.a && !@kb.key_held.d && @gtk_state.tick_count > actor[:keypress_on] + @state[:keyup_delay] then
-      intend_move_left actor, 0
+      if !actor[:particle].velocity.x < 0 then
+        set_impulse actor, key_shift ? -8 : -4, 0
+      end
     end
     if key_s then
-      intend_move_down actor, key_shift ? 2 : 1
-    elsif !key_y_axis && !@kb.key_held.w && !@kb.key_held.s && @gtk_state.tick_count > actor[:keypress_on] + @state[:keyup_delay] then
-      intend_move_down actor, 0
+      if !actor[:particle].velocity.y < 0 then
+        set_impulse actor, 0, key_shift ? -8 : -4
+      end
     end
     if key_d then
-      intend_move_right actor, key_shift ? 2 : 1
-    elsif !key_x_axis && !@kb.key_held.a && !@kb.key_held.d && @gtk_state.tick_count > actor[:keypress_on] + @state[:keyup_delay] then
-      intend_move_right actor, 0
+      if !actor[:particle].velocity.x > 0 then
+        set_impulse actor, key_shift ? 8 : 4, 0
+      end
     end
 
     ###########################################################################

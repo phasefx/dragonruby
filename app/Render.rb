@@ -8,7 +8,11 @@ module Render
     @state[:actors].each_with_index {|actor,idx| render_actor actor,idx }
     if @state[:wireframe?] then
       #:x => @gtk_grid.rect[2].half,
-      @gtk_outputs.labels << [ @gtk_grid.rect[0], @gtk_grid.rect[3], "Player (#{@state[:player][:x]},#{@state[:player][:y]})" ]
+      @gtk_outputs.labels << [
+        @gtk_grid.rect[0],
+        @gtk_grid.rect[3],
+        "Player (#{@state[:player][:particle].position.x},#{@state[:player][:particle].position.y})"
+      ]
     end
   end # of render
   
@@ -30,7 +34,7 @@ module Render
 
   def render_actor actor, idx
     path = "#{@state[:sprite_path][actor[:sprite_type]]}#{actor[:sprite_idx]}.png"
-    face_left = actor[:intend_x_dir] < 0
+    face_left = actor[:intended_impulse].x < 0
     if actor[:player?] then
       if @kb.directional_vector then
         face_left = @kb.directional_vector[0] < 0
@@ -40,8 +44,8 @@ module Render
     end
     if @state[:wireframe?]
       @gtk_outputs.borders << {
-        x: actor.x-actor.w.half,
-        y: actor.y-actor.h.half,
+        x: actor[:particle].position.x-actor.w.half,
+        y: actor[:particle].position.y-actor.h.half,
         w: actor.w,
         h: actor.h,
         r: 255,
@@ -50,14 +54,14 @@ module Render
         a: 128
       }
       @gtk_outputs.labels << {
-        x: actor.x-actor.w.half,
-        y: actor.y-actor.h.half,
+        x: actor[:particle].position.x-actor.w.half,
+        y: actor[:particle].position.y-actor.h.half,
         text: 'collision-z: ' + actor[:collision_z].to_s
       }
     end
     @gtk_outputs.primitives << {
-      x: actor.x-actor.w.half,
-      y: actor.y-actor.h.half,
+      x: actor[:particle].position.x-actor.w.half,
+      y: actor[:particle].position.y-actor.h.half,
       w: actor.w,
       h: actor.h,
       path: path,

@@ -2,19 +2,21 @@ module Actor
 
   def player
     {
-      :intend_x_dir => 0,
-      :intend_y_dir => 0,
-      :speed_x => 10,
-      :speed_y => 10,
+      :intended_impulse => Vector.new(0, 0),
+      :intended_on => 0,
+      :impulsed_on => 0,
       :collision_x => false,
       :collision_y => false,
-      :x => @gtk_grid.rect[2].half,
-      :y => @gtk_grid.rect[3].half,
       :render_z => 1,
       :collision_z => 1,
       :keypress_on => 0,
-      :proposed_x => @gtk_grid.rect[2].half,
-      :proposed_y => @gtk_grid.rect[3].half,
+      :particle => Particle.new(
+        Vector.new(@gtk_grid.rect[2].half, @gtk_grid.rect[3].half), # position
+        Vector.new(0,0),                                            # next_position
+        Vector.new(0,0),                                            # velocity
+        Vector.new(0,0),                                            # next_velocity
+        100                                                         # mass
+      ),
       :w => 128,
       :h => 101,
       :rotation => 0,
