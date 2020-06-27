@@ -33,10 +33,9 @@ module Logic
     @state[:actors].each_with_index do |actor,idx|
       case actor[:ai_routine]
         when :player then input actor, idx
-        when :horizontal then
-          if actor[:particle].velocity.x.abs > 0 then
-            # already moving; if we applied more impulses it would accelerate
-          else
+        when :horizontal 
+          # if already moving, more impulses would accelerate. Let's not do that for now
+          if actor[:particle].velocity.x.zero? then
             set_impulse actor, actor[:ai_hdir], 0
           end
       end
@@ -44,8 +43,12 @@ module Logic
   end
 
   def set_impulse actor, x, y
-    actor[:intended_impulse] = Vector.new x, y
-    actor[:intended_on] = @gtk_state.tick_count
+    if !x.nil? && !y.nil? then
+      actor[:intended_impulse] = Vector.new x, y
+      actor[:intended_on] = @gtk_state.tick_count
+    else
+      puts "got a nil (#{actor},#{x},#{y})"
+    end
   end
 
   def forces

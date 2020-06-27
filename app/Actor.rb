@@ -24,6 +24,7 @@ module Actor
       :gravity? => true,
       :player? => true,
       :ai_routine => :player,
+      :ai_hdir => 0,
       :sprite_idx => 1,
       :sprite_type => :monster
     }

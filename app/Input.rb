@@ -32,8 +32,6 @@ module Input
     # WASD
 
     key_shift = false
-    key_x_axis = false
-    key_y_axis = false
     key_w = false
     key_a = false
     key_s = false
@@ -41,10 +39,10 @@ module Input
     if @kb.key_down.truthy_keys.length > 0 then
       @kb.key_down.truthy_keys.each do |truth|
         #if truth == :shift then key_shift = true ; actor[:keypress_on] = @gtk_state.tick_count ; end
-        if truth == :w then key_w = true ; key_y_axis = true ; actor[:keypress_on] = @gtk_state.tick_count ; end
-        if truth == :a then key_a = true ; key_x_axis = true ; actor[:keypress_on] = @gtk_state.tick_count ; end
-        if truth == :s then key_s = true ; key_y_axis = true ; actor[:keypress_on] = @gtk_state.tick_count ; end
-        if truth == :d then key_d = true ; key_x_axis = true ; actor[:keypress_on] = @gtk_state.tick_count ; end
+        if truth == :w then key_w = true ; actor[:keypress_on] = @gtk_state.tick_count ; end
+        if truth == :a then key_a = true ; actor[:keypress_on] = @gtk_state.tick_count ; end
+        if truth == :s then key_s = true ; actor[:keypress_on] = @gtk_state.tick_count ; end
+        if truth == :d then key_d = true ; actor[:keypress_on] = @gtk_state.tick_count ; end
       end
     end
     if @kb.key_up.truthy_keys.length > 0 then

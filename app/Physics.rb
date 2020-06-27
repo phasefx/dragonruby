@@ -15,6 +15,9 @@ module Physics
     particle.next_position = particle.position
     particle.next_velocity = particle.velocity
     forces.each do |force| 
+      #puts "#{force.x}/#{particle.mass}, #{force.y}/#{particle.mass} = "
+      #puts force.x/particle.mass
+      #puts force.y/particle.mass
       acceleration = Vector.new(force.x/particle.mass,force.y/particle.mass)
       particle.next_velocity.x = particle.next_velocity.x + acceleration.x * dt
       particle.next_velocity.y = particle.next_velocity.y + acceleration.y * dt
