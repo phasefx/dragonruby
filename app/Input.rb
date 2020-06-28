@@ -80,7 +80,7 @@ module Input
     # misc
 
     if @kb.key_down.r then
-      @gtk_state[:reset_desired?] = true
+      $gtk.reset seed: rand(Time.now.sec)
     end
     if @kb.key_down.g then
       @state[:gravity?] = ! @state[:gravity?]
