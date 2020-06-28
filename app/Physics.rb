@@ -41,16 +41,8 @@ module Physics
     particle.next_position = particle.position
     particle.next_velocity = particle.velocity
     forces.each do |force| 
-      #puts "#{force.x}/#{particle.mass}, #{force.y}/#{particle.mass} = "
-      #puts force.x/particle.mass
-      #puts force.y/particle.mass
-      if (!force.x.nil? && !force.y.nil?) then
-        acceleration = Vector.new(force.x/particle.mass,force.y/particle.mass)
-      else
-        $gtk.log_error("unexpected nil; particle: #{particle.to_s} force: #{force.to_s}")
-        $gtk.pause!
-        acceleration = Vector.new(0,0)
-      end
+      assert !force.x.nil? && !force.y.nil?, "unexpected nil in force"
+      acceleration = Vector.new(force.x/particle.mass,force.y/particle.mass)
       particle.next_velocity.x = particle.next_velocity.x + acceleration.x * dt
       particle.next_velocity.y = particle.next_velocity.y + acceleration.y * dt
       particle.next_position.x = particle.next_position.x + particle.next_velocity.x * dt

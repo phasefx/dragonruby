@@ -12,9 +12,9 @@ require 'app/Game.rb'
 ###############################################################################
 # main
 
-#set_trace_func proc { |event, file, line, id, binding, classname|
-#    printf "%8s %s:%-2d %10s %8s\n", event, file, line, id, classname
-#}
+def assert(condition, message = nil)
+  fail "Assertion failed: #{message}" if !condition
+end
 
 def tick args
   #trace!($gtk)
