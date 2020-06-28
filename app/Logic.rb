@@ -81,6 +81,12 @@ module Logic
         actor[:particle].next_position.y = actor[:particle].position.y
         actor[:particle].next_velocity.y = actor[:particle].velocity.y
       end
+      if actor[:particle].next_position.y < 0 then
+        # this is cheating; I should be creating an opposing force to gravity for the floor
+        # but I think when it comes to collisions I'm going to step away from realistic
+        # physics at that point
+        actor[:particle].next_position.y = 0
+      end
     end
   end
 

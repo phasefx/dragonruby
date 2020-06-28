@@ -37,7 +37,7 @@ module Physics
   end
 
   def calculate_next_vectors particle, forces
-    dt = 0.02
+    dt = 0.2
     particle.next_position = particle.position
     particle.next_velocity = particle.velocity
     forces.each do |force| 
