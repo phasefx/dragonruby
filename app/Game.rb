@@ -2,6 +2,8 @@ class Game
   #############################################################################
   # setup
 
+  attr_accessor :state
+
   include Actor
   include Audio
   include Input
@@ -45,10 +47,6 @@ class Game
   def to_s
     serialize.to_s
   end # of to_s
-
-  def state
-    puts "state called"
-  end
 
   #############################################################################
   # game loop
