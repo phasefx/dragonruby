@@ -1,8 +1,8 @@
 class Vector
-  attr_accessor :x, :y
+  attr_accessor :x, :y, :tag
 
   def initialize(*args)
-    @x,@y=args
+    @x,@y,@tag=args
   end
 
   def serialize() {x:@x,y:@y} end
@@ -33,7 +33,7 @@ end
 module Physics
 
   def calculate_g_force particle
-    Vector.new(0, (particle.mass * -9.81))
+    Vector.new(0, (particle.mass * -9.81), :gravity)
   end
 
   def calculate_next_vectors particle, forces
@@ -48,6 +48,7 @@ module Physics
         acceleration = Vector.new(force.x/particle.mass,force.y/particle.mass)
       else
         $gtk.log_error("unexpected nil; particle: #{particle.to_s} force: #{force.to_s}")
+        $gtk.pause!
         acceleration = Vector.new(0,0)
       end
       particle.next_velocity.x = particle.next_velocity.x + acceleration.x * dt

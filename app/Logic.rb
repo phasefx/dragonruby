@@ -59,8 +59,11 @@ module Logic
       end
       if actor[:intended_impulse].x != 0 || actor[:intended_impulse].y !=0
         if actor[:intended_on] > actor[:impulsed_on]
-          forces_a << Vector.new(actor[:particle].mass * actor[:intended_impulse].x)
-          forces_a << Vector.new(actor[:particle].mass * actor[:intended_impulse].y)
+          forces_a << Vector.new(
+            actor[:particle].mass * actor[:intended_impulse].x,
+            actor[:particle].mass * actor[:intended_impulse].y,
+            :impulse
+          )
           actor[:impulsed_on] = @gtk_state.tick_count
         end
       end
