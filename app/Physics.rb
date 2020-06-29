@@ -45,9 +45,9 @@ module Physics
       acceleration = Vector.new(force.x/particle.mass,force.y/particle.mass)
       particle.next_velocity.x = particle.next_velocity.x + acceleration.x * dt
       particle.next_velocity.y = particle.next_velocity.y + acceleration.y * dt
-      particle.next_position.x = particle.next_position.x + particle.next_velocity.x * dt
-      particle.next_position.y = particle.next_position.y + particle.next_velocity.y * dt
     end
+    particle.next_position.x = particle.next_position.x + particle.next_velocity.x * dt
+    particle.next_position.y = particle.next_position.y + particle.next_velocity.y * dt
   end
 
 end

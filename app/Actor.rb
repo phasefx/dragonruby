@@ -5,6 +5,8 @@ module Actor
       :intended_impulse => Vector.new(0, 0),
       :intended_on => 0,
       :impulsed_on => 0,
+      :speed_limit_x => 20,
+      :speed_limit_y => 20,
       :collision_x => false,
       :collision_y => false,
       :render_z => 1,
@@ -34,7 +36,6 @@ module Actor
     @state[:player] = player
     @state[:actors] = []
       .concat([@state[:player]])
-      .concat(m_ghost)
       .concat(m_ghost)
       .sort { |a,b| a[:render_z] <=> b[:render_z] }
   end
