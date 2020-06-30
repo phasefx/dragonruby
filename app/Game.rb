@@ -25,9 +25,10 @@ class Game
       :monster => "sprites/DungeonAssetPack/SpriteFolder/Monsters/monster"
     }
     @state[:keyup_delay] = 10
-    @state[:wireframe?] = false
-    @state[:gravity?] = true
+    @state[:wireframe?] = true
+    @state[:gravity?] = false
     @state[:music?] = false
+    @debug = false
     load_actors
     render_background
     play_bg_music if @state[:music?]

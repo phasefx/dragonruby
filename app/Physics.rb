@@ -38,8 +38,10 @@ module Physics
 
   def calculate_next_vectors particle, forces
     dt = 0.2
-    particle.next_position = particle.position
-    particle.next_velocity = particle.velocity
+    particle.next_position.x = particle.position.x
+    particle.next_position.y = particle.position.y
+    particle.next_velocity.x = particle.velocity.x
+    particle.next_velocity.y = particle.velocity.y
     forces.each do |force| 
       assert !force.x.nil? && !force.y.nil?, "unexpected nil in force"
       acceleration = Vector.new(force.x/particle.mass,force.y/particle.mass)

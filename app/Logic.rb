@@ -4,11 +4,23 @@ module Logic
   # handle the game logic
 
   def actor_collision? idx
+    # this tests for would-be collisions
 
     actor = @state[:actors][idx]
     other_actors = @state[:actors].select.with_index { |oa,i| i != idx }.select { |oa| oa[:collision_z] == actor[:collision_z] }
 
     collision = other_actors.any? { |oa| [oa[:particle].next_position.x, oa[:particle].next_position.y, oa.w, oa.h].intersect_rect? [actor[:particle].next_position.x, actor[:particle].next_position.y, actor.w, actor.h] }
+
+    return collision
+  end
+
+  def actor_collision_presently? idx
+    # this test for collisions that have already occurred
+
+    actor = @state[:actors][idx]
+    other_actors = @state[:actors].select.with_index { |oa,i| i != idx }.select { |oa| oa[:collision_z] == actor[:collision_z] }
+
+    collision = other_actors.any? { |oa| [oa[:particle].position.x, oa[:particle].position.y, oa.w, oa.h].intersect_rect? [actor[:particle].position.x, actor[:particle].position.y, actor.w, actor.h] }
 
     return collision
   end
@@ -41,12 +53,9 @@ module Logic
   end
 
   def set_impulse actor, x, y
-    if !x.nil? && !y.nil? then
-      actor[:intended_impulse] = Vector.new x, y
-      actor[:intended_on] = @gtk_state.tick_count
-    else
-      puts "got a nil (#{actor},#{x},#{y})"
-    end
+    assert !x.nil? && !y.nil?, "unexpected nil with set_impulse"
+    actor[:intended_impulse] = Vector.new x, y
+    actor[:intended_on] = @gtk_state.tick_count
   end
 
   def forces
@@ -87,7 +96,9 @@ module Logic
       # test for collisions
       actor[:collision_x] = false
       actor[:collision_y] = false
-      if actor_collision? idx then
+      if actor_collision?(idx) then
+        puts "general collision on tick #{@gtk_state.tick_count}"
+        #$gtk.pause!
         save_x = actor[:particle].next_position.x
         save_y = actor[:particle].next_position.y
         # test just x collsion
@@ -104,10 +115,12 @@ module Logic
           actor[:collision_y] = true
         end
         if actor[:collision_x] then
+          puts "stopping x progress #{actor[:particle]}"
           actor[:particle].next_position.x = actor[:particle].position.x
           actor[:particle].next_velocity.x = actor[:particle].velocity.x
         end
         if actor[:collision_y] then
+          puts "stopping y progress #{actor[:particle]}"
           actor[:particle].next_position.y = actor[:particle].position.y
           actor[:particle].next_velocity.y = actor[:particle].velocity.y
         end
@@ -122,9 +135,11 @@ module Logic
   end
 
   def actual_movement
-    @state[:actors].each do |actor|
-      actor[:particle].position = actor[:particle].next_position
-      actor[:particle].velocity = actor[:particle].next_velocity
+    @state[:actors].each_with_index do |actor,idx|
+      actor[:particle].position.x = actor[:particle].next_position.x
+      actor[:particle].position.y = actor[:particle].next_position.y
+      actor[:particle].velocity.x = actor[:particle].next_velocity.x
+      actor[:particle].velocity.y = actor[:particle].next_velocity.y
     end
   end
 
