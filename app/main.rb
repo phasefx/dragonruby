@@ -148,17 +148,16 @@ class Game
     @iteration += 1
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
-        n = {} # neighbors; imagine a number pad: 5 is our center cell
-        n[1] = @cells[wrap(hpos-1)][wrap(vpos-1)]
-        n[2] = @cells[hpos][wrap(vpos-1)]
-        n[3] = @cells[wrap(hpos+1)][wrap(vpos-1)]
-        n[4] = @cells[wrap(hpos-1)][vpos]
-        n[6] = @cells[wrap(hpos+1)][vpos]
-        n[7] = @cells[wrap(hpos-1)][wrap(vpos+1)]
-        n[8] = @cells[hpos][wrap(vpos+1)]
-        n[9] = @cells[wrap(hpos+1)][wrap(vpos+1)]
         live_count = 0
-        n.each_with_index { |e,idx| live_count += 1 if n[idx] }
+        # imagine a number pad: 5 is our center cell
+        live_count +=1 if @cells[wrap(hpos-1)][wrap(vpos-1)]  # 1
+        live_count +=1 if @cells[hpos][wrap(vpos-1)]          # 2
+        live_count +=1 if @cells[wrap(hpos+1)][wrap(vpos-1)]  # 3
+        live_count +=1 if @cells[wrap(hpos-1)][vpos]          # 4
+        live_count +=1 if @cells[wrap(hpos+1)][vpos]          # 6
+        live_count +=1 if @cells[wrap(hpos-1)][wrap(vpos+1)]  # 7
+        live_count +=1 if @cells[hpos][wrap(vpos+1)]          # 8
+        live_count +=1 if @cells[wrap(hpos+1)][wrap(vpos+1)]  # 9
         @next_cells[hpos][vpos] = @cells[hpos][vpos]
         if @cells[hpos][vpos] then # currently alive
           if live_count == 2 || live_count == 3 then
@@ -175,9 +174,7 @@ class Game
         end
       end
     end
-    temp = @cells
-    @cells = @next_cells
-    @next_cells = temp
+    @cells, @next_cells = @next_cells, @cells
   end
 
   def tick
