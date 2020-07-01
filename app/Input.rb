@@ -56,24 +56,16 @@ module Input
     end
 
     if key_w then
-      if !actor[:particle].velocity.y > 0 then
-        set_impulse actor, 0, key_shift ? 8 : 4
-      end
+      set_impulse actor, 0, key_shift ? 8 : 4
     end
     if key_a then
-      if !actor[:particle].velocity.x < 0 then
-        set_impulse actor, key_shift ? -8 : -4, 0
-      end
+      set_impulse actor, key_shift ? -8 : -4, 0
     end
     if key_s then
-      if !actor[:particle].velocity.y < 0 then
-        set_impulse actor, 0, key_shift ? -8 : -4
-      end
+      set_impulse actor, 0, key_shift ? -8 : -4
     end
     if key_d then
-      if !actor[:particle].velocity.x > 0 then
-        set_impulse actor, key_shift ? 8 : 4, 0
-      end
+      set_impulse actor, key_shift ? 8 : 4, 0
     end
 
     ###########################################################################
