@@ -2,13 +2,13 @@ class Game
 
   attr_accessor :cells, :next_cells # for debugging: $gtk.args.state.game.cells
 
-  GRID_DIVISIONS = 64
-  TEXT_HEIGHT = 18
+  TEXT_HEIGHT = 20
 
   def initialize args
 
     $gtk.set_window_title 'Game of Life'
 
+    @gtk_args = args
     @gtk_inputs = args.inputs
     @gtk_outputs = args.outputs
     @gtk_state = args.state
@@ -23,12 +23,15 @@ class Game
     @w = @ux - @lx
     @h = @uy - @ly
 
-    @cells = Array.new(GRID_DIVISIONS){Array.new(GRID_DIVISIONS,false)}
-    @next_cells = Array.new(GRID_DIVISIONS){Array.new(GRID_DIVISIONS,true)}
+    @grid_divisions = 32
+
+    @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
+    @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
     @run_simulation = false
     @iterate_once = false
     @iteration = 0
     @sparkle = false
+    @pulsate = false
 
     static_render
   end
@@ -45,15 +48,15 @@ class Game
     serialize.to_s
   end
 
-  def static_render
-    @grid_segment_size = @h.idiv(GRID_DIVISIONS)
+  def render_grid
+    @grid_segment_size = @h.idiv(@grid_divisions)
     @grid_offset = [
-      @lx + (@w - (@grid_segment_size*GRID_DIVISIONS)).half,
+      @lx + (@w - (@grid_segment_size*@grid_divisions)).half,
       @ly + @grid_segment_size.half
     ]
-    GRID_DIVISIONS.times do |x|
-      GRID_DIVISIONS.times do |y|
-        @gtk_outputs.static_borders << [
+    @grid_divisions.times do |x|
+      @grid_divisions.times do |y|
+        @gtk_outputs.borders << [
           @grid_offset[0] + (@grid_segment_size * x),
           @grid_offset[1] + (@grid_segment_size * y),
           @grid_segment_size,
@@ -62,15 +65,29 @@ class Game
         ]
       end
     end
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*1,'Mouse to toggle cells']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*2,'Space to toggle simulation']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*3,'I for one iteration']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*4,'C to clear cells']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*5,'R to randomize cells']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*6,'S for sparkle party']
   end
 
-  def render
+  def static_render
+    #                                                     Iteration #
+    #                                                     Grid #x#
+    #                                                     Mouse to toggle cells
+    #                                                     Space to toggle simulation
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*4,'I for one iteration']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*5,'C to clear cells']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*6,'R to randomize cells']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*7,']/[ for grid size']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*8,'(affects performance)']
+  end
+
+  def color_wrap c
+    if c > 32
+      return 64 - c
+    else
+      c
+    end
+  end
+
+  def render_cells
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
         if cell then
@@ -79,10 +96,10 @@ class Game
             @grid_offset[1] + (@grid_segment_size * vpos),
             @grid_segment_size,
             @grid_segment_size,
-            @sparkle ? rand(256) : 0,
-            @sparkle ? rand(256) : 0,
-            @sparkle ? rand(256) : 0,
-            @sparkle ? rand(128) + 128 : 128,
+            @sparkle ? rand(256) : @pulsate ? color_wrap(@gtk_args.tick_count.mod(64)) : 0,
+            @sparkle ? rand(256) : @pulsate ? color_wrap(@gtk_args.tick_count.mod(64))*2 : 0,
+            @sparkle ? rand(256) : @pulsate ? color_wrap(@gtk_args.tick_count.mod(64))*3 : 0,
+            128
           ]
         end
       end
@@ -112,13 +129,21 @@ class Game
 
   def handle_keyboard
     @gtk_kb.key_down.truthy_keys.each do |truth|
-      @sparkle = !@sparkle if truth == :s
+      if truth == :space then
+        @run_simulation = !@run_simulation
+      end
+      if truth == :i then
+        @iterate_once = !@iterate_once
+        @run_simulation = true
+      end
       if truth == :c then
-        @cells = Array.new(GRID_DIVISIONS){Array.new(GRID_DIVISIONS,false)}
+        @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
+        @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
         @iteration = 0
       end
       if truth == :r then
-        @cells = Array.new(GRID_DIVISIONS){Array.new(GRID_DIVISIONS,false)}
+        @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
+        @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
             @cells[hpos][vpos] = rand(11) > 5
@@ -126,17 +151,31 @@ class Game
         end
         @iteration = 0
       end
-      if truth == :i then
-        @iterate_once = !@iterate_once
-        @run_simulation = true
+      if truth == :s
+        @sparkle = !@sparkle if truth
       end
-      @run_simulation = !@run_simulation if truth == :space
+      if truth == :p
+        @pulsate = !@pulsate if truth
+      end
+      if truth == :close_square_brace then
+        @grid_divisions += 1
+        @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
+        @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
+        @iteration = 0
+      end
+      if truth == :open_square_brace then
+        @grid_divisions -= 1
+        @grid_divisions = 1 if @grid_divisions < 1
+        @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
+        @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
+        @iteration = 0
+      end
     end
   end
 
   def wrap pos
-    return GRID_DIVISIONS - 1 if pos < 0
-    return 0 if pos > GRID_DIVISIONS - 1
+    return @grid_divisions - 1 if pos < 0
+    return 0 if pos > @grid_divisions - 1
     return pos
   end
 
@@ -146,8 +185,10 @@ class Game
       @iterate_once = false
     end
     @iteration += 1
+    no_change = true
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
+        puts "examining (#{hpos},#{vpos})" if @gtk_state.debug # set through console
         live_count = 0
         # imagine a number pad: 5 is our center cell
         live_count +=1 if @cells[wrap(hpos-1)][wrap(vpos-1)]  # 1
@@ -164,29 +205,42 @@ class Game
             # yay, stays alive
           else
             @next_cells[hpos][vpos] = false # dies
+            no_change = false
           end
         else # currently dead
           if live_count == 3 then
             @next_cells[hpos][vpos] = true # resurrected
+            no_change = false
           else
             # stays dead
           end
         end
       end
     end
+    if no_change then
+      @run_simulation = false
+      puts "no change detected, simulation paused"
+    end
     @cells, @next_cells = @next_cells, @cells
   end
 
   def tick
-    @gtk_outputs.labels << [ @lx, @uy, "Iteration #{@iteration}" ]
+    @gtk_outputs.labels << [@lx, @uy, "Iteration #{@iteration}", @run_simulation ? [0,0,0] : [255,0,0]]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*1,"Grid #{@grid_divisions}x#{@grid_divisions}"]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*2,'Mouse to toggle cells', @run_simulation ? [255,0,0] : [0,0,0]]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*3,'Space to toggle simulation', @run_simulation ? [0,0,0] : [255,0,0]]
     handle_mouse if !@run_simulation
     handle_keyboard
     simulation if @run_simulation
-    render
+    render_grid
+    render_cells
   end
 
 end
 def tick args
   args.state.game ||= Game.new args
   args.state.game.tick
+  if args.state.slowmo then # set through console
+    $gtk.sleep args.state.slowmo_speed || 0.1
+  end
 end
