@@ -1,6 +1,6 @@
 class Game
 
-  attr_accessor :cells, :next_cells # for debugging: $gtk.args.state.game.cells
+  attr_accessor :cells, :next_cells, :delay # for debugging: $gtk.args.state.game.cells
 
   TEXT_HEIGHT = 20
 
@@ -24,6 +24,7 @@ class Game
     @h = @uy - @ly
 
     @grid_divisions = 32
+    @delay = 2
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
     @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
@@ -68,15 +69,17 @@ class Game
   end
 
   def static_render
-    #                                                     Iteration #
-    #                                                     Grid #x#
-    #                                                     Mouse to toggle cells
-    #                                                     Space to toggle simulation
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*4,'I for one iteration']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*5,'C to clear cells']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*6,'R to randomize cells']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*7,']/[ for grid size']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*8,'(affects performance)']
+    #                                                      Iteration #
+    #                                                      Grid #x# Delay #
+    #                                                      Mouse to toggle cells
+    #                                                      Space to toggle simulation
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*4, 'I for one iteration']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*5, 'C to clear cells']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*6, 'R to randomize cells']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*7, ']/[ for grid size']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*8, '(affects performance)']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*9, ',/. for simulation delay']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*10,'(slow down if frame skipping)']
   end
 
   def color_wrap c
@@ -170,6 +173,13 @@ class Game
         @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
         @iteration = 0
       end
+      if truth == :comma then
+        @delay -= 1
+        @delay = 1 if @delay < 1
+      end
+      if truth == :period then
+        @delay += 1
+      end
     end
   end
 
@@ -226,12 +236,14 @@ class Game
 
   def tick
     @gtk_outputs.labels << [@lx, @uy, "Iteration #{@iteration}", @run_simulation ? [0,0,0] : [255,0,0]]
-    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*1,"Grid #{@grid_divisions}x#{@grid_divisions}"]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*1,"Grid #{@grid_divisions}x#{@grid_divisions} Delay #{@delay}"]
     @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*2,'Mouse to toggle cells', @run_simulation ? [255,0,0] : [0,0,0]]
     @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*3,'Space to toggle simulation', @run_simulation ? [0,0,0] : [255,0,0]]
     handle_mouse if !@run_simulation
     handle_keyboard
-    simulation if @run_simulation
+    if @run_simulation
+      simulation if @gtk_state.tick_count.mod(@delay) == 0
+    end
     render_grid
     render_cells
   end
