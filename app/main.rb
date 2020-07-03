@@ -50,10 +50,10 @@ class Game
   end
 
   def render_grid
-    @grid_segment_size = @h.idiv(@grid_divisions)
+    @grid_segment_size = (@h-10)/(@grid_divisions)
     @grid_offset = [
-      @lx + (@w - (@grid_segment_size*@grid_divisions)).half,
-      @ly + @grid_segment_size.half
+      @lx + 290,
+      @ly + 1
     ]
     @grid_divisions.times do |x|
       @grid_divisions.times do |y|
@@ -114,9 +114,9 @@ class Game
       @mouse_down = true
       x = @gtk_mouse.x - @grid_offset[0]
       y = @gtk_mouse.y - @grid_offset[1]
-      hpos = x.idiv(@grid_segment_size)
-      vpos = y.idiv(@grid_segment_size)
-      if hpos > -1 && hpos < 64 && vpos > -1 && vpos < 64 && !(hpos == @prev_hpos && vpos == @prev_vpos) then
+      hpos = (x/(@grid_segment_size)).floor
+      vpos = (y/(@grid_segment_size)).floor
+      if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions && !(hpos == @prev_hpos && vpos == @prev_vpos) then
         @iteration = 0
         @prev_hpos = hpos
         @prev_vpos = vpos
