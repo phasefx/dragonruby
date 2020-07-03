@@ -185,7 +185,7 @@ class Game
         @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
-            @cells[hpos][vpos] = rand(11) > 5
+            @cells[hpos][vpos] = rand(11) > 5 ? :normal : false
           end
         end
         @iteration = 0
@@ -275,6 +275,24 @@ class Game
     @cells, @next_cells = @next_cells, @cells
   end
 
+  def render_right_pane
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,               'Cell rules:' ]
+    #                                                                                                 '1234567890123456789012345678' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*2, '1) Live cells with 2 or 3' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*3, '   live neighbours survive.' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*4, '2) Dead cells with 3 live' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*5, '   neighbours return to life' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*6, '3) All other live cells die.' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*7, '   All other dead cells stay' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*8, '   dead' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*10,'These rules are applied to' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*11,'all cells at the same time.']
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*13,'Deviations:']
+    #                                                                                                 '1234567890123456789012345678' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*15,'Immortal cells live forever.' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*16,'Pit cells never live.' ]
+  end
+
   def tick
     @gtk_outputs.labels << [@lx, @uy, "Iteration #{@iteration}", @run_simulation ? [0,0,0] : [255,0,0]]
     @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*1,"Grid #{@grid_divisions}x#{@grid_divisions} Delay #{@delay}"]
@@ -289,6 +307,7 @@ class Game
     end
     render_grid
     render_cells
+    render_right_pane
   end
 
 end
