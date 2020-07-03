@@ -72,14 +72,16 @@ class Game
     #                                                      Iteration #
     #                                                      Grid #x# Delay #
     #                                                      Left Mouse to toggle cells
+    #                                                      Right Mouse for immortal
+    #                                                      Middle Mouse (or Z) for pit
     #                                                      Space to toggle simulation
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*4, 'I for one iteration']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*5, 'C to clear cells']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*6, 'R to randomize cells']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*7, ']/[ for grid size']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*8, '(affects performance)']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*9, ',/. for simulation delay']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*10,'(slow down if frame skipping)']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*6, 'I for one iteration']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*7, 'C to clear cells']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*8, 'R to randomize cells']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*9, ']/[ for grid size']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*10,'(affects performance)']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*11,',/. for simulation delay']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*12,'(slow down if frame skipping)']
   end
 
   def color_wrap c
@@ -93,39 +95,68 @@ class Game
   def render_cells
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
-        if cell then
+        color = [
+            @sparkle ? rand(256) : @pulsate ? color_wrap(@gtk_args.tick_count.mod(64)) : 0,
+            @sparkle ? rand(256) : @pulsate ? color_wrap(@gtk_args.tick_count.mod(64))*2 : 0,
+            @sparkle ? rand(256) : @pulsate ? color_wrap(@gtk_args.tick_count.mod(64))*3 : 0,
+        ]
+        if cell == :immortal then
+          color[0] = @sparkle ? rand(256) : @pulsate ? color_wrap(@gtk_args.tick_count.mod(64)) + 128 : 128
+          color[1] = 0
+          color[2] = 0
+        end
+        if [:immortal,:normal].include? cell then
           @gtk_outputs.solids << [
             @grid_offset[0] + (@grid_segment_size * hpos),
             @grid_offset[1] + (@grid_segment_size * vpos),
             @grid_segment_size,
             @grid_segment_size,
-            @sparkle ? rand(256) : @pulsate ? color_wrap(@gtk_args.tick_count.mod(64)) : 0,
-            @sparkle ? rand(256) : @pulsate ? color_wrap(@gtk_args.tick_count.mod(64))*2 : 0,
-            @sparkle ? rand(256) : @pulsate ? color_wrap(@gtk_args.tick_count.mod(64))*3 : 0,
-            128
+            color,
+            cell == :immortal ? 255 : 128
+          ]
+        elsif cell == :pit then
+          @gtk_outputs.lines << [
+            @grid_offset[0] + (@grid_segment_size * hpos),
+            @grid_offset[1] + (@grid_segment_size * vpos),
+            @grid_offset[0] + (@grid_segment_size * hpos) + @grid_segment_size,
+            @grid_offset[1] + (@grid_segment_size * vpos) + @grid_segment_size,
+            0, 0, 0
+          ]
+          @gtk_outputs.lines << [
+            @grid_offset[0] + (@grid_segment_size * hpos),
+            @grid_offset[1] + (@grid_segment_size * vpos) + @grid_segment_size,
+            @grid_offset[0] + (@grid_segment_size * hpos) + @grid_segment_size,
+            @grid_offset[1] + (@grid_segment_size * vpos),
+            0, 0, 0
           ]
         end
       end
     end
   end
 
-  def handle_mouse
-    if (@gtk_mouse.down && @gtk_mouse.button_left) || @mouse_down then
-      puts "1: up = #{@gtk_mouse.up} down = #{@gtk_mouse.down} button_left = #{@gtk_mouse.button_left}"
-      @mouse_down = true
-      x = @gtk_mouse.x - @grid_offset[0]
-      y = @gtk_mouse.y - @grid_offset[1]
-      hpos = (x/(@grid_segment_size)).floor
-      vpos = (y/(@grid_segment_size)).floor
-      if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions && !(hpos == @prev_hpos && vpos == @prev_vpos) then
-        @iteration = 0
-        @prev_hpos = hpos
-        @prev_vpos = vpos
-        @cells[hpos][vpos] = !@cells[hpos][vpos]
+  def handle_cell_toggle cell_type, keyboard_entry
+    x = @gtk_mouse.x - @grid_offset[0]
+    y = @gtk_mouse.y - @grid_offset[1]
+    hpos = (x/(@grid_segment_size)).floor
+    vpos = (y/(@grid_segment_size)).floor
+    if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions && !(hpos == @prev_hpos && vpos == @prev_vpos && !keyboard_entry) then
+      @iteration = 0
+      @prev_hpos = hpos
+      @prev_vpos = vpos
+      if @cells[hpos][vpos] then
+        @cells[hpos][vpos] = false
+      else
+        @cells[hpos][vpos] = cell_type
       end
     end
+  end
+
+  def handle_mouse
+    if @gtk_mouse.down || @mouse_down then
+      @mouse_down = true
+      handle_cell_toggle @gtk_mouse.button_left ? :normal : (@gtk_mouse.button_middle ? :pit : :immortal), false
+    end
     if @gtk_mouse.up then
-      puts "2: up = #{@gtk_mouse.up} down = #{@gtk_mouse.down} button_left = #{@gtk_mouse.button_left}"
       @mouse_down = false
       @prev_hpos = nil
       @prev_vpos = nil
@@ -134,6 +165,9 @@ class Game
 
   def handle_keyboard
     @gtk_kb.key_down.truthy_keys.each do |truth|
+      if truth == :z then
+        handle_cell_toggle :pit, true
+      end
       if truth == :space then
         @run_simulation = !@run_simulation
       end
@@ -200,31 +234,36 @@ class Game
     no_change = true
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
-        puts "examining (#{hpos},#{vpos})" if @gtk_state.debug # set through console
         live_count = 0
         # imagine a number pad: 5 is our center cell
-        live_count +=1 if @cells[wrap(hpos-1)][wrap(vpos-1)]  # 1
-        live_count +=1 if @cells[hpos][wrap(vpos-1)]          # 2
-        live_count +=1 if @cells[wrap(hpos+1)][wrap(vpos-1)]  # 3
-        live_count +=1 if @cells[wrap(hpos-1)][vpos]          # 4
-        live_count +=1 if @cells[wrap(hpos+1)][vpos]          # 6
-        live_count +=1 if @cells[wrap(hpos-1)][wrap(vpos+1)]  # 7
-        live_count +=1 if @cells[hpos][wrap(vpos+1)]          # 8
-        live_count +=1 if @cells[wrap(hpos+1)][wrap(vpos+1)]  # 9
+        live_count +=1 if [:immortal,:normal].include? @cells[wrap(hpos-1)][wrap(vpos-1)]  # 1
+        live_count +=1 if [:immortal,:normal].include? @cells[hpos][wrap(vpos-1)]          # 2
+        live_count +=1 if [:immortal,:normal].include? @cells[wrap(hpos+1)][wrap(vpos-1)]  # 3
+        live_count +=1 if [:immortal,:normal].include? @cells[wrap(hpos-1)][vpos]          # 4
+        live_count +=1 if [:immortal,:normal].include? @cells[wrap(hpos+1)][vpos]          # 6
+        live_count +=1 if [:immortal,:normal].include? @cells[wrap(hpos-1)][wrap(vpos+1)]  # 7
+        live_count +=1 if [:immortal,:normal].include? @cells[hpos][wrap(vpos+1)]          # 8
+        live_count +=1 if [:immortal,:normal].include? @cells[wrap(hpos+1)][wrap(vpos+1)]  # 9
         @next_cells[hpos][vpos] = @cells[hpos][vpos]
-        if @cells[hpos][vpos] then # currently alive
-          if live_count == 2 || live_count == 3 then
-            # yay, stays alive
-          else
-            @next_cells[hpos][vpos] = false # dies
-            no_change = false
-          end
-        else # currently dead
-          if live_count == 3 then
-            @next_cells[hpos][vpos] = true # resurrected
-            no_change = false
-          else
-            # stays dead
+        if @cells[hpos][vpos] == :immortal || @cells[hpos][vpos] == :pit then
+          # immortal cells do not die
+          # pit cells do not live
+        else
+          # normal life rules
+          if @cells[hpos][vpos] then # currently alive
+            if live_count == 2 || live_count == 3 then
+              # yay, stays alive
+            else
+              @next_cells[hpos][vpos] = false # dies
+              no_change = false
+            end
+          else # currently dead
+            if live_count == 3 then
+              @next_cells[hpos][vpos] = :normal # resurrected
+              no_change = false
+            else
+              # stays dead
+            end
           end
         end
       end
@@ -240,7 +279,9 @@ class Game
     @gtk_outputs.labels << [@lx, @uy, "Iteration #{@iteration}", @run_simulation ? [0,0,0] : [255,0,0]]
     @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*1,"Grid #{@grid_divisions}x#{@grid_divisions} Delay #{@delay}"]
     @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*2,'Left Mouse to toggle cells', @run_simulation ? [255,0,0] : [0,0,0]]
-    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*3,'Space to toggle simulation', @run_simulation ? [0,0,0] : [255,0,0]]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*3,'Right Mouse for immortal', @run_simulation ? [255,0,0] : [0,0,0]]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*4,'Middle Mouse (or Z) for pit', @run_simulation ? [255,0,0] : [0,0,0]]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*5,'Space to toggle simulation', @run_simulation ? [0,0,0] : [255,0,0]]
     handle_mouse if !@run_simulation
     handle_keyboard
     if @run_simulation
