@@ -291,6 +291,7 @@ class Game
     #                                                                                                 '1234567890123456789012345678' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*15,'Immortal cells live forever.' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*16,'Pit cells never live.' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*17,'Play area is finite & wraps.' ]
   end
 
   def tick
