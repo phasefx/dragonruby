@@ -1,6 +1,7 @@
 class Game
 
-  attr_accessor :cells, :next_cells, :delay # for debugging: $gtk.args.state.game.cells
+  # for debugging: $gtk.args.state.game.cells, etc
+  attr_accessor :cells, :next_cells, :delay, :ruleA, :ruleB, :ruleC
 
   TEXT_HEIGHT = 20
 
@@ -25,6 +26,10 @@ class Game
 
     @grid_divisions = 32
     @delay = 2
+
+    @ruleA = 2
+    @ruleB = 3
+    @ruleC = 3
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
     @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
@@ -75,13 +80,17 @@ class Game
     #                                                      Right Mouse for immortal
     #                                                      Middle Mouse (or Z) for pit
     #                                                      Space to toggle simulation
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*6, 'I for one iteration']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*7, 'C to clear cells']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*8, 'R to randomize cells']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*9, ']/[ for grid size']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*10,'(affects performance)']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*11,',/. for simulation delay']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*12,'(slow down if frame skipping)']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*6, '(quick save on start)']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*7, '1 for one iteration']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*8, 'C to clear cells']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*9, 'R to randomize cells']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*10, ']/[ for grid size']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*11,'(affects performance)']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*12,',/. for simulation delay']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*13,'(slow down if frame skipping)']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*14,'7/8/u/i/j/k for rule tweaks']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*15,'3/4 to save/restore grid']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*16,'6 to restore quick save']
   end
 
   def color_wrap c
@@ -170,8 +179,16 @@ class Game
       end
       if truth == :space then
         @run_simulation = !@run_simulation
+        if @run_simulation then
+          @quick_saved = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
+          @cells.each_with_index do |row, hpos|
+            row.each_with_index do |cell, vpos|
+              @quick_saved[hpos][vpos] = @cells[hpos][vpos]
+            end
+          end
+        end
       end
-      if truth == :i then
+      if truth == :one then
         @iterate_once = !@iterate_once
         @run_simulation = true
       end
@@ -198,15 +215,35 @@ class Game
       end
       if truth == :close_square_brace then
         @grid_divisions += 1
-        @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
         @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
+        temp = @cells
+        @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
+        @cells.each_with_index do |row, hpos|
+          row.each_with_index do |cell, vpos|
+            if temp[hpos].nil? then
+              @cells[hpos][vpos] = false
+            else
+              @cells[hpos][vpos] = temp[hpos][vpos]
+            end
+          end
+        end
         @iteration = 0
       end
       if truth == :open_square_brace then
         @grid_divisions -= 1
         @grid_divisions = 1 if @grid_divisions < 1
-        @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
         @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
+        temp = @cells
+        @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
+        @cells.each_with_index do |row, hpos|
+          row.each_with_index do |cell, vpos|
+            if temp[hpos].nil? then
+              @cells[hpos][vpos] = false
+            else
+              @cells[hpos][vpos] = temp[hpos][vpos]
+            end
+          end
+        end
         @iteration = 0
       end
       if truth == :comma then
@@ -215,6 +252,57 @@ class Game
       end
       if truth == :period then
         @delay += 1
+      end
+      if truth == :seven then
+        @ruleA -= 1
+        @ruleA = 0 if @ruleA < 0
+      end
+      if truth == :eight then
+        @ruleA += 1
+      end
+      if truth == :u then
+        @ruleB -= 1
+        @ruleB = 0 if @ruleB < 0
+      end
+      if truth == :i then
+        @ruleB += 1
+      end
+      if truth == :j then
+        @ruleC -= 1
+        @ruleC = 0 if @ruleC < 0
+      end
+      if truth == :k then
+        @ruleC += 1
+      end
+      if truth == :three && !@saved.nil? then # restore
+        @cells.each_with_index do |row, hpos|
+          row.each_with_index do |cell, vpos|
+            if @saved[hpos].nil? then
+              @cells[hpos][vpos] = false
+            else
+              @cells[hpos][vpos] = @saved[hpos][vpos]
+            end
+          end
+        end
+      end
+      if truth == :four then # save
+        @saved = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
+        @cells.each_with_index do |row, hpos|
+          row.each_with_index do |cell, vpos|
+            @saved[hpos][vpos] = @cells[hpos][vpos]
+          end
+        end
+      end
+      if truth == :six && !@quick_saved.nil? then # restore quick save
+        @cells.each_with_index do |row, hpos|
+          row.each_with_index do |cell, vpos|
+            if @quick_saved[hpos].nil? then
+              @cells[hpos][vpos] = false
+            else
+              @cells[hpos][vpos] = @quick_saved[hpos][vpos]
+            end
+          end
+        end
       end
     end
   end
@@ -251,14 +339,14 @@ class Game
         else
           # normal life rules
           if @cells[hpos][vpos] then # currently alive
-            if live_count == 2 || live_count == 3 then
+            if live_count == @ruleA || live_count == @ruleB then
               # yay, stays alive
             else
               @next_cells[hpos][vpos] = false # dies
               no_change = false
             end
           else # currently dead
-            if live_count == 3 then
+            if live_count == @ruleC then
               @next_cells[hpos][vpos] = :normal # resurrected
               no_change = false
             else
@@ -278,9 +366,9 @@ class Game
   def render_right_pane
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,               'Cell rules:' ]
     #                                                                                                 '1234567890123456789012345678' ]
-    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*2, '1) Live cells with 2 or 3' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*2, "1) Live cells with #{@ruleA} or #{@ruleB}" ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*3, '   live neighbours survive.' ]
-    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*4, '2) Dead cells with 3 live' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*4, "2) Dead cells with #{@ruleC} live" ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*5, '   neighbours return to life' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*6, '3) All other live cells die.' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*7, '   All other dead cells stay' ]
@@ -315,7 +403,4 @@ end
 def tick args
   args.state.game ||= Game.new args
   args.state.game.tick
-  if args.state.slowmo then # set through console
-    $gtk.sleep args.state.slowmo_speed || 0.1
-  end
 end
