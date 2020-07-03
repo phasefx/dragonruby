@@ -53,7 +53,7 @@ class Game
     @grid_segment_size = (@h-10)/(@grid_divisions)
     @grid_offset = [
       @lx + 290,
-      @ly + 1
+      @ly + 5
     ]
     @grid_divisions.times do |x|
       @grid_divisions.times do |y|
@@ -71,7 +71,7 @@ class Game
   def static_render
     #                                                      Iteration #
     #                                                      Grid #x# Delay #
-    #                                                      Mouse to toggle cells
+    #                                                      Left Mouse to toggle cells
     #                                                      Space to toggle simulation
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*4, 'I for one iteration']
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*5, 'C to clear cells']
@@ -110,7 +110,8 @@ class Game
   end
 
   def handle_mouse
-    if @gtk_mouse.down || @mouse_down then
+    if (@gtk_mouse.down && @gtk_mouse.button_left) || @mouse_down then
+      puts "1: up = #{@gtk_mouse.up} down = #{@gtk_mouse.down} button_left = #{@gtk_mouse.button_left}"
       @mouse_down = true
       x = @gtk_mouse.x - @grid_offset[0]
       y = @gtk_mouse.y - @grid_offset[1]
@@ -124,6 +125,7 @@ class Game
       end
     end
     if @gtk_mouse.up then
+      puts "2: up = #{@gtk_mouse.up} down = #{@gtk_mouse.down} button_left = #{@gtk_mouse.button_left}"
       @mouse_down = false
       @prev_hpos = nil
       @prev_vpos = nil
@@ -237,7 +239,7 @@ class Game
   def tick
     @gtk_outputs.labels << [@lx, @uy, "Iteration #{@iteration}", @run_simulation ? [0,0,0] : [255,0,0]]
     @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*1,"Grid #{@grid_divisions}x#{@grid_divisions} Delay #{@delay}"]
-    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*2,'Mouse to toggle cells', @run_simulation ? [255,0,0] : [0,0,0]]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*2,'Left Mouse to toggle cells', @run_simulation ? [255,0,0] : [0,0,0]]
     @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*3,'Space to toggle simulation', @run_simulation ? [0,0,0] : [255,0,0]]
     handle_mouse if !@run_simulation
     handle_keyboard
