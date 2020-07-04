@@ -31,6 +31,9 @@ class Game
     @ruleB = 3
     @ruleC = 3
 
+    @deaths = 0
+    @births = 0
+
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
     @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
     @run_simulation = false
@@ -38,6 +41,7 @@ class Game
     @iteration = 0
     @sparkle = false
     @pulsate = false
+    @audio = false
 
     static_render
   end
@@ -91,6 +95,7 @@ class Game
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*14,'7/8/u/i/j/k for rule tweaks']
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*15,'3/4 to save/restore grid']
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*16,'6 to restore quick save']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*17,'A to toggle audio']
   end
 
   def color_wrap c
@@ -208,10 +213,10 @@ class Game
         @iteration = 0
       end
       if truth == :s
-        @sparkle = !@sparkle if truth
+        @sparkle = !@sparkle
       end
       if truth == :p
-        @pulsate = !@pulsate if truth
+        @pulsate = !@pulsate
       end
       if truth == :close_square_brace then
         @grid_divisions += 1
@@ -304,6 +309,9 @@ class Game
           end
         end
       end
+      if truth == :a
+        @audio = !@audio
+      end
     end
   end
 
@@ -344,11 +352,13 @@ class Game
             else
               @next_cells[hpos][vpos] = false # dies
               no_change = false
+              @deaths += 1
             end
           else # currently dead
             if live_count == @ruleC then
               @next_cells[hpos][vpos] = :normal # resurrected
               no_change = false
+              @births += 1
             else
               # stays dead
             end
@@ -380,6 +390,10 @@ class Game
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*15,'Immortal cells live forever.' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*16,'Pit cells never live.' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*17,'Play area is finite & wraps.' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*19,'Audio:']
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*21,'births>deaths => 1000 Hz']
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*22,'deaths>births => 2000 Hz']
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy-TEXT_HEIGHT*23,'deaths=births => no sound']
   end
 
   def tick
@@ -397,9 +411,19 @@ class Game
     render_grid
     render_cells
     render_right_pane
+    if @audio then
+    #if @gtk_state.tick_count.mod(5) == 0 && @audio then
+      if @births > @deaths then
+        @gtk_outputs.sounds << 'app/audiocheck.net_sin_1000Hz_-3dBFS_0.1s.wav'
+      elsif @births < @deaths
+        @gtk_outputs.sounds << 'app/audiocheck.net_sin_2000Hz_-3dBFS_0.1s.wav'
+      end
+      @births = 0
+      @deaths = 0
+    end
   end
-
 end
+
 def tick args
   args.state.game ||= Game.new args
   args.state.game.tick
