@@ -280,6 +280,7 @@ class Game
         @ruleC += 1
       end
       if truth == :three && !@saved.nil? then # restore
+        @iteration = 0
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
             if @saved[hpos].nil? then
@@ -299,6 +300,7 @@ class Game
         end
       end
       if truth == :six && !@auto_saved.nil? then # restore auto save
+        @iteration = 0
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
             if @auto_saved[hpos].nil? then
