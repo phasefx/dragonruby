@@ -33,6 +33,8 @@ class Game
 
     @deaths = 0
     @births = 0
+    @total_deaths = 0
+    @total_births = 0
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
     @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
@@ -84,18 +86,21 @@ class Game
     #                                                      Right Mouse for immortal
     #                                                      Middle Mouse (or Z) for pit
     #                                                      Space to toggle simulation
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*6, '(auto save on start)']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*7, '1 for one iteration']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*8, 'C to clear cells']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*9, 'R to randomize cells']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*10, ']/[ for grid size']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*11,'(affects performance)']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*12,',/. for simulation delay']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*13,'(slow down if frame skipping)']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*14,'7/8/u/i/j/k for rule tweaks']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*15,'3/4 to save/restore grid']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*16,'6 to restore auto save']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*17,'A to toggle audio']
+    #                                                     '1234567890123456789012345678' ]
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*7, '(auto save on start)']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*8, '1 for one iteration']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*9, 'C to clear cells']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*10, 'R to randomize cells']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*11, ']/[ for grid size']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*12,'(affects performance)']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*13,',/. for simulation delay']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*14,'(slow down if frame skipping)']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*15,'7/8/u/i/j/k for rule tweaks']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*16,'3/4 to save/restore grid']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*17,'6 to restore auto save']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*18,'A to toggle audio']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*19,'Arrow keys to pan grid']
+    #                                                     '1234567890123456789012345678' ]
   end
 
   def color_wrap c
@@ -311,8 +316,24 @@ class Game
           end
         end
       end
-      if truth == :a
+      if truth == :a then
         @audio = !@audio
+      end
+      if truth == :left then
+        @cells = @cells.rotate(1)
+      end
+      if truth == :right then
+        @cells = @cells.rotate(-1)
+      end
+      if truth == :down then
+        @cells.each_with_index do |row, hpos|
+          @cells[hpos] = @cells[hpos].rotate(1)
+        end
+      end
+      if truth == :up then
+        @cells.each_with_index do |row, hpos|
+          @cells[hpos] = @cells[hpos].rotate(-1)
+        end
       end
     end
   end
@@ -355,12 +376,14 @@ class Game
               @next_cells[hpos][vpos] = false # dies
               no_change = false
               @deaths += 1
+              @total_deaths += 1
             end
           else # currently dead
             if live_count == @ruleC then
               @next_cells[hpos][vpos] = :normal # resurrected
               no_change = false
               @births += 1
+              @total_births += 1
             else
               # stays dead
             end
@@ -401,10 +424,11 @@ class Game
   def tick
     @gtk_outputs.labels << [@lx, @uy, "Iteration #{@iteration}", @run_simulation ? [0,0,0] : [255,0,0]]
     @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*1,"Grid #{@grid_divisions}x#{@grid_divisions} Delay #{@delay}"]
-    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*2,'Left Mouse to toggle cells', @run_simulation ? [255,0,0] : [0,0,0]]
-    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*3,'Right Mouse for immortal', @run_simulation ? [255,0,0] : [0,0,0]]
-    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*4,'Middle Mouse (or Z) for pit', @run_simulation ? [255,0,0] : [0,0,0]]
-    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*5,'Space to toggle simulation', @run_simulation ? [0,0,0] : [255,0,0]]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*2,"Births #{@total_births} Deaths #{@total_deaths}"]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*3,'Left Mouse to toggle cells', @run_simulation ? [255,0,0] : [0,0,0]]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*4,'Right Mouse for immortal', @run_simulation ? [255,0,0] : [0,0,0]]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*5,'Middle Mouse (or Z) for pit', @run_simulation ? [255,0,0] : [0,0,0]]
+    @gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*6,'Space to toggle simulation', @run_simulation ? [0,0,0] : [255,0,0]]
     handle_mouse if !@run_simulation
     handle_keyboard
     if @run_simulation
@@ -414,7 +438,6 @@ class Game
     render_cells
     render_right_pane
     if @audio then
-    #if @gtk_state.tick_count.mod(5) == 0 && @audio then
       if @births > @deaths then
         @gtk_outputs.sounds << 'app/audiocheck.net_sin_1000Hz_-3dBFS_0.1s.wav'
       elsif @births < @deaths
