@@ -84,7 +84,7 @@ class Game
     #                                                      Right Mouse for immortal
     #                                                      Middle Mouse (or Z) for pit
     #                                                      Space to toggle simulation
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*6, '(quick save on start)']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*6, '(auto save on start)']
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*7, '1 for one iteration']
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*8, 'C to clear cells']
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*9, 'R to randomize cells']
@@ -94,7 +94,7 @@ class Game
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*13,'(slow down if frame skipping)']
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*14,'7/8/u/i/j/k for rule tweaks']
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*15,'3/4 to save/restore grid']
-    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*16,'6 to restore quick save']
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*16,'6 to restore auto save']
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*17,'A to toggle audio']
   end
 
@@ -185,10 +185,10 @@ class Game
       if truth == :space then
         @run_simulation = !@run_simulation
         if @run_simulation then
-          @quick_saved = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
+          @auto_saved = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
           @cells.each_with_index do |row, hpos|
             row.each_with_index do |cell, vpos|
-              @quick_saved[hpos][vpos] = @cells[hpos][vpos]
+              @auto_saved[hpos][vpos] = @cells[hpos][vpos]
             end
           end
         end
@@ -298,13 +298,13 @@ class Game
           end
         end
       end
-      if truth == :six && !@quick_saved.nil? then # restore quick save
+      if truth == :six && !@auto_saved.nil? then # restore auto save
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
-            if @quick_saved[hpos].nil? then
+            if @auto_saved[hpos].nil? then
               @cells[hpos][vpos] = false
             else
-              @cells[hpos][vpos] = @quick_saved[hpos][vpos]
+              @cells[hpos][vpos] = @auto_saved[hpos][vpos]
             end
           end
         end
