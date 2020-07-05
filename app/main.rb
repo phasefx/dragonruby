@@ -60,6 +60,26 @@ class Game
     serialize.to_s
   end
 
+  class Background
+    attr_sprite
+
+    def initialize args
+      @x = args.grid.left
+      @y = args.grid.bottom
+      @w = args.grid.right - @x
+      @h = args.grid.top - @y
+      @r = 255
+      @g = 255
+      @b = 255
+      @a = 64
+      @path = "media/bg/bg-#{(args.tick_count.mod(200)+1).to_s.rjust(3, '0')}.jpg"
+    end
+  end
+
+  def render_bg
+    @gtk_outputs.sprites << Background.new(@gtk_args)
+  end
+
   def render_grid
     @grid_segment_size = (@h-10)/(@grid_divisions)
     @grid_offset = [
@@ -68,13 +88,13 @@ class Game
     ]
     @grid_divisions.times do |x|
       @grid_divisions.times do |y|
-        @gtk_outputs.borders << [
+        @gtk_outputs.primitives << [
           @grid_offset[0] + (@grid_segment_size * x),
           @grid_offset[1] + (@grid_segment_size * y),
           @grid_segment_size,
           @grid_segment_size,
           0, 0, 0, 64
-        ]
+        ].border
       end
     end
   end
@@ -125,29 +145,29 @@ class Game
           color[2] = 0
         end
         if [:immortal,:normal].include? cell then
-          @gtk_outputs.solids << [
+          @gtk_outputs.primitives << [
             @grid_offset[0] + (@grid_segment_size * hpos),
             @grid_offset[1] + (@grid_segment_size * vpos),
             @grid_segment_size,
             @grid_segment_size,
             color,
             cell == :immortal ? 255 : 128
-          ]
+          ].solid
         elsif cell == :pit then
-          @gtk_outputs.lines << [
+          @gtk_outputs.primitives << [
             @grid_offset[0] + (@grid_segment_size * hpos),
             @grid_offset[1] + (@grid_segment_size * vpos),
             @grid_offset[0] + (@grid_segment_size * hpos) + @grid_segment_size,
             @grid_offset[1] + (@grid_segment_size * vpos) + @grid_segment_size,
             0, 0, 0
-          ]
-          @gtk_outputs.lines << [
+          ].line
+          @gtk_outputs.primitives << [
             @grid_offset[0] + (@grid_segment_size * hpos),
             @grid_offset[1] + (@grid_segment_size * vpos) + @grid_segment_size,
             @grid_offset[0] + (@grid_segment_size * hpos) + @grid_segment_size,
             @grid_offset[1] + (@grid_segment_size * vpos),
             0, 0, 0
-          ]
+          ].line
         end
       end
     end
@@ -434,14 +454,15 @@ class Game
     if @run_simulation
       simulation if @gtk_state.tick_count.mod(@delay) == 0
     end
+    render_bg
     render_grid
     render_cells
     render_right_pane
     if @audio then
       if @births > @deaths then
-        @gtk_outputs.sounds << 'app/audiocheck.net_sin_1000Hz_-3dBFS_0.1s.wav'
+        @gtk_outputs.sounds << 'media/sfx/audiocheck.net_sin_1000Hz_-3dBFS_0.1s.wav'
       elsif @births < @deaths
-        @gtk_outputs.sounds << 'app/audiocheck.net_sin_2000Hz_-3dBFS_0.1s.wav'
+        @gtk_outputs.sounds << 'media/sfx/audiocheck.net_sin_2000Hz_-3dBFS_0.1s.wav'
       end
       @births = 0
       @deaths = 0
