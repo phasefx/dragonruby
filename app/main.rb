@@ -24,7 +24,7 @@ class Game
     @w = @ux - @lx
     @h = @uy - @ly
 
-    @grid_divisions = 32
+    @grid_divisions = 16
     @delay = 2
 
     @ruleA = 2
@@ -121,6 +121,7 @@ class Game
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*18,'A to toggle audio']
     @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*19,'Arrow keys to pan grid']
     #                                                     '1234567890123456789012345678' ]
+    @gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*21,'Press Enter for demo']
   end
 
   def color_wrap c
@@ -354,6 +355,18 @@ class Game
         @cells.each_with_index do |row, hpos|
           @cells[hpos] = @cells[hpos].rotate(-1)
         end
+      end
+      if truth == :enter then # demo
+        @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
+        @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
+        @cells.each_with_index do |row, hpos|
+          row.each_with_index do |cell, vpos|
+            @cells[hpos][vpos] = rand(11) > 5 ? :normal : false
+          end
+        end
+        @iteration = 0
+        @audio = true
+        @run_simulation = true
       end
     end
   end
