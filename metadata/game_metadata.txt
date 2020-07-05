@@ -1,0 +1,6 @@
+devid=phasefx
+devtitle=Jason Etheridge
+gameid=game-of-life
+gametitle=Game of Life
+version=0.7
+icon=metadata/icon.png
