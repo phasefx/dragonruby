@@ -361,9 +361,16 @@ class Game
         @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
-            @cells[hpos][vpos] = rand(11) > 5 ? :normal : false
+            @cells[hpos][vpos] = false
           end
         end
+        @cells[5][7] = :immortal
+        @cells[6][6] = :immortal
+        @cells[7][6] = :immortal
+        @cells[8][6] = :immortal
+        @cells[9][7] = :immortal
+        @cells[6][9] = :immortal
+        @cells[8][9] = :immortal
         @iteration = 0
         @audio = true
         @run_simulation = true
