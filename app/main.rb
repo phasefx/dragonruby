@@ -219,7 +219,8 @@ class Game
           set_state(:seeking_first_token)
           @first_token = nil
           @first_token_coords = nil
-        elsif @cells[hpos][vpos].state.nil? then
+        # make sure the proposed second token is adjacent to the first
+        elsif (@first_token_coords[0] - hpos).abs < 2 && (@first_token_coords[1] - vpos).abs < 2 && @cells[hpos][vpos].state.nil? then
           @cells[hpos][vpos].state = :second_token
           @cells[hpos][vpos].sprite.angle = -45
           set_state(:testing_swap)
