@@ -132,7 +132,7 @@ class Game
   end
 
   class Book
-    attr_accessor :x, :y, :w, :h, :type, :state, :match_state, :dropping, :sprite
+    attr_accessor :x, :y, :w, :h, :type, :state, :match_state, :dropping, :sprite, :target_x, :target_y
 
     def initialize x, y, w, h, type=nil
       @x = x
@@ -158,6 +158,12 @@ class Game
       @sprite.h = @h
       @sprite.rebuild @x, @y, @w, @h
       self
+    end
+
+    def drop_to x, y
+      @target_x = x
+      @target_y = y
+      @dropping = true
     end
 
     def serialize
