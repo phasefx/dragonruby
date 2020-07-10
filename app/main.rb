@@ -52,7 +52,7 @@ class Game
     @total_score = 0
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
-    @audio = false
+    @audio = true
 
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
     init_cells
@@ -78,6 +78,20 @@ class Game
   def set_state s
     puts "stage change: #{@state} to #{s}"
     @state = s
+  end
+
+  def random_sound
+    return if !@audio 
+    case rand(8)
+    when 0 then @gtk_outputs.sounds << 'media/sfx/A3.wav'
+    when 1 then @gtk_outputs.sounds << 'media/sfx/B3.wav'
+    when 2 then @gtk_outputs.sounds << 'media/sfx/C3.wav'
+    when 3 then @gtk_outputs.sounds << 'media/sfx/C4.wav'
+    when 4 then @gtk_outputs.sounds << 'media/sfx/D3.wav'
+    when 5 then @gtk_outputs.sounds << 'media/sfx/E3.wav'
+    when 6 then @gtk_outputs.sounds << 'media/sfx/F3.wav'
+    when 7 then @gtk_outputs.sounds << 'media/sfx/G3.wav'
+    end
   end
 
   def render_grid
@@ -621,6 +635,7 @@ class Game
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*4,"Match at least 3" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*5,"R to Reset" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*6,"Arrows to shift grid" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*7,"A to toggle audio" ]
   end
 
   def undo_swap
@@ -710,6 +725,7 @@ class Game
             @cells[hpos][vpos].match_state = true
             match_found = true
             @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
+            random_sound
           end
           prev_last_seen = last_seen
         else
@@ -734,6 +750,7 @@ class Game
             @cells[vpos][hpos].match_state = true
             match_found = true
             @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
+            random_sound
           end
           prev_last_seen = last_seen
         else
