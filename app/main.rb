@@ -39,8 +39,14 @@ class Game
     #        :drop_pieces
     #        :pieces_dropping
 
-    @combo = 0
-    @score = 0
+    @combo_count = 0
+    @score_multiplier = 0
+    @current_combo = 0
+    @last_combo = 0
+    @highest_combo = 0
+    @score_for_this_cycle = 0
+    @score_for_last_cycle = 0
+    @total_score = 0
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
     @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
@@ -145,10 +151,10 @@ class Game
       @w = w
       @h = h
       @type = type.nil? ? rand(7) + 1 : type
+      #@type = type.nil? ? rand(3) + 1 : type
       @dropping = false
       #@match_state = false
       #@state = nil
-      #@type = type.nil? ? rand(2) + 1 : type
       @sprite = Sprite.new(@x,@y,@w,@h,@type)
     end
 
@@ -327,11 +333,21 @@ class Game
     end # @cells.each_with_index
     if @state == :pieces_dropping && !pieces_dropping then
       if clearing_matches then
-        @combo += 1
+        old_combo = @current_combo
+        @combo_count += 1
+        if @combo_count == 1 then
+          @current_combo += @score_for_last_cycle
+        end
+        @current_combo += @score_for_this_cycle
+        puts "combo count = #{@combo_count} current_combo was #{old_combo}, but is now #{@current_combo}"
         set_state(:clear_animation)
         @animation_count = 0
       else
-        @combo = 0
+        puts "end of combo, current_combo = #{@current_combo}"
+        @last_combo = @current_combo
+        @highest_combo = @current_combo if @current_combo > @highest_combo
+        @current_combo = 0
+        @combo_count = 0
         set_state(:seeking_first_token)
       end
     elsif @state != :pieces_dropping && pieces_dropping then
@@ -340,7 +356,7 @@ class Game
   end
 
   def handle_cell_click hpos, vpos
-    puts "#{@state} handle_cell_click #{hpos}, #{vpos}"
+    #puts "#{@state} handle_cell_click #{hpos}, #{vpos}"
     if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions then
       return if @cells[hpos][vpos].nil? # shouldn't happen once dev is finished
       if @state == :seeking_first_token then
@@ -577,9 +593,13 @@ class Game
     return pos
   end
 
-  def render_right_pane
+  def render_text
+    #@gtk_outputs.labels << [@lx,@uy-TEXT_HEIGHT*21,'Press Enter for demo']
     #@gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,               'Cell rules:' ]
     ##                                                                                                 '1234567890123456789012345678' ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*0,"Score: #{@total_score}" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*1,"Last Combo: #{@last_combo}" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*2,"Highest Combo: #{@highest_combo}" ]
   end
 
   def undo_swap
@@ -645,8 +665,15 @@ class Game
     end
   end
 
+  def inc_total_score inc, msg = ''
+    puts "total_score was #{@total_score}, but is now #{@total_score+inc} (#{msg})"
+    @total_score += inc
+  end
+
   def clearing_matches
     match_found = false
+    @score_for_last_cycle = @score_for_this_cycle
+    @score_for_this_cycle = 0
     # one direction, I think vertical despite how I have hpos/vpos here
     @cells.each_with_index do |row, hpos|
       prev_last_seen = nil
@@ -661,6 +688,7 @@ class Game
             last_seen.match_state = true
             @cells[hpos][vpos].match_state = true
             match_found = true
+            @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
           end
           prev_last_seen = last_seen
         else
@@ -684,6 +712,7 @@ class Game
             last_seen.match_state = true
             @cells[vpos][hpos].match_state = true
             match_found = true
+            @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
           end
           prev_last_seen = last_seen
         else
@@ -695,6 +724,7 @@ class Game
     end
     #set_state(:temp)
     puts "match_found = #{match_found}"
+    inc_total_score(@score_for_this_cycle,'clearing_matches') if match_found
     match_found
   end
 
@@ -703,7 +733,7 @@ class Game
     handle_keyboard if [:seeking_first_token,:seeking_second_token].include? @state
     render_grid
     render_cells
-    render_right_pane
+    render_text
     if @audio then
     end
     case @state
