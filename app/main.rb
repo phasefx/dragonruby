@@ -4,6 +4,8 @@ class Game
   attr_accessor :cells, :state
 
   TEXT_HEIGHT = 20
+  SHRINK_SPEED = 10
+  DEBUG = true
 
   def initialize args
 
@@ -42,7 +44,7 @@ class Game
     init_cells
     static_render
     if clearing_matches then
-      @state = :clear_animation
+      set_state(:clear_animation)
       @animation_count = 0
     end
   end
@@ -137,6 +139,7 @@ class Game
       @w = w
       @h = h
       @type = type.nil? ? rand(7) + 1 : type
+      #@type = type.nil? ? rand(2) + 1 : type
       @sprite = Sprite.new(@x,@y,@w,@h,@type)
     end
 
@@ -179,10 +182,92 @@ class Game
     end
   end
 
-  def render_cells
+  def remove_matches
+    found = false
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
-        @cells[hpos][vpos].sprite.angle = @gtk_args.tick_count.mod(360)*10 if @cells[hpos][vpos].match_state
+        next if @cells[hpos][vpos].nil?
+        if @cells[hpos][vpos].match_state then
+          @cells[hpos][vpos] = nil
+          found = true
+        end
+      end
+    end
+    set_state(:drop_pieces)
+    return found
+  end
+
+  def test_for_nils
+    found = false
+    @cells.each_with_index do |row, hpos|
+      row.each_with_index do |cell, vpos|
+        found = true if @cells[hpos][vpos].nil?
+      end
+    end
+    return found
+  end
+
+  def drop_pieces
+    while test_for_nils do
+    #if true then
+      @cells.each_with_index do |row, hpos|
+        row.each_with_index do |cell, vpos|
+          puts "hpos = #{hpos} vpos = #{vpos} cell = #{@cells[hpos][vpos]}"
+          if @cells[hpos][vpos].nil? then
+            if wrap(vpos+1) > vpos then
+              puts "found cell above"
+              # we can reference the cell above; drop it here
+              @cells[hpos][vpos] = @cells[hpos][wrap(vpos+1)].nil? ? nil : @cells[hpos][wrap(vpos+1)].rebuild(
+                hpos2x(hpos),
+                vpos2y(vpos),
+                @grid_segment_size,
+                @grid_segment_size
+              )
+              @cells[hpos][wrap(vpos+1)] = nil
+            else
+              puts "already at top"
+              # we are at the top, make a new Book
+              @cells[hpos][vpos] = Book.new(
+                hpos2x(hpos),
+                vpos2y(vpos),
+                @grid_segment_size,
+                @grid_segment_size
+              )
+            end # of position test
+            puts "new cell = #{@cells[hpos][vpos]}"
+          end # of nil test
+        end # of row.each_with_index
+      end # of @cells.each_with_index
+    end # of while test_for_nils
+    if clearing_matches then
+      set_state(:clear_animation)
+      @animation_count = 0
+    else
+      set_state(:seeking_first_token)
+    end
+  end
+
+  def render_cells
+    if @state == :clear_animation then
+      @animation_count += 1
+      if @animation_count >= @grid_segment_size.div(SHRINK_SPEED) then
+        set_state(:remove_matches)
+      end
+    end
+    @cells.each_with_index do |row, hpos|
+      row.each_with_index do |cell, vpos|
+        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + TEXT_HEIGHT, "#{hpos}, #{vpos}" ] if DEBUG
+        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + @grid_segment_size, "#{@cells[hpos][vpos].nil? ? 'nil' : @cells[hpos][vpos].type}" ] if DEBUG
+        next if @cells[hpos][vpos].nil?
+        if @cells[hpos][vpos].match_state && @state == :clear_animation then
+          @cells[hpos][vpos].sprite.angle = @gtk_args.tick_count.mod(360)*10
+          @cells[hpos][vpos].sprite.x += SHRINK_SPEED.half
+          @cells[hpos][vpos].sprite.y += SHRINK_SPEED.half
+          @cells[hpos][vpos].sprite.w -= SHRINK_SPEED
+          @cells[hpos][vpos].sprite.w = 1 if @cells[hpos][vpos].sprite.w < 1
+          @cells[hpos][vpos].sprite.h -= SHRINK_SPEED
+          @cells[hpos][vpos].sprite.h = 1 if @cells[hpos][vpos].sprite.h < 1
+        end
         @gtk_outputs.sprites << @cells[hpos][vpos].sprite
         if @cells[hpos][vpos].state == :first_token then
           @gtk_outputs.solids << [
@@ -206,7 +291,9 @@ class Game
   end
 
   def handle_cell_click hpos, vpos
+    puts "#{@state} handle_cell_click #{hpos}, #{vpos}"
     if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions then
+      return if @cells[hpos][vpos].nil? # shouldn't happen once dev is finished
       if @state == :seeking_first_token then
         if @cells[hpos][vpos].state.nil? then
           @cells[hpos][vpos].state = :first_token
@@ -299,7 +386,10 @@ class Game
             end
           end
         end
-        @iteration = 0
+        if clearing_matches then
+          set_state(:clear_animation)
+          @animation_count = 0
+        end
       end
       if truth == :open_square_brace then
         @grid_divisions -= 1
@@ -328,7 +418,10 @@ class Game
             end
           end
         end
-        @iteration = 0
+        if clearing_matches then
+          set_state(:clear_animation)
+          @animation_count = 0
+        end
       end
       if truth == :comma then
         @delay -= 1
@@ -338,7 +431,6 @@ class Game
         @delay += 1
       end
       if truth == :three && !@saved.nil? then # restore
-        @iteration = 0
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
             if @saved[hpos].nil? || @saved[hpos][vpos].nil? then
@@ -463,6 +555,7 @@ class Game
     set_state(:clearing_matches)
     if !clearing_matches then
       undo_swap
+      set_state(:seeking_first_token)
     else
       @first_token.state = nil
       @first_token.sprite.angle = 0
@@ -472,8 +565,9 @@ class Game
       @first_token_coords = nil
       @second_token = nil
       @second_token_coords = nil
+      set_state(:clear_animation)
+      @animation_count = 0
     end
-    set_state(:seeking_first_token)
   end
 
   def clearing_matches
@@ -484,6 +578,7 @@ class Game
       last_seen = nil
       last_seen_counter = 1
       row.each_with_index do |cell, vpos|
+        next if @cells[hpos][vpos].nil?
         if !last_seen.nil? && @cells[hpos][vpos].type == last_seen.type then
           last_seen_counter += 1
           if last_seen_counter >= 3 then
@@ -506,6 +601,7 @@ class Game
       last_seen = nil
       last_seen_counter = 1
       row.each_with_index do |cell, vpos|
+        next if @cells[vpos][hpos].nil?
         if !last_seen.nil? && @cells[vpos][hpos].type == last_seen.type then
           last_seen_counter += 1
           if last_seen_counter >= 3 then
@@ -522,7 +618,7 @@ class Game
         last_seen = @cells[vpos][hpos]
       end
     end
-    set_state(:temp)
+    #set_state(:temp)
     puts "match_found = #{match_found}"
     match_found
   end
@@ -535,7 +631,11 @@ class Game
     render_right_pane
     if @audio then
     end
-    test_swap if @state == :testing_swap
+    case @state
+    when :testing_swap then test_swap
+    when :remove_matches then remove_matches
+    when :drop_pieces then drop_pieces
+    end
   end
 end
 
