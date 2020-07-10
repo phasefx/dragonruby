@@ -31,12 +31,16 @@ class Game
     @grid_divisions = INITIAL_GRID_SIZE
     @delay = 1
 
-    @state = :seeking_first_token
+    set_state(:seeking_first_token)
     #        :seeking_second_token
     #        :testing_swap
     #        :clearing_matches
     #        :clear_animation
-    #        :populating_empty_cells
+    #        :drop_pieces
+    #        :pieces_dropping
+
+    @combo = 0
+    @score = 0
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
     @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
@@ -233,6 +237,7 @@ class Game
   end
 
   def drop_pieces
+    set_state(:pieces_dropping) if test_for_nils
     while test_for_nils do
     #if true then
       @cells.each_with_index do |row, hpos|
@@ -265,12 +270,12 @@ class Game
         end # of row.each_with_index
       end # of @cells.each_with_index
     end # of while test_for_nils
-    if clearing_matches then
-      set_state(:clear_animation)
-      @animation_count = 0
-    else
-      set_state(:seeking_first_token)
-    end
+    #if clearing_matches then
+    #  set_state(:clear_animation)
+    #  @animation_count = 0
+    #else
+    #  set_state(:seeking_first_token)
+    #end
   end
 
   def render_cells
@@ -280,6 +285,7 @@ class Game
         set_state(:remove_matches)
       end
     end
+    pieces_dropping = false
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
         cell = @cells[hpos][vpos]
@@ -295,12 +301,14 @@ class Game
           cell.sprite.h -= SHRINK_SPEED
           cell.sprite.h = 1 if cell.sprite.h < 1
         end
-        if cell.dropping then
+        if @state == :pieces_dropping && cell.dropping then
           cell.sprite.y -= DROP_SPEED
           if cell.sprite.y <= cell.target_y then
             cell.dropping = false
             cell.target_x = nil
             cell.target_y = nil
+          else
+            pieces_dropping = true
           end
         end
         @gtk_outputs.sprites << cell.sprite
@@ -320,8 +328,20 @@ class Game
             @grid_segment_size,
             0, 255, 0, 64
           ]
-        end
+        end # of token highlighting
+      end # of row.each_with_index
+    end # @cells.each_with_index
+    if @state == :pieces_dropping && !pieces_dropping then
+      if clearing_matches then
+        @combo += 1
+        set_state(:clear_animation)
+        @animation_count = 0
+      else
+        @combo = 0
+        set_state(:seeking_first_token)
       end
+    elsif @state != :pieces_dropping && pieces_dropping then
+      set_state(:pieces_dropping)
     end
   end
 
@@ -679,8 +699,8 @@ class Game
   end
 
   def tick
-    handle_mouse # if [:first_token,:second_token].include? @state
-    handle_keyboard
+    handle_mouse if [:seeking_first_token,:seeking_second_token].include? @state
+    handle_keyboard if [:seeking_first_token,:seeking_second_token].include? @state
     render_grid
     render_cells
     render_right_pane
