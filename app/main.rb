@@ -6,6 +6,7 @@ class Game
   INITIAL_GRID_SIZE = 7
   TEXT_HEIGHT = 20
   SHRINK_SPEED = 5
+  DROP_SPEED = 10
   DEBUG = false
 
   def initialize args
@@ -164,6 +165,7 @@ class Game
       @target_x = x
       @target_y = y
       @dropping = true
+      self
     end
 
     def serialize
@@ -235,29 +237,30 @@ class Game
     #if true then
       @cells.each_with_index do |row, hpos|
         row.each_with_index do |cell, vpos|
-          puts "hpos = #{hpos} vpos = #{vpos} cell = #{@cells[hpos][vpos]}"
+          #puts "hpos = #{hpos} vpos = #{vpos} cell = #{@cells[hpos][vpos]}"
           if @cells[hpos][vpos].nil? then
             if wrap(vpos+1) > vpos then
-              puts "found cell above"
+              #puts "found cell above, #{@cells[hpos][wrap(vpos+1)].class}"
               # we can reference the cell above; drop it here
-              @cells[hpos][vpos] = @cells[hpos][wrap(vpos+1)].nil? ? nil : @cells[hpos][wrap(vpos+1)].rebuild(
+              @cells[hpos][vpos] = @cells[hpos][wrap(vpos+1)].nil? ? nil : @cells[hpos][wrap(vpos+1)].drop_to(
                 hpos2x(hpos),
-                vpos2y(vpos),
-                @grid_segment_size,
-                @grid_segment_size
+                vpos2y(vpos)
               )
               @cells[hpos][wrap(vpos+1)] = nil
             else
-              puts "already at top"
+              #puts "already at top"
               # we are at the top, make a new Book
               @cells[hpos][vpos] = Book.new(
                 hpos2x(hpos),
-                vpos2y(vpos),
+                vpos2y(vpos+1),
                 @grid_segment_size,
                 @grid_segment_size
+              ).drop_to(
+                hpos2x(hpos),
+                vpos2y(vpos)
               )
             end # of position test
-            puts "new cell = #{@cells[hpos][vpos]}"
+            #puts "new cell = #{@cells[hpos][vpos]}"
           end # of nil test
         end # of row.each_with_index
       end # of @cells.each_with_index
@@ -293,6 +296,12 @@ class Game
           cell.sprite.h = 1 if cell.sprite.h < 1
         end
         if cell.dropping then
+          cell.sprite.y -= DROP_SPEED
+          if cell.sprite.y <= cell.target_y then
+            cell.dropping = false
+            cell.target_x = nil
+            cell.target_y = nil
+          end
         end
         @gtk_outputs.sprites << cell.sprite
         if cell.state == :first_token then
