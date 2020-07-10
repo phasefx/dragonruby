@@ -2,5 +2,5 @@ devid=phasefx
 devtitle=Jason Etheridge
 gameid=dewey-decimate
 gametitle=Dewey Decimate
-version=0.2
+version=0.3
 icon=metadata/icon.png
