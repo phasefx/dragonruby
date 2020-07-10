@@ -132,7 +132,7 @@ class Game
   end
 
   class Book
-    attr_accessor :x, :y, :w, :h, :type, :state, :match_state, :sprite
+    attr_accessor :x, :y, :w, :h, :type, :state, :match_state, :dropping, :sprite
 
     def initialize x, y, w, h, type=nil
       @x = x
@@ -140,6 +140,9 @@ class Game
       @w = w
       @h = h
       @type = type.nil? ? rand(7) + 1 : type
+      @dropping = false
+      #@match_state = false
+      #@state = nil
       #@type = type.nil? ? rand(2) + 1 : type
       @sprite = Sprite.new(@x,@y,@w,@h,@type)
     end
@@ -270,20 +273,23 @@ class Game
     end
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
+        cell = @cells[hpos][vpos]
         @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + TEXT_HEIGHT, "#{hpos}, #{vpos}" ] if DEBUG
-        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + @grid_segment_size, "#{@cells[hpos][vpos].nil? ? 'nil' : @cells[hpos][vpos].type}" ] if DEBUG
-        next if @cells[hpos][vpos].nil?
-        if @cells[hpos][vpos].match_state && @state == :clear_animation then
-          @cells[hpos][vpos].sprite.angle = @gtk_args.tick_count.mod(360)*10
-          @cells[hpos][vpos].sprite.x += SHRINK_SPEED.half
-          @cells[hpos][vpos].sprite.y += SHRINK_SPEED.half
-          @cells[hpos][vpos].sprite.w -= SHRINK_SPEED
-          @cells[hpos][vpos].sprite.w = 1 if @cells[hpos][vpos].sprite.w < 1
-          @cells[hpos][vpos].sprite.h -= SHRINK_SPEED
-          @cells[hpos][vpos].sprite.h = 1 if @cells[hpos][vpos].sprite.h < 1
+        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + @grid_segment_size, "#{cell.nil? ? 'nil' : cell.type}" ] if DEBUG
+        next if cell.nil?
+        if cell.match_state && @state == :clear_animation then
+          cell.sprite.angle = @gtk_args.tick_count.mod(360)*10
+          cell.sprite.x += SHRINK_SPEED.half
+          cell.sprite.y += SHRINK_SPEED.half
+          cell.sprite.w -= SHRINK_SPEED
+          cell.sprite.w = 1 if cell.sprite.w < 1
+          cell.sprite.h -= SHRINK_SPEED
+          cell.sprite.h = 1 if cell.sprite.h < 1
         end
-        @gtk_outputs.sprites << @cells[hpos][vpos].sprite
-        if @cells[hpos][vpos].state == :first_token then
+        if cell.dropping then
+        end
+        @gtk_outputs.sprites << cell.sprite
+        if cell.state == :first_token then
           @gtk_outputs.solids << [
             hpos2x(hpos),
             vpos2y(vpos),
@@ -291,7 +297,7 @@ class Game
             @grid_segment_size,
             0, 0, 255, 64
           ]
-        elsif @cells[hpos][vpos].state == :second_token then
+        elsif cell.state == :second_token then
           @gtk_outputs.solids << [
             hpos2x(hpos),
             vpos2y(vpos),
