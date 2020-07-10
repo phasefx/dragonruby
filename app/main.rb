@@ -3,9 +3,10 @@ class Game
   # for debugging: $gtk.args.state.game.cells, etc
   attr_accessor :cells, :state
 
+  INITIAL_GRID_SIZE = 7
   TEXT_HEIGHT = 20
-  SHRINK_SPEED = 10
-  DEBUG = true
+  SHRINK_SPEED = 5
+  DEBUG = false
 
   def initialize args
 
@@ -26,7 +27,7 @@ class Game
     @w = @ux - @lx
     @h = @uy - @ly
 
-    @grid_divisions = 3
+    @grid_divisions = INITIAL_GRID_SIZE
     @delay = 1
 
     @state = :seeking_first_token
@@ -173,6 +174,19 @@ class Game
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
         @cells[hpos][vpos] = Book.new(
+          hpos2x(hpos),
+          vpos2y(vpos),
+          @grid_segment_size,
+          @grid_segment_size
+        )
+      end
+    end
+  end
+
+  def rebuild_cells
+    @cells.each_with_index do |row, hpos|
+      row.each_with_index do |cell, vpos|
+        @cells[hpos][vpos].rebuild(
           hpos2x(hpos),
           vpos2y(vpos),
           @grid_segment_size,
@@ -462,20 +476,40 @@ class Game
       if truth == :a then
         @audio = !@audio
       end
-      if truth == :left then
-        @cells = @cells.rotate(1)
-      end
       if truth == :right then
-        @cells = @cells.rotate(-1)
+        @cells = @cells.rotate(1)
+        rebuild_cells
+        if clearing_matches then
+          set_state(:clear_animation)
+          @animation_count = 0
+        end
       end
-      if truth == :down then
-        @cells.each_with_index do |row, hpos|
-          @cells[hpos] = @cells[hpos].rotate(1)
+      if truth == :left then
+        @cells = @cells.rotate(-1)
+        rebuild_cells
+        if clearing_matches then
+          set_state(:clear_animation)
+          @animation_count = 0
         end
       end
       if truth == :up then
         @cells.each_with_index do |row, hpos|
+          @cells[hpos] = @cells[hpos].rotate(1)
+        end
+        rebuild_cells
+        if clearing_matches then
+          set_state(:clear_animation)
+          @animation_count = 0
+        end
+      end
+      if truth == :down then
+        @cells.each_with_index do |row, hpos|
           @cells[hpos] = @cells[hpos].rotate(-1)
+        end
+        rebuild_cells
+        if clearing_matches then
+          set_state(:clear_animation)
+          @animation_count = 0
         end
       end
       if truth == :back_slash then
