@@ -76,7 +76,7 @@ class Game
   end
 
   def set_state s
-    puts "stage change: #{@state} to #{s}"
+    puts "stage change: #{@state} to #{s}" if DEBUG
     @state = s
   end
 
@@ -372,11 +372,11 @@ class Game
           @current_combo += @score_for_last_cycle
         end
         @current_combo += @score_for_this_cycle
-        puts "combo count = #{@combo_count} current_combo was #{old_combo}, but is now #{@current_combo}"
+        puts "combo count = #{@combo_count} current_combo was #{old_combo}, but is now #{@current_combo}" if DEBUG
         set_state(:clear_animation)
         @animation_count = 0
       else
-        puts "end of combo, current_combo = #{@current_combo}"
+        puts "end of combo, current_combo = #{@current_combo}" if DEBUG
         @last_combo = @current_combo
         @highest_combo = @current_combo if @current_combo > @highest_combo
         @current_combo = 0
@@ -390,7 +390,7 @@ class Game
 
   def handle_cell_click hpos, vpos, entry_state
     # return true for valid cells
-    puts "inside handle_cell_click #{hpos}, #{vpos} during #{@state}"
+    puts "inside handle_cell_click #{hpos}, #{vpos} during #{@state}" if DEBUG
     if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions then
       return false if @cells[hpos][vpos].nil? # shouldn't happen once dev is finished
       if @state == :seeking_first_token then
@@ -468,7 +468,7 @@ class Game
     hpos = x2hpos @gtk_mouse.x
     vpos = y2vpos @gtk_mouse.y
     if @gtk_mouse.down then
-      puts "inside @gtk_mouse.down; hpos = #{hpos} vpos = #{vpos} hpos2x = #{hpos2x(hpos)} vpos2y = #{vpos2y(vpos)} mouse.x = #{@gtk_mouse.x} mouse.y = #{@gtk_mouse.y}"
+      puts "inside @gtk_mouse.down; hpos = #{hpos} vpos = #{vpos} hpos2x = #{hpos2x(hpos)} vpos2y = #{vpos2y(vpos)} mouse.x = #{@gtk_mouse.x} mouse.y = #{@gtk_mouse.y}" if DEBUG
       @mouse_down = true
       @mouse_down_at = @gtk_args.tick_count
       @mouse_down_initial_hpos = hpos
@@ -478,9 +478,9 @@ class Game
       handle_cell_click hpos, vpos, :mouse_down
     end
     if @gtk_mouse.up then
-      puts "inside @gtk_mouse.up"
+      puts "inside @gtk_mouse.up" if DEBUG
       if hpos != @mouse_down_initial_hpos || vpos != @mouse_down_initial_vpos then
-        puts handle_cell_click(hpos, vpos, :mosue_up)
+        handle_cell_click(hpos, vpos, :mouse_up)
       end
       @mouse_down = false
       @mouse_down_at = nil
@@ -749,7 +749,7 @@ class Game
   end
 
   def inc_total_score inc, msg = ''
-    puts "total_score was #{@total_score}, but is now #{@total_score+inc} (#{msg})"
+    puts "total_score was #{@total_score}, but is now #{@total_score+inc} (#{msg})" if DEBUG
     @total_score += inc
   end
 
@@ -808,7 +808,7 @@ class Game
       end
     end
     #set_state(:temp)
-    puts "match_found = #{match_found}"
+    puts "match_found = #{match_found}" if DEBUG
     inc_total_score(@score_for_this_cycle,'clearing_matches') if match_found
     match_found
   end
