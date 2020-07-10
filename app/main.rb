@@ -1,7 +1,7 @@
 class Game
 
   # for debugging: $gtk.args.state.game.cells, etc
-  attr_accessor :cells
+  attr_accessor :cells, :state
 
   TEXT_HEIGHT = 20
 
@@ -24,20 +24,26 @@ class Game
     @w = @ux - @lx
     @h = @uy - @ly
 
-    @grid_divisions = 2
+    @grid_divisions = 8
     @delay = 1
+
+    @state = :seeking_first_token
+    #        :seeking_second_token
+    #        :testing_swap
+    #        :clearing_matches
+    #        :populating_empty_cells
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
     @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
     @audio = false
 
-    render_grid
+    render_grid # do this now so that we have @grid_segment_size ready for init_cells
     init_cells
     static_render
   end
 
   def serialize
-    {cells:@cells}
+    {state:@state}
   end
 
   def inspect
@@ -46,6 +52,11 @@ class Game
 
   def to_s
     serialize.to_s
+  end
+
+  def set_state s
+    puts "stage change: #{@state} to #{s}"
+    @state = s
   end
 
   def render_grid
@@ -74,13 +85,14 @@ class Game
 
   class Sprite
     attr_sprite
-    attr_accessor :x, :y, :w, :h, :type
+    attr_accessor :x, :y, :w, :h, :angle, :type
 
     def initialize x, y, w, h, type=nil
       @x = x
       @y = y
       @w = w
       @h = h
+      @angle = 0
       @r = 255
       @g = 255
       @b = 255
@@ -153,8 +165,8 @@ class Game
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
         @cells[hpos][vpos] = Book.new(
-          @grid_offset[0] + (@grid_segment_size * hpos),
-          @grid_offset[1] + (@grid_segment_size * vpos),
+          hpos2x(hpos),
+          vpos2y(vpos),
           @grid_segment_size,
           @grid_segment_size
         )
@@ -165,37 +177,90 @@ class Game
   def render_cells
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
-        #if [1..34].include? cell.type then
-          @gtk_outputs.sprites << @cells[hpos][vpos].sprite
-        #end
+        @gtk_outputs.sprites << @cells[hpos][vpos].sprite
+        if @cells[hpos][vpos].state == :first_token then
+          @gtk_outputs.solids << [
+            hpos2x(hpos),
+            vpos2y(vpos),
+            @grid_segment_size,
+            @grid_segment_size,
+            0, 0, 255, 64
+          ]
+        elsif @cells[hpos][vpos].state == :second_token then
+          @gtk_outputs.solids << [
+            hpos2x(hpos),
+            vpos2y(vpos),
+            @grid_segment_size,
+            @grid_segment_size,
+            0, 255, 0, 64
+          ]
+        end
       end
     end
   end
 
-  def handle_cell_toggle cell_type, keyboard_entry
-    x = @gtk_mouse.x - @grid_offset[0]
-    y = @gtk_mouse.y - @grid_offset[1]
-    hpos = (x/(@grid_segment_size)).floor
-    vpos = (y/(@grid_segment_size)).floor
-    if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions && !(hpos == @prev_hpos && vpos == @prev_vpos && !keyboard_entry) then
-      @iteration = 0
-      @prev_hpos = hpos
-      @prev_vpos = vpos
-      #if @cells[hpos][vpos] then
-      #  @cells[hpos][vpos] = cell_type
-      #end
+  def handle_cell_click hpos, vpos
+    if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions then
+      if @state == :seeking_first_token then
+        if @cells[hpos][vpos].state.nil? then
+          @cells[hpos][vpos].state = :first_token
+          @cells[hpos][vpos].sprite.angle = -45
+          set_state(:seeking_second_token)
+          @first_token = @cells[hpos][vpos]
+          @first_token_coords = [ hpos, vpos ]
+        else
+          # reserved for future use; cells that can't be selected?
+        end
+      elsif @state == :seeking_second_token then
+        # but if they re-select the first token, let's start over
+        if @cells[hpos][vpos].state == :first_token then
+          @cells[hpos][vpos].state = nil # de-select
+          @cells[hpos][vpos].sprite.angle = 0
+          set_state(:seeking_first_token)
+          @first_token = nil
+          @first_token_coords = nil
+        elsif @cells[hpos][vpos].state.nil? then
+          @cells[hpos][vpos].state = :second_token
+          @cells[hpos][vpos].sprite.angle = -45
+          set_state(:testing_swap)
+          @second_token = @cells[hpos][vpos]
+          @second_token_coords = [ hpos, vpos ]
+        else
+          # reserved for future use; cells that can't be selected?
+        end
+      else
+        # game is in a state where selection should be disabled
+      end
     end
   end
 
+  def x2hpos x
+    ax = x - @grid_offset[0]
+    (ax/@grid_segment_size).floor
+  end
+
+  def y2vpos y
+    ay = y - @grid_offset[1]
+    (ay/@grid_segment_size).floor
+  end
+
+  def hpos2x hpos
+    @grid_offset[0] + (@grid_segment_size * hpos)
+  end
+
+  def vpos2y vpos
+    @grid_offset[1] + (@grid_segment_size * vpos)
+  end
+
   def handle_mouse
-    if @gtk_mouse.down || @mouse_down then
+    if @gtk_mouse.down then
       @mouse_down = true
-      handle_cell_toggle @gtk_mouse.button_left ? :normal : (@gtk_mouse.button_middle ? :pit : :immortal), false
+      hpos = x2hpos @gtk_mouse.x
+      vpos = y2vpos @gtk_mouse.y
+      handle_cell_click hpos, vpos
     end
     if @gtk_mouse.up then
       @mouse_down = false
-      @prev_hpos = nil
-      @prev_vpos = nil
     end
   end
 
@@ -211,16 +276,16 @@ class Game
           row.each_with_index do |cell, vpos|
             if temp[hpos].nil? || temp[hpos][vpos].nil? then
               @cells[hpos][vpos] = Book.new(
-                @grid_offset[0] + (@grid_segment_size * hpos),
-                @grid_offset[1] + (@grid_segment_size * vpos),
+                hpos2x(hpos),
+                vpos2y(vpos),
                 @grid_segment_size,
                 @grid_segment_size
               )
             else
               @cells[hpos][vpos] = temp[hpos][vpos]
               @cells[hpos][vpos].rebuild(
-                @grid_offset[0] + (@grid_segment_size * hpos),
-                @grid_offset[1] + (@grid_segment_size * vpos),
+                hpos2x(hpos),
+                vpos2y(vpos),
                 @grid_segment_size,
                 @grid_segment_size
               )
@@ -240,16 +305,16 @@ class Game
           row.each_with_index do |cell, vpos|
             if temp[hpos].nil? || temp[hpos][vpos].nil? then
               @cells[hpos][vpos] = Book.new(
-                @grid_offset[0] + (@grid_segment_size * hpos),
-                @grid_offset[1] + (@grid_segment_size * vpos),
+                hpos2x(hpos),
+                vpos2y(vpos),
                 @grid_segment_size,
                 @grid_segment_size
               )
             else
               @cells[hpos][vpos] = temp[hpos][vpos]
               @cells[hpos][vpos].rebuild(
-                @grid_offset[0] + (@grid_segment_size * hpos),
-                @grid_offset[1] + (@grid_segment_size * vpos),
+                hpos2x(hpos),
+                vpos2y(vpos),
                 @grid_segment_size,
                 @grid_segment_size
               )
@@ -271,15 +336,15 @@ class Game
           row.each_with_index do |cell, vpos|
             if @saved[hpos].nil? || @saved[hpos][vpos].nil? then
               @cells[hpos][vpos] = Book.new(
-                @grid_offset[0] + (@grid_segment_size * hpos),
-                @grid_offset[1] + (@grid_segment_size * vpos),
+                hpos2x(hpos),
+                vpos2y(vpos),
                 @grid_segment_size,
                 @grid_segment_size
               )
             else
               @cells[hpos][vpos] = @saved[hpos][vpos].rebuild(
-                @grid_offset[0] + (@grid_segment_size * hpos),
-                @grid_offset[1] + (@grid_segment_size * vpos),
+                hpos2x(hpos),
+                vpos2y(vpos),
                 @grid_segment_size,
                 @grid_segment_size
               )
@@ -314,6 +379,17 @@ class Game
           @cells[hpos] = @cells[hpos].rotate(-1)
         end
       end
+      if truth == :back_slash then
+        @first_token.sprite.angle = 0
+        @first_token.state = nil
+        @second_token.sprite.angle = 0
+        @second_token.state = nil
+        @first_token = nil
+        @first_token_coords = nil
+        @second_token = nil
+        @second_token_coords = nil
+        set_state(:seeking_first_token)
+      end
     end
   end
 
@@ -329,13 +405,14 @@ class Game
   end
 
   def tick
-    handle_mouse
+    handle_mouse # if [:first_token,:second_token].include? @state
     handle_keyboard
     render_grid
     render_cells
     render_right_pane
     if @audio then
     end
+    #test_swap if @state == :testing_swap
   end
 end
 
