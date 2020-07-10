@@ -270,12 +270,6 @@ class Game
         end # of row.each_with_index
       end # of @cells.each_with_index
     end # of while test_for_nils
-    #if clearing_matches then
-    #  set_state(:clear_animation)
-    #  @animation_count = 0
-    #else
-    #  set_state(:seeking_first_token)
-    #end
   end
 
   def render_cells
@@ -375,7 +369,13 @@ class Game
           @second_token = @cells[hpos][vpos]
           @second_token_coords = [ hpos, vpos ]
         else
-          # reserved for future use; cells that can't be selected?
+          # so second token is too far away, let's make it the new first token
+          @first_token.state = nil
+          @first_token.sprite.angle = 0
+          @cells[hpos][vpos].state = :first_token
+          @cells[hpos][vpos].sprite.angle = -45
+          @first_token = @cells[hpos][vpos]
+          @first_token_coords = [ hpos, vpos ]
         end
       else
         # game is in a state where selection should be disabled
