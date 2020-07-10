@@ -8,6 +8,9 @@ class Game
   SHRINK_SPEED = 5
   DROP_SPEED = 10
   DEBUG = false
+  # we have 34 icons; we can use TILESET as an offset to mix things up a bit
+  UNIQUE_TILES = 7
+  TILESET = rand(4)
 
   def initialize args
 
@@ -49,7 +52,6 @@ class Game
     @total_score = 0
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
-    @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
     @audio = false
 
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
@@ -150,8 +152,7 @@ class Game
       @y = y
       @w = w
       @h = h
-      @type = type.nil? ? rand(7) + 1 : type
-      #@type = type.nil? ? rand(3) + 1 : type
+      @type = type.nil? ? rand(UNIQUE_TILES) + 1 + TILESET : type
       @dropping = false
       #@match_state = false
       #@state = nil
@@ -431,10 +432,27 @@ class Game
 
   def handle_keyboard
     @gtk_kb.key_down.truthy_keys.each do |truth|
-      if truth == :close_square_brace then
+      if truth == :r then # reset
+        @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
+        @cells.each_with_index do |row, hpos|
+          row.each_with_index do |cell, vpos|
+              @cells[hpos][vpos] = Book.new(
+                hpos2x(hpos),
+                vpos2y(vpos),
+                @grid_segment_size,
+                @grid_segment_size
+              )
+          end
+        end
+        @total_score = 0
+        if clearing_matches then
+          set_state(:clear_animation)
+          @animation_count = 0
+        end
+      end
+      if truth == :close_square_brace then # shrink grid
         @grid_divisions += 1
         @grid_segment_size = (@h-10)/(@grid_divisions)
-        @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
         temp = @cells
         @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
         @cells.each_with_index do |row, hpos|
@@ -462,11 +480,10 @@ class Game
           @animation_count = 0
         end
       end
-      if truth == :open_square_brace then
+      if truth == :open_square_brace then # grow grid
         @grid_divisions -= 1
         @grid_divisions = 1 if @grid_divisions < 1
         @grid_segment_size = (@h-10)/(@grid_divisions)
-        @next_cells = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
         temp = @cells
         @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
         @cells.each_with_index do |row, hpos|
@@ -600,6 +617,10 @@ class Game
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*0,"Score: #{@total_score}" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*1,"Last Combo: #{@last_combo}" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*2,"Highest Combo: #{@highest_combo}" ]
+
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*4,"Match at least 3" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*5,"R to Reset" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*6,"Arrows to shift grid" ]
   end
 
   def undo_swap
