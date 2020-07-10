@@ -173,6 +173,11 @@ class Game
       @sprite = Sprite.new(@x,@y,@w,@h,@type)
     end
 
+    # need to look into .dup and .clone, but for now...
+    def copy
+      Book.new(@x,@y,@w,@h,@type)
+    end
+
     def rebuild x, y, w, h
       @x = x
       @y = y
@@ -326,7 +331,20 @@ class Game
             pieces_dropping = true
           end
         end
-        @gtk_outputs.sprites << cell.sprite
+        if @state == :seeking_second_token && cell.state == :first_token && @mouse_down then
+          adjust_x = @mouse_down_initial_x - hpos2x(@mouse_down_initial_hpos)
+          adjust_y = @mouse_down_initial_y - vpos2y(@mouse_down_initial_vpos)
+          #puts "floating book at #{@gtk_mouse.x}, #{@gtk_mouse.y} adjusted by #{adjust_x}, #{adjust_y}"
+          floating_book = cell.copy.rebuild(
+            @gtk_mouse.x - adjust_x,
+            @gtk_mouse.y - adjust_y,
+            @grid_segment_size,
+            @grid_segment_size
+          )
+          @gtk_outputs.sprites << floating_book.sprite
+        else
+          @gtk_outputs.sprites << cell.sprite
+        end
         if cell.state == :first_token then
           @gtk_outputs.solids << [
             hpos2x(hpos),
@@ -370,10 +388,11 @@ class Game
     end
   end
 
-  def handle_cell_click hpos, vpos
-    #puts "#{@state} handle_cell_click #{hpos}, #{vpos}"
+  def handle_cell_click hpos, vpos, entry_state
+    # return true for valid cells
+    puts "inside handle_cell_click #{hpos}, #{vpos} during #{@state}"
     if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions then
-      return if @cells[hpos][vpos].nil? # shouldn't happen once dev is finished
+      return false if @cells[hpos][vpos].nil? # shouldn't happen once dev is finished
       if @state == :seeking_first_token then
         if @cells[hpos][vpos].state.nil? then
           @cells[hpos][vpos].state = :first_token
@@ -381,17 +400,20 @@ class Game
           set_state(:seeking_second_token)
           @first_token = @cells[hpos][vpos]
           @first_token_coords = [ hpos, vpos ]
+          return true
         else
           # reserved for future use; cells that can't be selected?
+          return false
         end
       elsif @state == :seeking_second_token then
-        # but if they re-select the first token, let's start over
-        if @cells[hpos][vpos].state == :first_token then
+        # but if they re-select the first token, let's start over (unless doing drag & drop)
+        if entry_state == :mouse_down && @cells[hpos][vpos].state == :first_token then
           @cells[hpos][vpos].state = nil # de-select
           @cells[hpos][vpos].sprite.angle = 0
           set_state(:seeking_first_token)
           @first_token = nil
           @first_token_coords = nil
+          return true
         # make sure the proposed second token is adjacent to the first
         elsif (@first_token_coords[0] - hpos).abs < 2 && (@first_token_coords[1] - vpos).abs < 2 && @cells[hpos][vpos].state.nil? then
           @cells[hpos][vpos].state = :second_token
@@ -399,19 +421,25 @@ class Game
           set_state(:testing_swap)
           @second_token = @cells[hpos][vpos]
           @second_token_coords = [ hpos, vpos ]
-        else
-          # so second token is too far away, let's make it the new first token
+          return true
+        elsif entry_state == :mouse_down
+          # so second token is too far away, let's make it the new first token (unless doing drag & drop)
           @first_token.state = nil
           @first_token.sprite.angle = 0
           @cells[hpos][vpos].state = :first_token
           @cells[hpos][vpos].sprite.angle = -45
           @first_token = @cells[hpos][vpos]
           @first_token_coords = [ hpos, vpos ]
+          return true
+        else
+          return false
         end
       else
         # game is in a state where selection should be disabled
+        return false
       end
     end
+    return false
   end
 
   def x2hpos x
@@ -432,15 +460,34 @@ class Game
     @grid_offset[1] + (@grid_segment_size * vpos)
   end
 
+  def mouse_down_for_at_least_half_second
+    @mouse_down && ((@gtk_args.tick_count - @mouse_down_at)>=30)
+  end
+
   def handle_mouse
+    hpos = x2hpos @gtk_mouse.x
+    vpos = y2vpos @gtk_mouse.y
     if @gtk_mouse.down then
+      puts "inside @gtk_mouse.down; hpos = #{hpos} vpos = #{vpos} hpos2x = #{hpos2x(hpos)} vpos2y = #{vpos2y(vpos)} mouse.x = #{@gtk_mouse.x} mouse.y = #{@gtk_mouse.y}"
       @mouse_down = true
-      hpos = x2hpos @gtk_mouse.x
-      vpos = y2vpos @gtk_mouse.y
-      handle_cell_click hpos, vpos
+      @mouse_down_at = @gtk_args.tick_count
+      @mouse_down_initial_hpos = hpos
+      @mouse_down_initial_vpos = vpos
+      @mouse_down_initial_x = @gtk_mouse.x
+      @mouse_down_initial_y = @gtk_mouse.y
+      handle_cell_click hpos, vpos, :mouse_down
     end
     if @gtk_mouse.up then
+      puts "inside @gtk_mouse.up"
+      if hpos != @mouse_down_initial_hpos || vpos != @mouse_down_initial_vpos then
+        puts handle_cell_click(hpos, vpos, :mosue_up)
+      end
       @mouse_down = false
+      @mouse_down_at = nil
+      @mouse_down_initial_hpos = nil
+      @mouse_down_initial_vpos = nil
+      @mouse_down_initial_x = nil
+      @mouse_down_initial_y = nil
     end
   end
 
