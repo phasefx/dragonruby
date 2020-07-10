@@ -24,13 +24,14 @@ class Game
     @w = @ux - @lx
     @h = @uy - @ly
 
-    @grid_divisions = 8
+    @grid_divisions = 3
     @delay = 1
 
     @state = :seeking_first_token
     #        :seeking_second_token
     #        :testing_swap
     #        :clearing_matches
+    #        :clear_animation
     #        :populating_empty_cells
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
@@ -40,6 +41,10 @@ class Game
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
     init_cells
     static_render
+    if clearing_matches then
+      @state = :clear_animation
+      @animation_count = 0
+    end
   end
 
   def serialize
@@ -124,7 +129,7 @@ class Game
   end
 
   class Book
-    attr_accessor :x, :y, :w, :h, :type, :state, :sprite
+    attr_accessor :x, :y, :w, :h, :type, :state, :match_state, :sprite
 
     def initialize x, y, w, h, type=nil
       @x = x
@@ -177,6 +182,7 @@ class Game
   def render_cells
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
+        @cells[hpos][vpos].sprite.angle = @gtk_args.tick_count.mod(360)*10 if @cells[hpos][vpos].match_state
         @gtk_outputs.sprites << @cells[hpos][vpos].sprite
         if @cells[hpos][vpos].state == :first_token then
           @gtk_outputs.solids << [
@@ -381,14 +387,18 @@ class Game
         end
       end
       if truth == :back_slash then
-        @first_token.sprite.angle = 0
-        @first_token.state = nil
-        @second_token.sprite.angle = 0
-        @second_token.state = nil
-        @first_token = nil
-        @first_token_coords = nil
-        @second_token = nil
-        @second_token_coords = nil
+        if !@first_token.nil? then
+          @first_token.sprite.angle = 0
+          @first_token.state = nil
+          @first_token = nil
+          @first_token_coords = nil
+        end
+        if !@second_token.nil? then
+          @second_token.sprite.angle = 0
+          @second_token.state = nil
+          @second_token = nil
+          @second_token_coords = nil
+        end
         set_state(:seeking_first_token)
       end
     end
@@ -405,6 +415,118 @@ class Game
     ##                                                                                                 '1234567890123456789012345678' ]
   end
 
+  def undo_swap
+    h1 = @first_token_coords[0]
+    h2 = @second_token_coords[0]
+    v1 = @first_token_coords[1]
+    v2 = @second_token_coords[1]
+    @cells[h1][v1] = @first_token.rebuild(
+      hpos2x(h1),
+      vpos2y(v1),
+      @grid_segment_size,
+      @grid_segment_size
+    )
+    @cells[h2][v2] = @second_token.rebuild(
+      hpos2x(h2),
+      vpos2y(v2),
+      @grid_segment_size,
+      @grid_segment_size
+    )
+    @first_token.state = nil
+    @first_token.sprite.angle = 0
+    @first_token = nil
+    @first_token_coords = nil
+    @second_token.state = nil
+    @second_token.sprite.angle = 0
+    @second_token = nil
+    @second_token_coords = nil
+  end
+
+  def test_swap
+    h1 = @first_token_coords[0]
+    h2 = @second_token_coords[0]
+    v1 = @first_token_coords[1]
+    v2 = @second_token_coords[1]
+
+    @cells[h1][v1] = @second_token.rebuild(
+      hpos2x(h1),
+      vpos2y(v1),
+      @grid_segment_size,
+      @grid_segment_size
+    )
+    @cells[h2][v2] = @first_token.rebuild(
+      hpos2x(h2),
+      vpos2y(v2),
+      @grid_segment_size,
+      @grid_segment_size
+    )
+    set_state(:clearing_matches)
+    if !clearing_matches then
+      undo_swap
+    else
+      @first_token.state = nil
+      @first_token.sprite.angle = 0
+      @second_token.state = nil
+      @second_token.sprite.angle = 0
+      @first_token = nil
+      @first_token_coords = nil
+      @second_token = nil
+      @second_token_coords = nil
+    end
+    set_state(:seeking_first_token)
+  end
+
+  def clearing_matches
+    match_found = false
+    # one direction, I think vertical despite how I have hpos/vpos here
+    @cells.each_with_index do |row, hpos|
+      prev_last_seen = nil
+      last_seen = nil
+      last_seen_counter = 1
+      row.each_with_index do |cell, vpos|
+        if !last_seen.nil? && @cells[hpos][vpos].type == last_seen.type then
+          last_seen_counter += 1
+          if last_seen_counter >= 3 then
+            prev_last_seen.match_state = true
+            last_seen.match_state = true
+            @cells[hpos][vpos].match_state = true
+            match_found = true
+          end
+          prev_last_seen = last_seen
+        else
+          last_seen_counter = 1
+          prev_last_seen = nil
+        end
+        last_seen = @cells[hpos][vpos]
+      end
+    end
+    # the other direction, relying on the grid being a square, via a swap of hpos,vpos with vpos,hpos
+    @cells.each_with_index do |row, hpos|
+      prev_last_seen = nil
+      last_seen = nil
+      last_seen_counter = 1
+      row.each_with_index do |cell, vpos|
+        if !last_seen.nil? && @cells[vpos][hpos].type == last_seen.type then
+          last_seen_counter += 1
+          if last_seen_counter >= 3 then
+            prev_last_seen.match_state = true
+            last_seen.match_state = true
+            @cells[vpos][hpos].match_state = true
+            match_found = true
+          end
+          prev_last_seen = last_seen
+        else
+          last_seen_counter = 1
+          prev_last_seen = nil
+        end
+        last_seen = @cells[vpos][hpos]
+      end
+    end
+    set_state(:temp)
+    puts "match_found = #{match_found}"
+    match_found
+  end
+
   def tick
     handle_mouse # if [:first_token,:second_token].include? @state
     handle_keyboard
@@ -413,7 +535,7 @@ class Game
     render_right_pane
     if @audio then
     end
-    #test_swap if @state == :testing_swap
+    test_swap if @state == :testing_swap
   end
 end
 
