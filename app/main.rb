@@ -341,7 +341,7 @@ class Game
             @grid_segment_size,
             @grid_segment_size
           )
-          @gtk_outputs.sprites << floating_book.sprite
+          @gtk_outputs.primitives << floating_book.sprite
         else
           @gtk_outputs.sprites << cell.sprite
         end
