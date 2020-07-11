@@ -83,7 +83,7 @@ class Game
   end
 
   def random_sound
-    return if !@audio 
+    return if !@audio
     case rand(8)
     when 0 then @gtk_outputs.sounds << 'media/sfx/A3.wav'
     when 1 then @gtk_outputs.sounds << 'media/sfx/B3.wav'
@@ -94,6 +94,18 @@ class Game
     when 6 then @gtk_outputs.sounds << 'media/sfx/F3.wav'
     when 7 then @gtk_outputs.sounds << 'media/sfx/G3.wav'
     end
+  end
+
+  def clash_sound
+    return if !@audio
+    @gtk_outputs.sounds << 'media/sfx/A3.wav'
+    @gtk_outputs.sounds << 'media/sfx/B3.wav'
+    @gtk_outputs.sounds << 'media/sfx/C3.wav'
+    @gtk_outputs.sounds << 'media/sfx/C4.wav'
+    @gtk_outputs.sounds << 'media/sfx/D3.wav'
+    @gtk_outputs.sounds << 'media/sfx/E3.wav'
+    @gtk_outputs.sounds << 'media/sfx/F3.wav'
+    @gtk_outputs.sounds << 'media/sfx/G3.wav'
   end
 
   def render_grid
@@ -742,6 +754,7 @@ class Game
     if !clearing_matches then
       undo_swap
       set_state(:seeking_first_token)
+      clash_sound
     else
       @first_token.state = nil
       @first_token.sprite.angle = 0
@@ -827,8 +840,6 @@ class Game
     render_grid
     render_cells
     render_text
-    if @audio then
-    end
     case @state
     when :testing_swap then test_swap
     when :remove_matches then remove_matches
