@@ -1,7 +1,7 @@
 class Game
 
   # for debugging: $gtk.args.state.game.cells, etc
-  attr_accessor :cells, :state
+  attr_accessor :cells, :state, :audio, :audio_scheme
 
   INITIAL_GRID_SIZE = 7
   TEXT_HEIGHT = 20
@@ -10,7 +10,8 @@ class Game
   # we have 34 icons; we can use these to mix things up a bit
   FAVORITE_TILES = [1,2,3,4,5,8,9,10]
   UNIQUE_TILES = 7
-  TILESET = rand(3)
+  TILESHIFT = rand(2)
+  # FAVORITE_TILES[rand(UNIQUE_TILES) + TILESHIFT]
 
   def initialize args
 
@@ -55,6 +56,7 @@ class Game
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
     @audio = true
+    @audio_scheme = :indexed
 
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
     init_cells
@@ -82,9 +84,18 @@ class Game
     @state = s
   end
 
-  def random_sound
+  def match_sound celltype
+    puts "match_sound #{celltype} with #{@audio_scheme}" if @debug
+    case @audio_scheme
+    when :random then random_sound
+    when :indexed then indexed_sound FAVORITE_TILES.index(celltype)
+    end
+  end
+
+  def indexed_sound idx
     return if !@audio
-    case rand(8)
+    puts "playing sound #{idx}" if @debug
+    case idx
     when 0 then @gtk_outputs.sounds << 'media/sfx/A3.wav'
     when 1 then @gtk_outputs.sounds << 'media/sfx/B3.wav'
     when 2 then @gtk_outputs.sounds << 'media/sfx/C3.wav'
@@ -92,20 +103,22 @@ class Game
     when 4 then @gtk_outputs.sounds << 'media/sfx/D3.wav'
     when 5 then @gtk_outputs.sounds << 'media/sfx/E3.wav'
     when 6 then @gtk_outputs.sounds << 'media/sfx/F3.wav'
-    when 7 then @gtk_outputs.sounds << 'media/sfx/G3.wav'
+    else @gtk_outputs.sounds << 'media/sfx/G3.wav'
     end
+  end
+
+  def random_sound
+    return if !@audio
+    puts "playing random sound" if @debug
+    indexed_sound rand(8)
   end
 
   def clash_sound
     return if !@audio
-    @gtk_outputs.sounds << 'media/sfx/A3.wav'
-    @gtk_outputs.sounds << 'media/sfx/B3.wav'
-    @gtk_outputs.sounds << 'media/sfx/C3.wav'
-    @gtk_outputs.sounds << 'media/sfx/C4.wav'
-    @gtk_outputs.sounds << 'media/sfx/D3.wav'
-    @gtk_outputs.sounds << 'media/sfx/E3.wav'
-    @gtk_outputs.sounds << 'media/sfx/F3.wav'
-    @gtk_outputs.sounds << 'media/sfx/G3.wav'
+    puts "playing all sounds" if @debug
+    (0..7).each do |idx|
+      indexed_sound idx
+    end
   end
 
   def render_grid
@@ -180,7 +193,8 @@ class Game
       @y = y
       @w = w
       @h = h
-      @type = type.nil? ? FAVORITE_TILES[rand(UNIQUE_TILES) + 1 + TILESET] : type
+      @type = type.nil? ? FAVORITE_TILES[rand(UNIQUE_TILES) + TILESHIFT] : type
+      puts "bad tile selection #{@type}" if ! FAVORITE_TILES.include? @type
       @dropping = false
       #@match_state = false
       #@state = nil
@@ -793,7 +807,7 @@ class Game
             @cells[hpos][vpos].match_state = true
             match_found = true
             @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
-            random_sound
+            match_sound @cells[hpos][vpos].type
           end
           prev_last_seen = last_seen
         else
@@ -818,7 +832,7 @@ class Game
             @cells[vpos][hpos].match_state = true
             match_found = true
             @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
-            random_sound
+            match_sound @cells[vpos][hpos].type
           end
           prev_last_seen = last_seen
         else
