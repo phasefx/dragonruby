@@ -7,12 +7,14 @@ class Game
   TEXT_HEIGHT = 20
   SHRINK_SPEED = 5
   DROP_SPEED = 10
-  DEBUG = false
-  # we have 34 icons; we can use TILESET as an offset to mix things up a bit
+  # we have 34 icons; we can use these to mix things up a bit
+  FAVORITE_TILES = [1,2,3,4,5,8,9,10]
   UNIQUE_TILES = 7
-  TILESET = rand(4)
+  TILESET = rand(3)
 
   def initialize args
+
+    @debug = false
 
     $gtk.set_window_title 'Dewey Decimate System'
 
@@ -76,7 +78,7 @@ class Game
   end
 
   def set_state s
-    puts "stage change: #{@state} to #{s}" if DEBUG
+    puts "stage change: #{@state} to #{s}" if @debug
     @state = s
   end
 
@@ -166,7 +168,7 @@ class Game
       @y = y
       @w = w
       @h = h
-      @type = type.nil? ? rand(UNIQUE_TILES) + 1 + TILESET : type
+      @type = type.nil? ? FAVORITE_TILES[rand(UNIQUE_TILES) + 1 + TILESET] : type
       @dropping = false
       #@match_state = false
       #@state = nil
@@ -309,8 +311,8 @@ class Game
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
         cell = @cells[hpos][vpos]
-        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + TEXT_HEIGHT, "#{hpos}, #{vpos}" ] if DEBUG
-        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + @grid_segment_size, "#{cell.nil? ? 'nil' : cell.type}" ] if DEBUG
+        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + TEXT_HEIGHT, "#{hpos}, #{vpos}" ] if @debug
+        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + @grid_segment_size, "#{cell.nil? ? 'nil' : cell.type}" ] if @debug
         next if cell.nil?
         if cell.match_state && @state == :clear_animation then
           cell.sprite.angle = @gtk_args.tick_count.mod(360)*10
@@ -372,11 +374,11 @@ class Game
           @current_combo += @score_for_last_cycle
         end
         @current_combo += @score_for_this_cycle
-        puts "combo count = #{@combo_count} current_combo was #{old_combo}, but is now #{@current_combo}" if DEBUG
+        puts "combo count = #{@combo_count} current_combo was #{old_combo}, but is now #{@current_combo}" if @debug
         set_state(:clear_animation)
         @animation_count = 0
       else
-        puts "end of combo, current_combo = #{@current_combo}" if DEBUG
+        puts "end of combo, current_combo = #{@current_combo}" if @debug
         @last_combo = @current_combo
         @highest_combo = @current_combo if @current_combo > @highest_combo
         @current_combo = 0
@@ -390,7 +392,7 @@ class Game
 
   def handle_cell_click hpos, vpos, entry_state
     # return true for valid cells
-    puts "inside handle_cell_click #{hpos}, #{vpos} during #{@state}" if DEBUG
+    puts "inside handle_cell_click #{hpos}, #{vpos} during #{@state}" if @debug
     if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions then
       return false if @cells[hpos][vpos].nil? # shouldn't happen once dev is finished
       if @state == :seeking_first_token then
@@ -468,7 +470,7 @@ class Game
     hpos = x2hpos @gtk_mouse.x
     vpos = y2vpos @gtk_mouse.y
     if @gtk_mouse.down then
-      puts "inside @gtk_mouse.down; hpos = #{hpos} vpos = #{vpos} hpos2x = #{hpos2x(hpos)} vpos2y = #{vpos2y(vpos)} mouse.x = #{@gtk_mouse.x} mouse.y = #{@gtk_mouse.y}" if DEBUG
+      puts "inside @gtk_mouse.down; hpos = #{hpos} vpos = #{vpos} hpos2x = #{hpos2x(hpos)} vpos2y = #{vpos2y(vpos)} mouse.x = #{@gtk_mouse.x} mouse.y = #{@gtk_mouse.y}" if @debug
       @mouse_down = true
       @mouse_down_at = @gtk_args.tick_count
       @mouse_down_initial_hpos = hpos
@@ -478,7 +480,7 @@ class Game
       handle_cell_click hpos, vpos, :mouse_down
     end
     if @gtk_mouse.up then
-      puts "inside @gtk_mouse.up" if DEBUG
+      puts "inside @gtk_mouse.up" if @debug
       if hpos != @mouse_down_initial_hpos || vpos != @mouse_down_initial_vpos then
         handle_cell_click(hpos, vpos, :mouse_up)
       end
@@ -493,6 +495,12 @@ class Game
 
   def handle_keyboard
     @gtk_kb.key_down.truthy_keys.each do |truth|
+      if truth == :t then # test
+        @gtk_outputs.sounds << 'media/sfx/test.wav'
+      end
+      if truth == :d then # debug toggle
+        @debug = !@debug
+      end
       if truth == :r then # reset
         @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
         @cells.each_with_index do |row, hpos|
@@ -749,7 +757,7 @@ class Game
   end
 
   def inc_total_score inc, msg = ''
-    puts "total_score was #{@total_score}, but is now #{@total_score+inc} (#{msg})" if DEBUG
+    puts "total_score was #{@total_score}, but is now #{@total_score+inc} (#{msg})" if @debug
     @total_score += inc
   end
 
@@ -808,7 +816,7 @@ class Game
       end
     end
     #set_state(:temp)
-    puts "match_found = #{match_found}" if DEBUG
+    puts "match_found = #{match_found}" if @debug
     inc_total_score(@score_for_this_cycle,'clearing_matches') if match_found
     match_found
   end
