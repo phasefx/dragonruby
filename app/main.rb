@@ -12,6 +12,7 @@ class Game
   UNIQUE_TILES = 7
   TILESHIFT = rand(2)
   # FAVORITE_TILES[rand(UNIQUE_TILES) + TILESHIFT]
+  BACH = ['E3','A3','C4','B3','E3','B3']
 
   def initialize args
 
@@ -56,7 +57,9 @@ class Game
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
     @audio = true
-    @audio_scheme = :indexed
+    @audio_scheme = :sequenced
+    @note_queue = [] # for playing notes sequentially
+    @note_queue_delay = 30 # play on tick_count.mod(delay) == 0
 
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
     init_cells
@@ -89,22 +92,34 @@ class Game
     case @audio_scheme
     when :random then random_sound
     when :indexed then indexed_sound FAVORITE_TILES.index(celltype)
+    when :sequenced then bach_invention_13
     end
   end
 
-  def indexed_sound idx
+  def indexed_sound idx, queue = false
     return if !@audio
     puts "playing sound #{idx}" if @debug
+    a = queue ? @note_queue : @gtk_outputs.sounds
     case idx
-    when 0 then @gtk_outputs.sounds << 'media/sfx/A3.wav'
-    when 1 then @gtk_outputs.sounds << 'media/sfx/B3.wav'
-    when 2 then @gtk_outputs.sounds << 'media/sfx/C3.wav'
-    when 3 then @gtk_outputs.sounds << 'media/sfx/C4.wav'
-    when 4 then @gtk_outputs.sounds << 'media/sfx/D3.wav'
-    when 5 then @gtk_outputs.sounds << 'media/sfx/E3.wav'
-    when 6 then @gtk_outputs.sounds << 'media/sfx/F3.wav'
-    else @gtk_outputs.sounds << 'media/sfx/G3.wav'
+    when 0 then a << 'media/sfx/A3.wav'
+    when 1 then a << 'media/sfx/B3.wav'
+    when 2 then a << 'media/sfx/C3.wav'
+    when 3 then a << 'media/sfx/C4.wav'
+    when 4 then a << 'media/sfx/D3.wav'
+    when 5 then a << 'media/sfx/E3.wav'
+    when 6 then a << 'media/sfx/F3.wav'
+    when 7 then a << 'media/sfx/G3.wav'
+    else
+      # missing note
     end
+    puts "note_queue = #{@note_queue}" if @debug
+  end
+
+  def bach_invention_13
+    return if !@audio
+    @bach = BACH.clone if @bach.nil? || @bach.empty?
+    puts "playing bach" if @debug
+    indexed_sound ['A3','B3','C3','C4','D3','E3','F3','G3'].index(@bach.pop), true
   end
 
   def random_sound
@@ -858,6 +873,11 @@ class Game
     when :testing_swap then test_swap
     when :remove_matches then remove_matches
     when :drop_pieces then drop_pieces
+    end
+    if @audio then
+      if @gtk_args.tick_count.mod(@note_queue_delay) == 0 then
+        @gtk_outputs.sounds << @note_queue.pop if ! @note_queue.empty?
+      end
     end
   end
 end
