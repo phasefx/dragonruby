@@ -56,6 +56,10 @@ class Turtle
     if @args.inputs.keyboard.key_down.space then
       pt
     end
+    if @args.inputs.keyboard.key_down.t then
+      go_tree if !@tree
+      @tree = true
+    end
     if @args.state.angle > 360 then
       @args.state.angle -= 360
     end
@@ -69,7 +73,39 @@ class Turtle
       @args.state.coord = new_coord
       @args.state.move = 0
     end
+    if @tree then
+      @fiber.resume if @fiber.alive?
+    end
   end
+
+  def go_tree
+    @fiber = Fiber.new do
+      tree 150
+    end
+  end
+
+  def tree size
+    if size < 5 then
+      @args.state.move = size ; Fiber.yield
+      @args.state.move = -size ; Fiber.yield
+    else
+      @args.state.move = size / 3 ; Fiber.yield
+      @args.state.angle += 30 ; Fiber.yield
+      tree size*2/3 ; Fiber.yield
+      @args.state.angle -= 30 ; Fiber.yield
+      @args.state.move = size/6 ; Fiber.yield
+      @args.state.angle -= 25 ; Fiber.yield
+      tree size/2 ; Fiber.yield
+      @args.state.angle += 25 ; Fiber.yield
+      @args.state.move = size/3 ; Fiber.yield
+      @args.state.angle -= 25 ; Fiber.yield
+      tree size/2 ; Fiber.yield
+      @args.state.angle += 25 ; Fiber.yield
+      @args.state.move = size/6 ; Fiber.yield
+      @args.state.move = -size ; Fiber.yield
+    end
+  end
+
 end
 
 class CartesianCoordinate
@@ -156,6 +192,7 @@ alias cls cs
 def home
     $args.state.coord = CartesianCoordinate.new $args.grid.rect[2].half, $args.grid.rect[3].half
 end
+
 
 def tick args
   args.state.turtle ||= Turtle.new args
