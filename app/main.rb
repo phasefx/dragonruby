@@ -56,10 +56,6 @@ class Turtle
     if @args.inputs.keyboard.key_down.space then
       pt
     end
-    if @args.inputs.keyboard.key_down.t then
-      go_tree if !@tree
-      @tree = true
-    end
     if @args.state.angle > 360 then
       @args.state.angle -= 360
     end
@@ -76,11 +72,16 @@ class Turtle
     if @tree then
       @fiber.resume if @fiber.alive?
     end
+    if @args.inputs.keyboard.key_down.t then
+      go_tree if !@tree
+      @tree = true
+    end
   end
 
   def go_tree
     @fiber = Fiber.new do
       tree 150
+      @tree = false
     end
   end
 
@@ -92,15 +93,15 @@ class Turtle
       @args.state.move = size / 3 ; Fiber.yield
       @args.state.angle += 30 ; Fiber.yield
       tree size*2/3 ; Fiber.yield
-      @args.state.angle -= 30 ; Fiber.yield
+      @args.state.angle -= 30 ; # angle + move (in that order) may be paired together
       @args.state.move = size/6 ; Fiber.yield
       @args.state.angle -= 25 ; Fiber.yield
       tree size/2 ; Fiber.yield
-      @args.state.angle += 25 ; Fiber.yield
+      @args.state.angle += 25 ;
       @args.state.move = size/3 ; Fiber.yield
       @args.state.angle -= 25 ; Fiber.yield
       tree size/2 ; Fiber.yield
-      @args.state.angle += 25 ; Fiber.yield
+      @args.state.angle += 25 ;
       @args.state.move = size/6 ; Fiber.yield
       @args.state.move = -size ; Fiber.yield
     end
