@@ -539,7 +539,7 @@ class Game
       if truth == :t then # test
         @gtk_outputs.sounds << 'media/sfx/test.wav'
       end
-      if truth == :d then # debug toggle
+      if truth == :i then # debug toggle
         @debug = !@debug
       end
       if truth == :r then # reset
@@ -657,10 +657,10 @@ class Game
           end
         end
       end
-      if truth == :a then
+      if truth == :o then
         @audio = !@audio
       end
-      if truth == :right then
+      if truth == :right || truth == :d then
         @cells = @cells.rotate(1)
         rebuild_cells
         if clearing_matches then
@@ -668,7 +668,7 @@ class Game
           @animation_count = 0
         end
       end
-      if truth == :left then
+      if truth == :left || truth == :a then
         @cells = @cells.rotate(-1)
         rebuild_cells
         if clearing_matches then
@@ -676,7 +676,7 @@ class Game
           @animation_count = 0
         end
       end
-      if truth == :up then
+      if truth == :up || truth == :w then
         @cells.each_with_index do |row, hpos|
           @cells[hpos] = @cells[hpos].rotate(1)
         end
@@ -686,7 +686,7 @@ class Game
           @animation_count = 0
         end
       end
-      if truth == :down then
+      if truth == :down || truth == :s then
         @cells.each_with_index do |row, hpos|
           @cells[hpos] = @cells[hpos].rotate(-1)
         end
@@ -730,8 +730,8 @@ class Game
 
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*4,"Match at least 3" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*5,"R to Reset" ]
-    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*6,"Arrows to shift grid" ]
-    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*7,"A to toggle audio" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*6,"Arrows/WASD to shift grid" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*7,"M to toggle music/audio" ]
   end
 
   def undo_swap
