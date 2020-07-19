@@ -41,7 +41,6 @@ class Game
     @h = @uy - @ly
 
     @grid_divisions = INITIAL_GRID_SIZE
-    @delay = 1
 
     set_state(:seeking_first_token)
     #        :seeking_second_token
@@ -646,13 +645,6 @@ class Game
           set_state(:clear_animation)
           @animation_count = 0
         end
-      end
-      if truth == :comma then
-        @delay -= 1
-        @delay = 1 if @delay < 1
-      end
-      if truth == :period then
-        @delay += 1
       end
       if truth == :three && !@saved.nil? then # restore
         @cells.each_with_index do |row, hpos|
