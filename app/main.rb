@@ -238,9 +238,11 @@ class Game
     def move_to x, y
       @target_x = x
       @target_y = y
-      @y_moving = @y != @target_y
-      @x_moving = @x != @target_x
-      puts "x: #{@x_moving}, #{@x.floor} to #{@target_x.floor}  y: #{@y_moving}, #{@y.floor} to #{@target_y.floor}"
+      @y_moving = @target_y <=> @y
+      @x_moving = @target_x <=> @x
+      @y_moving = false if @y_moving == 0
+      @x_moving = false if @x_moving == 0
+      #puts "x: #{@x_moving}, #{@x.floor} to #{@target_x.floor}  y: #{@y_moving}, #{@y.floor} to #{@target_y.floor}"
       self
     end
 
@@ -367,12 +369,22 @@ class Game
           cell.sprite.h -= SHRINK_SPEED
           cell.sprite.h = 1 if cell.sprite.h < 1
         end
-        if @state == :pieces_dropping && cell.y_moving then
-          cell.sprite.y -= MOVE_SPEED
-          if cell.sprite.y <= cell.target_y then
-            cell.y_moving = false
-            cell.target_x = nil
+        if cell.y_moving && ([:pieces_dropping,:grid_shifting].include? @state) then
+          cell.sprite.y += MOVE_SPEED * cell.y_moving
+          if cell.y_moving < 0 ? cell.sprite.y <= cell.target_y : cell.sprite.y >= cell.target_y then
+            cell.sprite.y = vpos2y(y2vpos(cell.target_y)) # snap to grid
             cell.target_y = nil
+            cell.y_moving = false
+          else
+            pieces_moving = true
+          end
+        end
+        if cell.x_moving && ([:grid_shifting].include? @state) then
+          cell.sprite.x += MOVE_SPEED * cell.x_moving
+          if cell.x_moving < 0 ? cell.sprite.x <= cell.target_x : cell.sprite.x >= cell.target_x then
+            cell.sprite.x = hpos2x(x2hpos(cell.target_x)) # snap to grid
+            cell.target_x = nil
+            cell.x_moving = false
           else
             pieces_moving = true
           end
@@ -410,7 +422,7 @@ class Game
         end # of token highlighting
       end # of row.each_with_index
     end # @cells.each_with_index
-    if @state == :pieces_dropping && !pieces_moving then
+    if !pieces_moving && ([:pieces_dropping,:grid_shifting].include? @state) then
       if clearing_matches then
         old_combo = @current_combo
         @combo_count += 1
@@ -429,7 +441,7 @@ class Game
         @combo_count = 0
         set_state(:seeking_first_token)
       end
-    elsif @state != :pieces_dropping && pieces_moving then
+    elsif pieces_moving && !([:pieces_dropping,:grid_shifting].include? @state) then
       set_state(:pieces_dropping)
     end
   end
@@ -541,6 +553,13 @@ class Game
     @gtk_kb.key_down.truthy_keys.each do |truth|
       if truth == :t then # test
         @gtk_outputs.sounds << 'media/sfx/test.wav'
+      end
+      if truth == :u then # test
+        @cells[0][0].move_to(
+          hpos2x(@grid_divisions - 1),
+          vpos2y(@grid_divisions - 1)
+        )
+        set_state(:grid_shifting)
       end
       if truth == :i then # debug toggle
         @debug = !@debug
