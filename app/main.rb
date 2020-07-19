@@ -6,7 +6,7 @@ class Game
   INITIAL_GRID_SIZE = 7
   TEXT_HEIGHT = 20
   SHRINK_SPEED = 5
-  DROP_SPEED = 10
+  MOVE_SPEED = 10
   # we have 34 icons; we can use these to mix things up a bit
   FAVORITE_TILES = [1,2,3,4,5,8,9,10]
   UNIQUE_TILES = 7
@@ -201,7 +201,7 @@ class Game
   end
 
   class Book
-    attr_accessor :x, :y, :w, :h, :type, :state, :match_state, :dropping, :sprite, :target_x, :target_y
+    attr_accessor :x, :y, :w, :h, :type, :state, :match_state, :x_moving, :y_moving, :sprite, :target_x, :target_y
 
     def initialize x, y, w, h, type=nil
       @x = x
@@ -210,7 +210,8 @@ class Game
       @h = h
       @type = type.nil? ? FAVORITE_TILES[rand(UNIQUE_TILES) + TILESHIFT] : type
       puts "bad tile selection #{@type}" if ! FAVORITE_TILES.include? @type
-      @dropping = false
+      @x_moving = false
+      @y_moving = false
       #@match_state = false
       #@state = nil
       @sprite = Sprite.new(@x,@y,@w,@h,@type)
@@ -234,10 +235,12 @@ class Game
       self
     end
 
-    def drop_to x, y
+    def move_to x, y
       @target_x = x
       @target_y = y
-      @dropping = true
+      @y_moving = @y != @target_y
+      @x_moving = @x != @target_x
+      puts "x: #{@x_moving}, #{@x.floor} to #{@target_x.floor}  y: #{@y_moving}, #{@y.floor} to #{@target_y.floor}"
       self
     end
 
@@ -316,7 +319,7 @@ class Game
             if wrap(vpos+1) > vpos then
               #puts "found cell above, #{@cells[hpos][wrap(vpos+1)].class}"
               # we can reference the cell above; drop it here
-              @cells[hpos][vpos] = @cells[hpos][wrap(vpos+1)].nil? ? nil : @cells[hpos][wrap(vpos+1)].drop_to(
+              @cells[hpos][vpos] = @cells[hpos][wrap(vpos+1)].nil? ? nil : @cells[hpos][wrap(vpos+1)].move_to(
                 hpos2x(hpos),
                 vpos2y(vpos)
               )
@@ -329,7 +332,7 @@ class Game
                 vpos2y(vpos+1),
                 @grid_segment_size,
                 @grid_segment_size
-              ).drop_to(
+              ).move_to(
                 hpos2x(hpos),
                 vpos2y(vpos)
               )
@@ -348,7 +351,7 @@ class Game
         set_state(:remove_matches)
       end
     end
-    pieces_dropping = false
+    pieces_moving = false
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
         cell = @cells[hpos][vpos]
@@ -364,14 +367,14 @@ class Game
           cell.sprite.h -= SHRINK_SPEED
           cell.sprite.h = 1 if cell.sprite.h < 1
         end
-        if @state == :pieces_dropping && cell.dropping then
-          cell.sprite.y -= DROP_SPEED
+        if @state == :pieces_dropping && cell.y_moving then
+          cell.sprite.y -= MOVE_SPEED
           if cell.sprite.y <= cell.target_y then
-            cell.dropping = false
+            cell.y_moving = false
             cell.target_x = nil
             cell.target_y = nil
           else
-            pieces_dropping = true
+            pieces_moving = true
           end
         end
         if @state == :seeking_second_token && cell.state == :first_token && @mouse_down then
@@ -407,7 +410,7 @@ class Game
         end # of token highlighting
       end # of row.each_with_index
     end # @cells.each_with_index
-    if @state == :pieces_dropping && !pieces_dropping then
+    if @state == :pieces_dropping && !pieces_moving then
       if clearing_matches then
         old_combo = @current_combo
         @combo_count += 1
@@ -426,7 +429,7 @@ class Game
         @combo_count = 0
         set_state(:seeking_first_token)
       end
-    elsif @state != :pieces_dropping && pieces_dropping then
+    elsif @state != :pieces_dropping && pieces_moving then
       set_state(:pieces_dropping)
     end
   end
