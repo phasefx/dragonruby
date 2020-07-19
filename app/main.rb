@@ -1,3 +1,6 @@
+$game_debug = false
+$game_milestone = :top
+
 class Game
 
   # for debugging: $gtk.args.state.game.cells, etc
@@ -16,7 +19,9 @@ class Game
 
   def initialize args
 
-    @debug = false
+    trace! if $game_debug
+
+    $game_milestone = :game_init
 
     $gtk.set_window_title 'Dewey Decimate System'
 
@@ -64,14 +69,14 @@ class Game
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
     init_cells
     static_render
-    if clearing_matches then
+    if clearing_matches :init then
       set_state(:clear_animation)
       @animation_count = 0
     end
   end
 
   def serialize
-    {state:@state}
+    {state:@state,milestone:$game_milestone}
   end
 
   def inspect
@@ -83,12 +88,12 @@ class Game
   end
 
   def set_state s
-    puts "stage change: #{@state} to #{s}" if @debug
+    puts "stage change: #{@state} to #{s}" if $game_debug
     @state = s
   end
 
   def match_sound celltype
-    puts "match_sound #{celltype} with #{@audio_scheme}" if @debug
+    puts "match_sound #{celltype} with #{@audio_scheme}" if $game_debug
     case @audio_scheme
     when :random then random_sound
     when :indexed then indexed_sound FAVORITE_TILES.index(celltype)
@@ -98,7 +103,7 @@ class Game
 
   def indexed_sound idx, queue = false
     return if !@audio
-    puts "playing sound #{idx}" if @debug
+    puts "playing sound #{idx}" if $game_debug
     a = queue ? @note_queue : @gtk_outputs.sounds
     case idx
     when 0 then a << 'media/sfx/A3.wav'
@@ -112,25 +117,25 @@ class Game
     else
       # missing note
     end
-    puts "note_queue = #{@note_queue}" if @debug
+    puts "note_queue = #{@note_queue}" if $game_debug
   end
 
   def bach_invention_13
     return if !@audio
     @bach = BACH.clone if @bach.nil? || @bach.empty?
-    puts "playing bach" if @debug
+    puts "playing bach" if $game_debug
     indexed_sound ['A3','B3','C3','C4','D3','E3','F3','G3'].index(@bach.pop), true
   end
 
   def random_sound
     return if !@audio
-    puts "playing random sound" if @debug
+    puts "playing random sound" if $game_debug
     indexed_sound rand(8)
   end
 
   def clash_sound
     return if !@audio
-    puts "playing all sounds" if @debug
+    puts "playing all sounds" if $game_debug
     (0..7).each do |idx|
       indexed_sound idx
     end
@@ -162,13 +167,18 @@ class Game
 
   class Sprite
     attr_sprite
-    attr_accessor :x, :y, :w, :h, :angle, :type
+    attr_accessor :x, :y, :w, :h, :angle,:type, :target_x, :target_y, :x_moving, :y_moving
 
     def initialize x, y, w, h, type=nil
+
+      #trace! if $game_debug
+
       @x = x
       @y = y
       @w = w
       @h = h
+      @x_moving = false
+      @y_moving = false
       @angle = 0
       @r = 255
       @g = 255
@@ -201,53 +211,42 @@ class Game
   end
 
   class Book
-    attr_accessor :x, :y, :w, :h, :type, :state, :match_state, :x_moving, :y_moving, :sprite, :target_x, :target_y
+    attr_accessor :type, :state, :match_state, :sprite
 
     def initialize x, y, w, h, type=nil
-      @x = x
-      @y = y
-      @w = w
-      @h = h
+
+      #trace! if $game_debug
+
       @type = type.nil? ? FAVORITE_TILES[rand(UNIQUE_TILES) + TILESHIFT] : type
       puts "bad tile selection #{@type}" if ! FAVORITE_TILES.include? @type
-      @x_moving = false
-      @y_moving = false
       #@match_state = false
       #@state = nil
-      @sprite = Sprite.new(@x,@y,@w,@h,@type)
+      @sprite = Sprite.new(x,y,w,h,@type)
     end
 
     # need to look into .dup and .clone, but for now...
     def copy
-      Book.new(@x,@y,@w,@h,@type)
+      Book.new(@sprite.x,@sprite.y,@sprite.w,@sprite.h,@type)
     end
 
     def rebuild x, y, w, h
-      @x = x
-      @y = y
-      @w = w
-      @h = h
-      @sprite.x = @x
-      @sprite.y = @y
-      @sprite.w = @W
-      @sprite.h = @h
-      @sprite.rebuild @x, @y, @w, @h
+      @sprite.rebuild x, y, w, h
       self
     end
 
     def move_to x, y
-      @target_x = x
-      @target_y = y
-      @y_moving = @target_y <=> @y
-      @x_moving = @target_x <=> @x
-      @y_moving = false if @y_moving == 0
-      @x_moving = false if @x_moving == 0
-      #puts "x: #{@x_moving}, #{@x.floor} to #{@target_x.floor}  y: #{@y_moving}, #{@y.floor} to #{@target_y.floor}"
+      @sprite.target_x = x
+      @sprite.target_y = y
+      @sprite.y_moving = @sprite.target_y <=> @sprite.y
+      @sprite.x_moving = @sprite.target_x <=> @sprite.x
+      @sprite.y_moving = false if @sprite.y_moving == 0
+      @sprite.x_moving = false if @sprite.x_moving == 0
+      puts "x: #{@sprite.x_moving}, #{@sprite.x} to #{@sprite.target_x}  y: #{@sprite.y_moving}, #{@sprite.y} to #{@sprite.target_y}" if $game_debug
       self
     end
 
     def serialize
-      {state:@state,x:@x,y:@y,w:@w,h:@h,type:@type,sprite:@sprite}
+      {state:@state,match_state:@match_state,type:@type,sprite:@sprite}
     end
 
     def inspect
@@ -357,8 +356,8 @@ class Game
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
         cell = @cells[hpos][vpos]
-        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + TEXT_HEIGHT, "#{hpos}, #{vpos}" ] if @debug
-        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + @grid_segment_size, "#{cell.nil? ? 'nil' : cell.type}" ] if @debug
+        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + TEXT_HEIGHT, "#{hpos}, #{vpos}" ] if $game_debug
+        @gtk_outputs.labels << [ hpos2x(hpos), vpos2y(vpos) + @grid_segment_size, "#{cell.nil? ? 'nil' : cell.type}" ] if $game_debug
         next if cell.nil?
         if cell.match_state && @state == :clear_animation then
           cell.sprite.angle = @gtk_args.tick_count.mod(360)*10
@@ -369,22 +368,22 @@ class Game
           cell.sprite.h -= SHRINK_SPEED
           cell.sprite.h = 1 if cell.sprite.h < 1
         end
-        if cell.y_moving && ([:pieces_dropping,:grid_shifting].include? @state) then
-          cell.sprite.y += MOVE_SPEED * cell.y_moving
-          if cell.y_moving < 0 ? cell.sprite.y <= cell.target_y : cell.sprite.y >= cell.target_y then
-            cell.sprite.y = vpos2y(y2vpos(cell.target_y)) # snap to grid
-            cell.target_y = nil
-            cell.y_moving = false
+        if cell.sprite.y_moving && ([:pieces_dropping,:grid_shifting].include? @state) then
+          cell.sprite.y += MOVE_SPEED * cell.sprite.y_moving
+          if cell.sprite.y_moving < 0 ? cell.sprite.y <= cell.sprite.target_y : cell.sprite.y >= cell.sprite.target_y then
+            cell.sprite.y = vpos2y(y2vpos(cell.sprite.target_y)) # snap to grid
+            cell.sprite.target_y = nil
+            cell.sprite.y_moving = false
           else
             pieces_moving = true
           end
         end
-        if cell.x_moving && ([:grid_shifting].include? @state) then
-          cell.sprite.x += MOVE_SPEED * cell.x_moving
-          if cell.x_moving < 0 ? cell.sprite.x <= cell.target_x : cell.sprite.x >= cell.target_x then
-            cell.sprite.x = hpos2x(x2hpos(cell.target_x)) # snap to grid
-            cell.target_x = nil
-            cell.x_moving = false
+        if cell.sprite.x_moving && ([:grid_shifting].include? @state) then
+          cell.sprite.x += MOVE_SPEED * cell.sprite.x_moving
+          if cell.sprite.x_moving < 0 ? cell.sprite.x <= cell.sprite.target_x : cell.sprite.x >= cell.sprite.target_x then
+            cell.sprite.x = hpos2x(x2hpos(cell.sprite.target_x)) # snap to grid
+            cell.sprite.target_x = nil
+            cell.sprite.x_moving = false
           else
             pieces_moving = true
           end
@@ -423,18 +422,18 @@ class Game
       end # of row.each_with_index
     end # @cells.each_with_index
     if !pieces_moving && ([:pieces_dropping,:grid_shifting].include? @state) then
-      if clearing_matches then
+      if clearing_matches :render_cells then
         old_combo = @current_combo
         @combo_count += 1
         if @combo_count == 1 then
           @current_combo += @score_for_last_cycle
         end
         @current_combo += @score_for_this_cycle
-        puts "combo count = #{@combo_count} current_combo was #{old_combo}, but is now #{@current_combo}" if @debug
+        puts "combo count = #{@combo_count} current_combo was #{old_combo}, but is now #{@current_combo}" if $game_debug
         set_state(:clear_animation)
         @animation_count = 0
       else
-        puts "end of combo, current_combo = #{@current_combo}" if @debug
+        puts "end of combo, current_combo = #{@current_combo}" if $game_debug
         @last_combo = @current_combo
         @highest_combo = @current_combo if @current_combo > @highest_combo
         @current_combo = 0
@@ -448,7 +447,7 @@ class Game
 
   def handle_cell_click hpos, vpos, entry_state
     # return true for valid cells
-    puts "inside handle_cell_click #{hpos}, #{vpos} during #{@state}" if @debug
+    puts "inside handle_cell_click #{hpos}, #{vpos} during #{@state}" if $game_debug
     if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions then
       return false if @cells[hpos][vpos].nil? # shouldn't happen once dev is finished
       if @state == :seeking_first_token then
@@ -526,7 +525,7 @@ class Game
     hpos = x2hpos @gtk_mouse.x
     vpos = y2vpos @gtk_mouse.y
     if @gtk_mouse.down then
-      puts "inside @gtk_mouse.down; hpos = #{hpos} vpos = #{vpos} hpos2x = #{hpos2x(hpos)} vpos2y = #{vpos2y(vpos)} mouse.x = #{@gtk_mouse.x} mouse.y = #{@gtk_mouse.y}" if @debug
+      puts "inside @gtk_mouse.down; hpos = #{hpos} vpos = #{vpos} hpos2x = #{hpos2x(hpos)} vpos2y = #{vpos2y(vpos)} mouse.x = #{@gtk_mouse.x} mouse.y = #{@gtk_mouse.y}" if $game_debug
       @mouse_down = true
       @mouse_down_at = @gtk_args.tick_count
       @mouse_down_initial_hpos = hpos
@@ -536,7 +535,7 @@ class Game
       handle_cell_click hpos, vpos, :mouse_down
     end
     if @gtk_mouse.up then
-      puts "inside @gtk_mouse.up" if @debug
+      puts "inside @gtk_mouse.up" if $game_debug
       if hpos != @mouse_down_initial_hpos || vpos != @mouse_down_initial_vpos then
         handle_cell_click(hpos, vpos, :mouse_up)
       end
@@ -562,25 +561,30 @@ class Game
         set_state(:grid_shifting)
       end
       if truth == :i then # debug toggle
-        @debug = !@debug
+        $game_debug = !$game_debug
       end
       if truth == :r then # reset
         @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
               @cells[hpos][vpos] = Book.new(
-                hpos2x(hpos),
-                vpos2y(vpos),
+                hpos2x(rand(@grid_divisions)),
+                vpos2y(rand(@grid_divisions)),
                 @grid_segment_size,
                 @grid_segment_size
               )
+              @cells[hpos][vpos].move_to(
+                hpos2x(hpos),
+                vpos2y(vpos)
+              )
           end
         end
+        set_state(:grid_shifting)
         @total_score = 0
-        if clearing_matches then
-          set_state(:clear_animation)
-          @animation_count = 0
-        end
+        #if clearing_matches then
+        #  set_state(:clear_animation)
+        #  @animation_count = 0
+        #end
       end
       if truth == :close_square_brace then # shrink grid
         @grid_divisions += 1
@@ -802,7 +806,7 @@ class Game
       @grid_segment_size
     )
     set_state(:clearing_matches)
-    if !clearing_matches then
+    if !clearing_matches :test_swap then
       undo_swap
       set_state(:seeking_first_token)
       clash_sound
@@ -821,11 +825,12 @@ class Game
   end
 
   def inc_total_score inc, msg = ''
-    puts "total_score was #{@total_score}, but is now #{@total_score+inc} (#{msg})" if @debug
+    puts "total_score was #{@total_score}, but is now #{@total_score+inc} (#{msg})" if $game_debug
     @total_score += inc
   end
 
-  def clearing_matches
+  def clearing_matches context=''
+    puts "inside clearing_matches (#{context})" if $game_debug
     match_found = false
     @score_for_last_cycle = @score_for_this_cycle
     @score_for_this_cycle = 0
@@ -880,7 +885,7 @@ class Game
       end
     end
     #set_state(:temp)
-    puts "match_found = #{match_found}" if @debug
+    puts "match_found = #{match_found}" if $game_debug
     inc_total_score(@score_for_this_cycle,'clearing_matches') if match_found
     match_found
   end
