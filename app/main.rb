@@ -161,6 +161,16 @@ class Game
     end
   end
 
+  def render_reserve
+    @gtk_outputs.primitives << [
+      90,
+      290,
+      100,
+      100,
+      0, 0, 0, 64
+    ].border
+  end
+
   def static_render
     ##                                                     '1234567890123456789012345678' ]
     #@gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*21,'Press Enter for demo']
@@ -560,13 +570,6 @@ class Game
       if truth == :t then # test
         @gtk_outputs.sounds << 'media/sfx/test.wav'
       end
-      if truth == :u then # test
-        @cells[0][0].move_to(
-          hpos2x(@grid_divisions - 1),
-          vpos2y(@grid_divisions - 1)
-        )
-        set_state(:grid_shifting)
-      end
       if truth == :i then # debug toggle
         $game_debug = !$game_debug
       end
@@ -589,10 +592,6 @@ class Game
         dump if $game_debug
         set_state(:grid_shifting)
         @total_score = 0
-        #if clearing_matches then
-        #  set_state(:clear_animation)
-        #  @animation_count = 0
-        #end
       end
       if truth == :close_square_brace then # shrink grid
         @grid_divisions += 1
@@ -684,7 +683,7 @@ class Game
           end
         end
       end
-      if truth == :o then
+      if truth == :m then
         @audio = !@audio
       end
       if truth == :right || truth == :d then
@@ -758,7 +757,9 @@ class Game
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*4,"Match at least 3" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*5,"R to Reset" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*6,"Arrows/WASD to shift grid" ]
-    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*7,"M to toggle music/audio" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*7,"Space for quick Reserve" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*8,"M to toggle music/audio" ]
+    @gtk_outputs.labels << [ @lx+90,@uy-TEXT_HEIGHT*15,"Reserve" ]
     ##                                                                                 '1234567890123456789012345678' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,"Mouse: #{@gtk_mouse.x}, #{@gtk_mouse.y}" ] if $game_debug
     @note_queue.each_with_index do |n,i|
@@ -902,6 +903,7 @@ class Game
     handle_mouse if [:seeking_first_token,:seeking_second_token].include? @state
     handle_keyboard if [:seeking_first_token,:seeking_second_token].include? @state
     render_grid
+    render_reserve
     render_cells
     render_text
     case @state
