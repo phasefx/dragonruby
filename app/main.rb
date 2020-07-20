@@ -1013,6 +1013,7 @@ class Game
     render_reserve
     render_cells
     render_text
+    @gtk_outputs.sprites << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions)+25, @ly+90, 228, 300, 'media/the_librarian.jpg' ]
     case @state
     when :testing_swap then test_swap
     when :remove_matches then remove_matches
