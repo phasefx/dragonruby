@@ -989,7 +989,7 @@ class Game
     end
     if @audio then
       if @gtk_args.tick_count.mod(@note_queue_delay) == 0 then
-        @gtk_outputs.sounds << @note_queue.pop if ! @note_queue.empty?
+        @gtk_outputs.sounds << @note_queue.shift if ! @note_queue.empty?
       end
     end
   end
