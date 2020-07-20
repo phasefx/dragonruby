@@ -285,14 +285,20 @@ class Game
   def rebuild_cells
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
-        @cells[hpos][vpos].rebuild(
+        cell = @cells[hpos][vpos]
+        cell.move_to(
           hpos2x(hpos),
-          vpos2y(vpos),
-          @grid_segment_size,
-          @grid_segment_size
+          vpos2y(vpos)
         )
+        if (cell.sprite.x - cell.sprite.target_x).abs > @grid_segment_size*2 then
+          cell.sprite.x = cell.sprite.target_x + @grid_segment_size * (cell.sprite.x <=> cell.sprite.target_x)
+        end
+        if (cell.sprite.y - cell.sprite.target_y).abs > @grid_segment_size*2 then
+          cell.sprite.y = cell.sprite.target_y + @grid_segment_size * (cell.sprite.y <=> cell.sprite.target_y)
+        end
       end
     end
+    set_state(:grid_shifting)
   end
 
   def remove_matches
@@ -689,38 +695,22 @@ class Game
       if truth == :right || truth == :d then
         @cells = @cells.rotate(1)
         rebuild_cells
-        if clearing_matches then
-          set_state(:clear_animation)
-          @animation_count = 0
-        end
       end
       if truth == :left || truth == :a then
         @cells = @cells.rotate(-1)
         rebuild_cells
-        if clearing_matches then
-          set_state(:clear_animation)
-          @animation_count = 0
-        end
       end
       if truth == :up || truth == :w then
         @cells.each_with_index do |row, hpos|
           @cells[hpos] = @cells[hpos].rotate(1)
         end
         rebuild_cells
-        if clearing_matches then
-          set_state(:clear_animation)
-          @animation_count = 0
-        end
       end
       if truth == :down || truth == :s then
         @cells.each_with_index do |row, hpos|
           @cells[hpos] = @cells[hpos].rotate(-1)
         end
         rebuild_cells
-        if clearing_matches then
-          set_state(:clear_animation)
-          @animation_count = 0
-        end
       end
       if truth == :back_slash then
         if !@first_token.nil? then
