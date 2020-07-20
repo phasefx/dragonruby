@@ -636,8 +636,7 @@ class Game
       @mouse_down_initial_x = @gtk_mouse.x
       @mouse_down_initial_y = @gtk_mouse.y
       handle_cell_click hpos, vpos, :mouse_down
-    end
-    if @gtk_mouse.up then
+    elsif @gtk_mouse.up then
       puts "inside @gtk_mouse.up" if $game_debug
       if hpos != @mouse_down_initial_hpos || vpos != @mouse_down_initial_vpos then
         handle_cell_click(hpos, vpos, :mouse_up)
@@ -648,6 +647,22 @@ class Game
       @mouse_down_initial_vpos = nil
       @mouse_down_initial_x = nil
       @mouse_down_initial_y = nil
+    elsif @gtk_mouse.wheel && @gtk_mouse.wheel.x < 0 then
+      @cells = @cells.rotate(-1)
+      rebuild_cells
+    elsif @gtk_mouse.wheel && @gtk_mouse.wheel.x > 0 then
+      @cells = @cells.rotate(1)
+      rebuild_cells
+    elsif @gtk_mouse.wheel && @gtk_mouse.wheel.y < 0 then
+      @cells.each_with_index do |row, hpos|
+        @cells[hpos] = @cells[hpos].rotate(-1)
+      end
+      rebuild_cells
+    elsif @gtk_mouse.wheel && @gtk_mouse.wheel.y > 0 then
+      @cells.each_with_index do |row, hpos|
+        @cells[hpos] = @cells[hpos].rotate(1)
+      end
+      rebuild_cells
     end
   end
 
@@ -831,11 +846,12 @@ class Game
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*2,"Highest Combo: #{@highest_combo}" ]
 
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*4,"Match at least 3" ]
-    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*5,"R to Reset" ]
-    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*6,"Arrows/WASD to shift grid" ]
-    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*7,"Space for quick Reserve" ]
-    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*8,"M to toggle music/audio" ]
-    @gtk_outputs.labels << [ @lx+90,@uy-TEXT_HEIGHT*15,"Reserve" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*6,"R to Reset" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*8,"Arrows/WASD/mouse-wheel" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*9,"to shift grid" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*11,"Space for quick Reserve" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*13,"M to toggle music/audio" ]
+    @gtk_outputs.labels << [ @lx+90,@uy-TEXT_HEIGHT*22,"Reserve" ]
     ##                                                                                 '1234567890123456789012345678' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,"Mouse: #{@gtk_mouse.x}, #{@gtk_mouse.y}" ] if $game_debug
     @note_queue.each_with_index do |n,i|
