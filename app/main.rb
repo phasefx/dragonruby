@@ -4,7 +4,7 @@ $game_milestone = :top
 class Game
 
   # for debugging: $gtk.args.state.game.cells, etc
-  attr_accessor :cells, :state, :audio, :audio_scheme, :reserve_token, :first_token
+  attr_accessor :cells, :state, :audio, :music_scheme, :sfx_scheme, :reserve_token, :first_token
 
   INITIAL_GRID_SIZE = 7
   TEXT_HEIGHT = 20
@@ -60,8 +60,10 @@ class Game
     @total_score = 0
 
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,nil)}
-    @audio = true
-    @audio_scheme = :sequenced
+    @audio_notes = true
+    @audio_match = true
+    @music_scheme = :sequenced
+    @sfx_scheme = :bass
     @note_queue = [] # for playing notes sequentially
     @note_queue_delay = 30 # play on tick_count.mod(delay) == 0
 
@@ -93,17 +95,24 @@ class Game
     @state = s
   end
 
-  def match_sound celltype
-    puts "match_sound #{celltype} with #{@audio_scheme}" if $game_debug
-    case @audio_scheme
-    when :random then random_sound
-    when :indexed then indexed_sound FAVORITE_TILES.index(celltype)
+  def queue_note celltype
+    puts "queue_note #{celltype} with #{@music_scheme}" if $game_debug
+    case @music_scheme
     when :sequenced then bach_invention_13
     end
   end
 
+  def match_sound celltype
+    puts "match_sound #{celltype} with #{@music_scheme}" if $game_debug
+    case @sfx_scheme
+    when :random then random_sound
+    when :indexed then indexed_sound FAVORITE_TILES.index(celltype)
+    when :bass then @gtk_outputs.sounds << 'media/sfx/bass.wav' if @audio_match
+    end
+  end
+
   def indexed_sound idx, queue = false
-    return if !@audio
+    return if !@audio_match
     puts "playing sound #{idx}" if $game_debug
     a = queue ? @note_queue : @gtk_outputs.sounds
     case idx
@@ -122,20 +131,20 @@ class Game
   end
 
   def bach_invention_13
-    return if !@audio
+    return if !@audio_notes
     @bach = BACH.clone if @bach.nil? || @bach.empty?
     puts "playing bach" if $game_debug
     indexed_sound ['A3','B3','C3','C4','D3','E3','F3','G3'].index(@bach.pop), true
   end
 
   def random_sound
-    return if !@audio
+    return if !@audio_match
     puts "playing random sound" if $game_debug
     indexed_sound rand(8)
   end
 
   def clash_sound
-    return if !@audio
+    return if !@audio_match
     puts "playing all sounds" if $game_debug
     (0..7).each do |idx|
       indexed_sound idx
@@ -785,7 +794,10 @@ class Game
         end
       end
       if truth == :m then
-        @audio = !@audio
+        @audio_match = !@audio_match
+      end
+      if truth == :n then
+        @audio_notes = !@audio_notes
       end
       if truth == :right || truth == :d then
         @cells = @cells.rotate(1)
@@ -850,7 +862,8 @@ class Game
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*8,"Arrows/WASD/mouse-wheel" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*9,"to shift grid" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*11,"Space for quick Reserve" ]
-    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*13,"M to toggle music/audio" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*13,"M to toggle match sound" ]
+    @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*14,"N to toggle music notes" ]
     @gtk_outputs.labels << [ @lx+90,@uy-TEXT_HEIGHT*22,"Reserve" ]
     ##                                                                                 '1234567890123456789012345678' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,"Mouse: #{@gtk_mouse.x}, #{@gtk_mouse.y}" ] if $game_debug
@@ -950,7 +963,8 @@ class Game
             @cells[hpos][vpos].match_state = true
             match_found = true
             @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
-            (last_seen_counter * 2).times do match_sound @cells[hpos][vpos].type end
+            match_sound @cells[hpos][vpos].type
+            (last_seen_counter * 2).times do queue_note @cells[hpos][vpos].type end
           end
           prev_last_seen = last_seen
         else
@@ -975,7 +989,8 @@ class Game
             @cells[vpos][hpos].match_state = true
             match_found = true
             @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
-            (last_seen_counter * 2).times do match_sound @cells[hpos][vpos].type end
+            match_sound @cells[hpos][vpos].type
+            (last_seen_counter * 2).times do queue_note @cells[hpos][vpos].type end
           end
           prev_last_seen = last_seen
         else
@@ -1003,7 +1018,7 @@ class Game
     when :remove_matches then remove_matches
     when :drop_pieces then drop_pieces
     end
-    if @audio then
+    if @audio_notes then
       if @gtk_args.tick_count.mod(@note_queue_delay) == 0 then
         @gtk_outputs.sounds << @note_queue.shift if ! @note_queue.empty?
       end
