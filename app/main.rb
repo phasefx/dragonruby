@@ -761,6 +761,11 @@ class Game
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*7,"M to toggle music/audio" ]
     ##                                                                                 '1234567890123456789012345678' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,"Mouse: #{@gtk_mouse.x}, #{@gtk_mouse.y}" ] if $game_debug
+    @note_queue.each_with_index do |n,i|
+      h = TEXT_HEIGHT*i.mod(10);
+      v = TEXT_HEIGHT*i.div(10);
+      @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions) + h, @uy-v,"♪" ]
+    end
   end
 
   def undo_swap
@@ -852,7 +857,7 @@ class Game
             @cells[hpos][vpos].match_state = true
             match_found = true
             @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
-            match_sound @cells[hpos][vpos].type
+            (last_seen_counter * 2).times do match_sound @cells[hpos][vpos].type end
           end
           prev_last_seen = last_seen
         else
@@ -877,7 +882,7 @@ class Game
             @cells[vpos][hpos].match_state = true
             match_found = true
             @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
-            match_sound @cells[vpos][hpos].type
+            (last_seen_counter * 2).times do match_sound @cells[hpos][vpos].type end
           end
           prev_last_seen = last_seen
         else
