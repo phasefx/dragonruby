@@ -370,7 +370,7 @@ class Game
         if cell.sprite.y_moving && ([:pieces_dropping,:grid_shifting].include? @state) then
           cell.sprite.y += MOVE_SPEED * cell.sprite.y_moving
           if cell.sprite.y_moving < 0 ? cell.sprite.y <= cell.sprite.target_y : cell.sprite.y >= cell.sprite.target_y then
-            #cell.sprite.y = vpos2y(y2vpos(cell.sprite.target_y)) # snap to grid
+            cell.sprite.y = cell.sprite.target_y # snap to grid
             #cell.sprite.target_y = nil
             #puts "#{hpos},#{vpos} no longer y-moving #{cell.sprite.y_moving} (#{cell.sprite.y} vs #{cell.sprite.target_y})"
             cell.sprite.y_moving = false
@@ -382,7 +382,7 @@ class Game
         if cell.sprite.x_moving && ([:grid_shifting].include? @state) then
           cell.sprite.x += MOVE_SPEED * cell.sprite.x_moving
           if cell.sprite.x_moving < 0 ? cell.sprite.x <= cell.sprite.target_x : cell.sprite.x >= cell.sprite.target_x then
-            #cell.sprite.x = hpos2x(x2hpos(cell.sprite.target_x)) # snap to grid
+            cell.sprite.x = cell.sprite.target_x # snap to grid
             #cell.sprite.target_x = nil
             #puts "#{hpos},#{vpos} no longer x-moving #{cell.sprite.x_moving} (#{cell.sprite.x} vs #{cell.sprite.target_x})"
             cell.sprite.x_moving = false
