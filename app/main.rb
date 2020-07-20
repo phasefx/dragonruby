@@ -4,7 +4,7 @@ $game_milestone = :top
 class Game
 
   # for debugging: $gtk.args.state.game.cells, etc
-  attr_accessor :cells, :state, :audio, :audio_scheme
+  attr_accessor :cells, :state, :audio, :audio_scheme, :reserve_token, :first_token
 
   INITIAL_GRID_SIZE = 7
   TEXT_HEIGHT = 20
@@ -162,13 +162,31 @@ class Game
   end
 
   def render_reserve
+    @reserve_x ||= 90
+    @reserve_y ||= 290
+    @reserve_w ||= 100
+    @reserve_h ||= 100
+    #@reserve_token ||= Book.new(
+    #  @reserve_x,
+    #  @reserve_y,
+    #  @reserve_w,
+    #  @reserve_h
+    #)
     @gtk_outputs.primitives << [
-      90,
-      290,
-      100,
-      100,
+      @reserve_x,
+      @reserve_y,
+      @reserve_w,
+      @reserve_h,
       0, 0, 0, 64
     ].border
+    @gtk_outputs.solids << [
+      @reserve_x,
+      @reserve_y,
+      @reserve_w,
+      @reserve_h,
+      0, 255, 255, 64
+    ] if @reserve_selected || @gtk_mouse.point.inside_rect?([@reserve_x,@reserve_y,@reserve_w,@reserve_h])
+    @gtk_outputs.sprites << @reserve_token.sprite unless @reserve_token.nil?
   end
 
   def static_render
@@ -186,6 +204,8 @@ class Game
 
       @x = x
       @y = y
+      @target_x = x
+      @target_y = y
       @w = w
       @h = h
       @x_moving = false
@@ -209,7 +229,7 @@ class Game
     end
 
     def serialize
-      {x:@x,y:@y,w:@w,h:@h,type:@type,path:@path}
+      {x:@x,y:@y,w:@w,h:@h,x_moving:@x_moving,y_moving:@y_moving,target_x:@target_x,target_y:@target_y,angle:@angle,type:@type,path:@path}
     end
 
     def inspect
@@ -468,6 +488,35 @@ class Game
     end
   end
 
+  def swap_reserve
+    h = @first_token_coords[0]
+    v = @first_token_coords[1]
+    @cells[h][v] = @reserve_token.nil? ? nil : @reserve_token.rebuild(
+      @reserve_token.sprite.x,
+      @reserve_token.sprite.y,
+      @grid_segment_size,
+      @grid_segment_size
+    ).move_to(
+      hpos2x(h),
+      vpos2y(v)
+    )
+    @reserve_token = @first_token.copy.rebuild(
+      @reserve_x,
+      @reserve_y,
+      @reserve_w,
+      @reserve_h
+    )
+    @first_token.sprite.angle = 0
+    @first_token.state = nil
+    @first_token = nil
+    @first_token_coords = nil
+    if @cells[h][v].nil? then
+      set_state(:drop_pieces)
+    else
+      set_state(:grid_shifting)
+    end
+  end
+
   def handle_cell_click hpos, vpos, entry_state
     # return true for valid cells
     puts "inside handle_cell_click #{hpos}, #{vpos} during #{@state}" if $game_debug
@@ -514,11 +563,42 @@ class Game
         else
           return false
         end
+      elsif @state == :reserve_selected
+        if @cells[hpos][vpos].state.nil? then
+          if !@first_token.nil? then
+            @first_token.sprite.angle = 0
+            @first_token.state = nil
+            @first_token = nil
+            @first_token_coords = nil
+          end
+          @cells[hpos][vpos].state = :first_token
+          @cells[hpos][vpos].sprite.angle = -45
+          @first_token = @cells[hpos][vpos]
+          @first_token_coords = [ hpos, vpos ]
+          swap_reserve
+          return true
+        else
+          # reserved for future use; cells that can't be selected?
+          return false
+        end
       else
         # game is in a state where selection should be disabled
         return false
       end
-    end
+    elsif @gtk_mouse.point.inside_rect? [@reserve_x,@reserve_y,@reserve_w,@reserve_h]
+      if @state == :seeking_first_token then
+        if @reserve_token.nil? then # don't allow an empty reserve to be selected as a first selection
+          return false
+        else
+          set_state(:reserve_selected)
+        end
+      elsif @state == :seeking_second_token
+        swap_reserve
+      elsif @state == :reserve_selected
+        set_state(:seeking_first_token)
+      end
+      return true
+    end # if hpos > -1 && hpos < @grid_divisions && vpos > -1 && vpos < @grid_divisions then
     return false
   end
 
@@ -727,6 +807,12 @@ class Game
         end
         set_state(:seeking_first_token)
       end
+      if truth == :space then
+        hpos = x2hpos @gtk_mouse.x
+        vpos = y2vpos @gtk_mouse.y
+        set_state(:reserve_selected)
+        handle_cell_click hpos, vpos, :spacebar
+      end
     end
   end
 
@@ -890,8 +976,8 @@ class Game
   end
 
   def tick
-    handle_mouse if [:seeking_first_token,:seeking_second_token].include? @state
-    handle_keyboard if [:seeking_first_token,:seeking_second_token].include? @state
+    handle_mouse if [:seeking_first_token,:seeking_second_token,:reserve_selected].include? @state
+    handle_keyboard if [:seeking_first_token,:seeking_second_token,:reserve_selected].include? @state
     render_grid
     render_reserve
     render_cells
