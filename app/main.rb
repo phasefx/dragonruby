@@ -866,6 +866,7 @@ class Game
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*13,"M to toggle match sound" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*14,"N to toggle music notes" ]
     @gtk_outputs.labels << [ @lx+90,@uy-TEXT_HEIGHT*22,"Reserve" ]
+    @gtk_outputs.labels << [ @lx,@ly+TEXT_HEIGHT*1,"FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}" ]
     ##                                                                                 '1234567890123456789012345678' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,"Mouse: #{@gtk_mouse.x}, #{@gtk_mouse.y}" ] if $game_debug
     @note_queue.each_with_index do |n,i|
