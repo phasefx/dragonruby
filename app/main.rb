@@ -59,19 +59,21 @@ class Game
     @score_for_last_cycle = 0
     @total_score = 0
 
-    @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
+    @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,nil)}
     @audio = true
     @audio_scheme = :sequenced
     @note_queue = [] # for playing notes sequentially
     @note_queue_delay = 30 # play on tick_count.mod(delay) == 0
 
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
-    init_cells
+    #init_cells
     static_render
-    if clearing_matches :init then
-      set_state(:clear_animation)
-      @animation_count = 0
-    end
+    @animation_count = 0
+    set_state(:drop_pieces)
+    #if clearing_matches :init then
+    #  set_state(:clear_animation)
+    #  @animation_count = 0
+    #end
   end
 
   def serialize
@@ -299,12 +301,14 @@ class Game
   end
 
   def test_for_nils
+    puts "inside test_for_nils" if $game_debug
     found = false
     @cells.each_with_index do |row, hpos|
       row.each_with_index do |cell, vpos|
         found = true if @cells[hpos][vpos].nil?
       end
     end
+    puts "found nills = #{found}" if $game_debug
     return found
   end
 
