@@ -370,21 +370,25 @@ class Game
         if cell.sprite.y_moving && ([:pieces_dropping,:grid_shifting].include? @state) then
           cell.sprite.y += MOVE_SPEED * cell.sprite.y_moving
           if cell.sprite.y_moving < 0 ? cell.sprite.y <= cell.sprite.target_y : cell.sprite.y >= cell.sprite.target_y then
-            cell.sprite.y = vpos2y(y2vpos(cell.sprite.target_y)) # snap to grid
-            cell.sprite.target_y = nil
+            #cell.sprite.y = vpos2y(y2vpos(cell.sprite.target_y)) # snap to grid
+            #cell.sprite.target_y = nil
+            #puts "#{hpos},#{vpos} no longer y-moving #{cell.sprite.y_moving} (#{cell.sprite.y} vs #{cell.sprite.target_y})"
             cell.sprite.y_moving = false
           else
             pieces_moving = true
+            #puts "#{hpos},#{vpos} still y-moving #{cell.sprite.y_moving} (#{cell.sprite.y} vs #{cell.sprite.target_y})"
           end
         end
         if cell.sprite.x_moving && ([:grid_shifting].include? @state) then
           cell.sprite.x += MOVE_SPEED * cell.sprite.x_moving
           if cell.sprite.x_moving < 0 ? cell.sprite.x <= cell.sprite.target_x : cell.sprite.x >= cell.sprite.target_x then
-            cell.sprite.x = hpos2x(x2hpos(cell.sprite.target_x)) # snap to grid
-            cell.sprite.target_x = nil
+            #cell.sprite.x = hpos2x(x2hpos(cell.sprite.target_x)) # snap to grid
+            #cell.sprite.target_x = nil
+            #puts "#{hpos},#{vpos} no longer x-moving #{cell.sprite.x_moving} (#{cell.sprite.x} vs #{cell.sprite.target_x})"
             cell.sprite.x_moving = false
           else
             pieces_moving = true
+            #puts "#{hpos},#{vpos} still x-moving #{cell.sprite.x_moving} (#{cell.sprite.x} vs #{cell.sprite.target_x})"
           end
         end
         if @state == :seeking_second_token && cell.state == :first_token && @mouse_down then
@@ -566,7 +570,7 @@ class Game
         @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
-              @cells[hpos][vpos] = Book.new(
+              cells[hpos][vpos] = Book.new(
                 hpos2x(rand(@grid_divisions)),
                 vpos2y(rand(@grid_divisions)),
                 @grid_segment_size,
@@ -578,6 +582,7 @@ class Game
               )
           end
         end
+        dump if $game_debug
         set_state(:grid_shifting)
         @total_score = 0
         #if clearing_matches then
@@ -750,6 +755,8 @@ class Game
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*5,"R to Reset" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*6,"Arrows/WASD to shift grid" ]
     @gtk_outputs.labels << [ @lx,@uy-TEXT_HEIGHT*7,"M to toggle music/audio" ]
+    ##                                                                                 '1234567890123456789012345678' ]
+    @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,"Mouse: #{@gtk_mouse.x}, #{@gtk_mouse.y}" ] if $game_debug
   end
 
   def undo_swap
@@ -899,6 +906,16 @@ class Game
       end
     end
   end
+end
+
+def dump
+  $gtk.args.state.game.cells.each_with_index do |row, hpos|
+    row.each_with_index do |cell, vpos|
+      c = $gtk.args.state.game.cells[hpos][vpos]
+        puts "pos = #{hpos}, #{vpos} x,y = #{c.sprite.x},#{c.sprite.y} tx,ty = #{c.sprite.target_x},#{c.sprite.target_y} mx,my = #{c.sprite.x_moving}, #{c.sprite.y_moving}" #if $game_debug
+    end
+  end
+  return nil
 end
 
 def tick args
