@@ -69,7 +69,7 @@ class Game
 
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
     #init_cells
-    static_render
+    render_static
     @animation_count = 0
     set_state(:drop_pieces)
     #if clearing_matches :init then
@@ -198,9 +198,10 @@ class Game
     @gtk_outputs.sprites << @reserve_token.sprite unless @reserve_token.nil?
   end
 
-  def static_render
+  def render_static
     ##                                                     '1234567890123456789012345678' ]
     #@gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*21,'Press Enter for demo']
+    @gtk_outputs.static_sprites << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions)+25, @ly+90, 228, 300, 'media/the_librarian.jpg' ]
   end
 
   class Sprite
@@ -1013,7 +1014,6 @@ class Game
     render_reserve
     render_cells
     render_text
-    @gtk_outputs.sprites << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions)+25, @ly+90, 228, 300, 'media/the_librarian.jpg' ]
     case @state
     when :testing_swap then test_swap
     when :remove_matches then remove_matches
