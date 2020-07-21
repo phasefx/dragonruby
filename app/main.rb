@@ -645,13 +645,18 @@ class Game
     vpos = y2vpos @gtk_mouse.y
     if @gtk_mouse.down then
       puts "inside @gtk_mouse.down; hpos = #{hpos} vpos = #{vpos} hpos2x = #{hpos2x(hpos)} vpos2y = #{vpos2y(vpos)} mouse.x = #{@gtk_mouse.x} mouse.y = #{@gtk_mouse.y}" if $game_debug
-      @mouse_down = true
-      @mouse_down_at = @gtk_args.tick_count
-      @mouse_down_initial_hpos = hpos
-      @mouse_down_initial_vpos = vpos
-      @mouse_down_initial_x = @gtk_mouse.x
-      @mouse_down_initial_y = @gtk_mouse.y
-      handle_cell_click hpos, vpos, :mouse_down
+      if @gtk_mouse.button_middle then
+        set_state(:reserve_selected)
+        handle_cell_click hpos, vpos, :middle_click
+      else
+        @mouse_down = true
+        @mouse_down_at = @gtk_args.tick_count
+        @mouse_down_initial_hpos = hpos
+        @mouse_down_initial_vpos = vpos
+        @mouse_down_initial_x = @gtk_mouse.x
+        @mouse_down_initial_y = @gtk_mouse.y
+        handle_cell_click hpos, vpos, :mouse_down
+      end
     elsif @gtk_mouse.up then
       puts "inside @gtk_mouse.up" if $game_debug
       if hpos != @mouse_down_initial_hpos || vpos != @mouse_down_initial_vpos then
