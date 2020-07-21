@@ -69,7 +69,10 @@ class Game
 
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
 
-    @note_labels = 360.times.map { |i| [ @grid_offset[0]+(@grid_segment_size*@grid_divisions) + TEXT_HEIGHT*i.mod(10), @uy-TEXT_HEIGHT*i.div(10), "♪" ]}
+    @note_labels = 200.times.map { |i| [
+      @grid_offset[0]+(@grid_segment_size*@grid_divisions) + TEXT_HEIGHT*i.mod(10) + 35,
+      @uy-TEXT_HEIGHT*i.div(10) - TEXT_HEIGHT*16, "♪"
+    ]}
 
     #init_cells
     render_static
@@ -204,7 +207,7 @@ class Game
   def render_static
     ##                                                     '1234567890123456789012345678' ]
     #@gtk_outputs.static_labels << [@lx,@uy-TEXT_HEIGHT*21,'Press Enter for demo']
-    @gtk_outputs.static_sprites << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions)+25, @ly+90, 228, 300, 'media/the_librarian.jpg' ]
+    @gtk_outputs.static_sprites << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions)+25, @uy-300, 228, 300, 'media/the_librarian.jpg' ]
   end
 
   class Sprite
