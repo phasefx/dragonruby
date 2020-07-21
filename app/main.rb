@@ -68,6 +68,9 @@ class Game
     @note_queue_delay = 30 # play on tick_count.mod(delay) == 0
 
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
+
+    @note_labels = 360.times.map { |i| [ @grid_offset[0]+(@grid_segment_size*@grid_divisions) + TEXT_HEIGHT*i.mod(10), @uy-TEXT_HEIGHT*i.div(10), "♪" ]}
+
     #init_cells
     render_static
     @animation_count = 0
@@ -681,6 +684,9 @@ class Game
       if truth == :t then # test
         @gtk_outputs.sounds << 'media/sfx/test.wav'
       end
+      if truth == :u then # test
+        100.times do queue_note -1 end
+      end
       if truth == :i then # debug toggle
         $game_debug = !$game_debug
       end
@@ -869,11 +875,7 @@ class Game
     @gtk_outputs.labels << [ @lx,@ly+TEXT_HEIGHT*1,"FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}" ]
     ##                                                                                 '1234567890123456789012345678' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,"Mouse: #{@gtk_mouse.x}, #{@gtk_mouse.y}" ] if $game_debug
-    @note_queue.each_with_index do |n,i|
-      h = TEXT_HEIGHT*i.mod(10);
-      v = TEXT_HEIGHT*i.div(10);
-      @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions) + h, @uy-v,"♪" ]
-    end
+    @gtk_outputs.labels << @note_labels.take(@note_queue.length)
   end
 
   def undo_swap
