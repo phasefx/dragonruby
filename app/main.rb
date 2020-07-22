@@ -504,6 +504,15 @@ class Game
     end
   end
 
+  def clear_first_token
+    if !@first_token.nil? then
+      @first_token.sprite.angle = 0
+      @first_token.state = nil
+      @first_token = nil
+      @first_token_coords = nil
+    end
+  end
+
   def swap_reserve
     h = @first_token_coords[0]
     v = @first_token_coords[1]
@@ -522,10 +531,7 @@ class Game
       @reserve_w,
       @reserve_h
     )
-    @first_token.sprite.angle = 0
-    @first_token.state = nil
-    @first_token = nil
-    @first_token_coords = nil
+    clear_first_token
     if @cells[h][v].nil? then
       set_state(:drop_pieces)
     else
@@ -556,8 +562,7 @@ class Game
           @cells[hpos][vpos].state = nil # de-select
           @cells[hpos][vpos].sprite.angle = 0
           set_state(:seeking_first_token)
-          @first_token = nil
-          @first_token_coords = nil
+          clear_first_token
           return true
         # make sure the proposed second token is adjacent to the first (diagonals do not count)
         elsif (((@first_token_coords[0] - hpos).abs < 2 && (@first_token_coords[1] - vpos).abs == 0) || ((@first_token_coords[0] - hpos).abs == 0 && (@first_token_coords[1] - vpos).abs < 2) ) && @cells[hpos][vpos].state.nil? then
@@ -581,12 +586,7 @@ class Game
         end
       elsif @state == :reserve_selected
         if @cells[hpos][vpos].state.nil? then
-          if !@first_token.nil? then
-            @first_token.sprite.angle = 0
-            @first_token.state = nil
-            @first_token = nil
-            @first_token_coords = nil
-          end
+          clear_first_token
           @cells[hpos][vpos].state = :first_token
           @cells[hpos][vpos].sprite.angle = -45
           @first_token = @cells[hpos][vpos]
@@ -835,12 +835,7 @@ class Game
         rebuild_cells
       end
       if truth == :back_slash then
-        if !@first_token.nil? then
-          @first_token.sprite.angle = 0
-          @first_token.state = nil
-          @first_token = nil
-          @first_token_coords = nil
-        end
+        clear_first_token
         if !@second_token.nil? then
           @second_token.sprite.angle = 0
           @second_token.state = nil
@@ -903,10 +898,7 @@ class Game
       @grid_segment_size,
       @grid_segment_size
     )
-    @first_token.state = nil
-    @first_token.sprite.angle = 0
-    @first_token = nil
-    @first_token_coords = nil
+    clear_first_token
     @second_token.state = nil
     @second_token.sprite.angle = 0
     @second_token = nil
@@ -937,14 +929,11 @@ class Game
       set_state(:seeking_first_token)
       clash_sound
     else
-      @first_token.state = nil
-      @first_token.sprite.angle = 0
       @second_token.state = nil
       @second_token.sprite.angle = 0
-      @first_token = nil
-      @first_token_coords = nil
       @second_token = nil
       @second_token_coords = nil
+      clear_first_token
       set_state(:clear_animation)
       @animation_count = 0
     end
