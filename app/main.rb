@@ -699,6 +699,7 @@ class Game
         $game_debug = !$game_debug
       end
       if truth == :r then # reset
+        clear_first_token
         @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,false)}
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
@@ -719,6 +720,7 @@ class Game
         @total_score = 0
       end
       if truth == :close_square_brace then # shrink grid
+        clear_first_token
         @grid_divisions += 1
         @grid_segment_size = (@h-10)/(@grid_divisions)
         temp = @cells
@@ -749,6 +751,7 @@ class Game
         end
       end
       if truth == :open_square_brace then # grow grid
+        clear_first_token
         @grid_divisions -= 1
         @grid_divisions = 1 if @grid_divisions < 1
         @grid_segment_size = (@h-10)/(@grid_divisions)
@@ -780,6 +783,7 @@ class Game
         end
       end
       if truth == :three && !@saved.nil? then # restore
+        clear_first_token
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
             if @saved[hpos].nil? || @saved[hpos][vpos].nil? then
@@ -801,6 +805,7 @@ class Game
         end
       end
       if truth == :four then # save
+        clear_first_token
         @saved = Array.new(@grid_divisions){Array.new(@grid_divisions,true)}
         @cells.each_with_index do |row, hpos|
           row.each_with_index do |cell, vpos|
@@ -815,20 +820,24 @@ class Game
         @audio_notes = !@audio_notes
       end
       if truth == :right || truth == :d then
+        clear_first_token
         @cells = @cells.rotate(1)
         rebuild_cells
       end
       if truth == :left || truth == :a then
+        clear_first_token
         @cells = @cells.rotate(-1)
         rebuild_cells
       end
       if truth == :up || truth == :w then
+        clear_first_token
         @cells.each_with_index do |row, hpos|
           @cells[hpos] = @cells[hpos].rotate(1)
         end
         rebuild_cells
       end
       if truth == :down || truth == :s then
+        clear_first_token
         @cells.each_with_index do |row, hpos|
           @cells[hpos] = @cells[hpos].rotate(-1)
         end
