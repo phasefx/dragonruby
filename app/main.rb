@@ -69,10 +69,18 @@ class Game
 
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
 
-    @note_labels = 200.times.map { |i| [
-      @grid_offset[0]+(@grid_segment_size*@grid_divisions) + TEXT_HEIGHT*i.mod(10) + 35,
-      @uy-TEXT_HEIGHT*i.div(10) - TEXT_HEIGHT*16, "♪"
-    ]}
+    @gtk_args.render_target(:note).labels << [0, TEXT_HEIGHT, '♪']
+    @note_labels = 200.times.map { |i| {
+      x: @grid_offset[0]+(@grid_segment_size*@grid_divisions) + TEXT_HEIGHT*i.mod(10) + 35,
+      y: @uy-TEXT_HEIGHT*i.div(10) - TEXT_HEIGHT*16,
+      w: TEXT_HEIGHT,
+      h: TEXT_HEIGHT,
+      path: :note,
+      source_x: 0,
+      source_y: 0,
+      source_w: TEXT_HEIGHT,
+      source_h: TEXT_HEIGHT
+    }}
 
     #init_cells
     render_static
@@ -887,7 +895,7 @@ class Game
     @gtk_outputs.labels << [ @lx,@ly+TEXT_HEIGHT*1,"FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}" ]
     ##                                                                                 '1234567890123456789012345678' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,"Mouse: #{@gtk_mouse.x}, #{@gtk_mouse.y}" ] if $game_debug
-    @gtk_outputs.labels << @note_labels.take(@note_queue.length)
+    @gtk_outputs.sprites << @note_labels.take(@note_queue.length)
   end
 
   def undo_swap
