@@ -4,7 +4,7 @@ $game_milestone = :top
 class Game
 
   # for debugging: $gtk.args.state.game.cells, etc
-  attr_accessor :cells, :state, :audio, :music_scheme, :sfx_scheme, :reserve_token, :first_token
+  attr_accessor :cells, :state, :audio, :music_scheme, :sfx_scheme, :reserve_token, :first_token, :note_queue
 
   INITIAL_GRID_SIZE = 7
   TEXT_HEIGHT = 20
@@ -15,7 +15,7 @@ class Game
   UNIQUE_TILES = 7
   TILESHIFT = rand(2)
   # FAVORITE_TILES[rand(UNIQUE_TILES) + TILESHIFT]
-  BACH = ['E3','A3','C4','B3','E3','B3']
+  BACH = ['E3','A3','C4','B3','E3','B3','D4']
 
   def initialize args
 
@@ -145,7 +145,8 @@ class Game
   def bach_invention_13
     @bach = BACH.clone if @bach.nil? || @bach.empty?
     puts "playing bach" if $game_debug
-    indexed_sound ['A3','B3','C3','C4','D3','E3','F3','G3'].index(@bach.pop), true
+    #indexed_sound ['A3','B3','C3','C4','D3','E3','F3','G3'].index(@bach.pop), true
+    specific_note @bach.pop.downcase, 0, true
   end
 
   def random_sound
