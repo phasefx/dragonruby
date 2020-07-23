@@ -64,7 +64,7 @@ class Game
     @audio_match = true
     @music_scheme = :sequenced
     @sfx_scheme = :bass
-    @note_queue = [] # for playing notes sequentially
+    @note_queue = [ [] ] # for playing notes sequentially; index for outer array is track
     @note_queue_delay = 30 # play on tick_count.mod(delay) == 0
 
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
@@ -118,9 +118,8 @@ class Game
   end
 
   def indexed_sound idx, queue = false
-    return if !@audio_match
     puts "playing sound #{idx}" if $game_debug
-    a = queue ? @note_queue : @gtk_outputs.sounds
+    a = queue ? @note_queue[0] : @audio_notes && @gtk_outputs.sounds
     case idx
     when 0 then a << 'media/sfx/A3.wav'
     when 1 then a << 'media/sfx/B3.wav'
@@ -136,21 +135,25 @@ class Game
     puts "note_queue = #{@note_queue}" if $game_debug
   end
 
+  def specific_note note, track = 0, queue = false
+    puts "playing note #{note}" if $game_debug
+    a = queue ? @note_queue[track] : @audio_notes && @gtk_outputs.sounds
+    a << "media/piano/#{note}.wav"
+    puts "note_queue = #{@note_queue}" if $game_debug
+  end
+
   def bach_invention_13
-    return if !@audio_notes
     @bach = BACH.clone if @bach.nil? || @bach.empty?
     puts "playing bach" if $game_debug
     indexed_sound ['A3','B3','C3','C4','D3','E3','F3','G3'].index(@bach.pop), true
   end
 
   def random_sound
-    return if !@audio_match
     puts "playing random sound" if $game_debug
     indexed_sound rand(8)
   end
 
   def clash_sound
-    return if !@audio_match
     puts "playing all sounds" if $game_debug
     (0..7).each do |idx|
       indexed_sound idx
@@ -887,7 +890,7 @@ class Game
     @gtk_outputs.labels << [ @lx,@ly+TEXT_HEIGHT*1,"FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}" ]
     ##                                                                                 '1234567890123456789012345678' ]
     @gtk_outputs.labels << [ @grid_offset[0]+(@grid_segment_size*@grid_divisions), @uy,"Mouse: #{@gtk_mouse.x}, #{@gtk_mouse.y}" ] if $game_debug
-    @gtk_outputs.labels << @note_labels.take(@note_queue.length)
+    @gtk_outputs.labels << @note_labels.take(@note_queue[0].length)
   end
 
   def undo_swap
@@ -1028,9 +1031,10 @@ class Game
     when :remove_matches then remove_matches
     when :drop_pieces then drop_pieces
     end
-    if @audio_notes then
-      if @gtk_args.tick_count.mod(@note_queue_delay) == 0 then
-        @gtk_outputs.sounds << @note_queue.shift if ! @note_queue.empty?
+    if @gtk_args.tick_count.mod(@note_queue_delay) == 0 then
+      @note_queue.each_with_index do |note,idx|
+        sound = @note_queue[idx].shift if ! @note_queue[idx].empty?
+        @gtk_outputs.sounds << sound if @audio_notes && !sound.nil?
       end
     end
   end
