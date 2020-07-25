@@ -1,6 +1,8 @@
 $game_debug = false
 $game_milestone = :top
 
+require 'app/music.rb'
+
 class Game
 
   # for debugging: $gtk.args.state.game.cells, etc
@@ -15,7 +17,6 @@ class Game
   UNIQUE_TILES = 7
   TILESHIFT = rand(2)
   # FAVORITE_TILES[rand(UNIQUE_TILES) + TILESHIFT]
-  BACH = ['E3','A3','C4','B3','E3','B3','D4']
 
   def initialize args
 
@@ -65,7 +66,7 @@ class Game
     @music_scheme = :sequenced
     @sfx_scheme = :bass
     @note_queue = [ [] ] # for playing notes sequentially; index for outer array is track
-    @note_queue_delay = 30 # play on tick_count.mod(delay) == 0
+    @note_queue_delay = 15 # play on tick_count.mod(delay) == 0
 
     render_grid # do this now so that we have @grid_segment_size ready for init_cells
 
@@ -137,16 +138,22 @@ class Game
 
   def specific_note note, track = 0, queue = false
     puts "playing note #{note}" if $game_debug
+    @note_queue[track] = [] if queue && @note_queue[track].nil?
     a = queue ? @note_queue[track] : @audio_notes && @gtk_outputs.sounds
-    a << "media/piano/#{note}.wav"
+    a << "media/piano/#{note.nil? ? 'blank' : note}.wav"
     puts "note_queue = #{@note_queue}" if $game_debug
   end
 
+  # ["a3"],["a3","e5"],["a4","a5"],["a4","c6"]...
+  # okay, we want to pull from the left of the opus, and add to the right of the note_queue, and then play from the left of the note_queue
   def bach_invention_13
     @bach = BACH.clone if @bach.nil? || @bach.empty?
     puts "playing bach" if $game_debug
-    #indexed_sound ['A3','B3','C3','C4','D3','E3','F3','G3'].index(@bach.pop), true
-    specific_note @bach.pop.downcase, 0, true
+    note_set = @bach.shift
+    #puts "pulled note_set #{note_set}" if $game_debug
+    note_set.each_with_index do |note,idx|
+      specific_note note, idx, true
+    end
   end
 
   def random_sound
@@ -697,7 +704,16 @@ class Game
         @gtk_outputs.sounds << 'media/sfx/test.wav'
       end
       if truth == :u then # test
-        100.times do queue_note -1 end
+        puts "playing 100 notes"
+        100.times do queue_note(-1) end
+      end
+      if truth == :o then # test
+        puts "playing one note"
+        queue_note(-1)
+      end
+      if truth == :p then # test
+        puts "resetting bach"
+        @bach = BACH.clone
       end
       if truth == :i then # debug toggle
         $game_debug = !$game_debug
@@ -959,6 +975,9 @@ class Game
 
   def clearing_matches context=''
     puts "inside clearing_matches (#{context})" if $game_debug
+    note_match_multiplier = 3
+    note_match_multiplier = 2 if @note_queue.length > 20
+    note_match_multiplier = 1 if @note_queue.length > 30
     match_found = false
     @score_for_last_cycle = @score_for_this_cycle
     @score_for_this_cycle = 0
@@ -978,7 +997,7 @@ class Game
             match_found = true
             @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
             match_sound @cells[hpos][vpos].type
-            (last_seen_counter * 2).times do queue_note @cells[hpos][vpos].type end
+            (last_seen_counter * note_match_multiplier).times do queue_note @cells[hpos][vpos].type end
           end
           prev_last_seen = last_seen
         else
@@ -1004,7 +1023,7 @@ class Game
             match_found = true
             @score_for_this_cycle += last_seen_counter * (@score_multiplier + 1)
             match_sound @cells[hpos][vpos].type
-            (last_seen_counter * 2).times do queue_note @cells[hpos][vpos].type end
+            (last_seen_counter * note_match_multiplier).times do queue_note @cells[hpos][vpos].type end
           end
           prev_last_seen = last_seen
         else
@@ -1034,7 +1053,12 @@ class Game
     end
     if @gtk_args.tick_count.mod(@note_queue_delay) == 0 then
       @note_queue.each_with_index do |note,idx|
-        sound = @note_queue[idx].shift if ! @note_queue[idx].empty?
+        if @note_queue[idx].empty? then
+          sound = nil
+        else
+          sound = @note_queue[idx].shift
+        end
+        #puts "on #{@gtk_args.tick_count} playing: #{sound}" unless sound.nil?
         @gtk_outputs.sounds << sound if @audio_notes && !sound.nil?
       end
     end
