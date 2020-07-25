@@ -120,7 +120,8 @@ class Game
 
   def indexed_sound idx, queue = false
     puts "playing sound #{idx}" if $game_debug
-    a = queue ? @note_queue[0] : @audio_notes && @gtk_outputs.sounds
+    a = queue ? @note_queue[0] : @gtk_outputs.sounds
+    #return if !queue && !@audio_notes
     case idx
     when 0 then a << 'media/sfx/A3.wav'
     when 1 then a << 'media/sfx/B3.wav'
