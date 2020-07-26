@@ -35,7 +35,7 @@ module Geo3d
     end
 
     def -@
-      self.class.new -x, -y, -z, -w
+      self.class.new(-x, -y, -z, -w)
     end
 
     def == q
@@ -193,7 +193,7 @@ module Geo3d
     end
 
     def conjugate
-      self.class.new -x, -y, -z, w
+      self.class.new(-x, -y, -z, w)
     end
 
     def inverse

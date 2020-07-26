@@ -393,7 +393,7 @@ module Geo3d
         dst[j] *= inverse_det
       end
 
-      inverted_matrix = self.class.new *dst
+      inverted_matrix = self.class.new * dst
 
       if with_determinant
         [inverted_matrix, det]
@@ -452,7 +452,7 @@ module Geo3d
       zn = zn.to_f
       zf = zf.to_f
       range = zn*Math.tan(Geo3d::Utils.to_radians(fovy/2.0))
-      self.gl_frustum -range*aspect, range*aspect, -range, range, zn, zf
+      self.gl_frustum(-range*aspect, range*aspect, -range, range, zn, zf)
     end
 
     def self.gl_frustum l, r, bottom, t, zn, zf
@@ -632,7 +632,7 @@ module Geo3d
     end
 
     def self.reflection reflection_plane
-      reflection_plane = Geo3d::Vector.new *reflection_plane.to_a
+      reflection_plane = Geo3d::Vector.new * reflection_plane.to_a
       reflection_matrix = self.new
 
       plane_magnitude = Vector.new(reflection_plane.x, reflection_plane.y, reflection_plane.z, 0).length
@@ -666,7 +666,7 @@ module Geo3d
     end
 
     def self.shadow light_position, plane
-      plane = Geo3d::Vector.new *plane.to_a
+      plane = Geo3d::Vector.new * plane.to_a
       norm = plane.x * plane.x + plane.y * plane.y + plane.z * plane.z
       normalized_plane = plane / norm
       dot = normalized_plane.dot(light_position)
