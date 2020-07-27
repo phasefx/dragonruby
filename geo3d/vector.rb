@@ -14,6 +14,18 @@ module Geo3d
       @w = args[3].to_f if args.size > 3
     end
 
+    def serialize
+      [@x,@y,@z,@w]
+    end
+
+    def inspect
+      serialize.to_s
+    end
+
+    #def to_s
+    #  serialize.to_s
+    #end
+
     def self.point *args
       self.new(*args).one_w
     end

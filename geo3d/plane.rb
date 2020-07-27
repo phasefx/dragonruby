@@ -6,6 +6,18 @@ module Geo3d
     alias :z :c
     alias :w :d
 
+    def serialize
+      [@x,@y,@z,@w]
+    end
+
+    def inspect
+      serialize.to_s
+    end
+
+    def to_s
+      serialize.to_s
+    end
+
     def initialize *args
       @a, @b, @c, @d = 0.0, 0.0, 0.0, 0.0
       @a = args[0].to_f if args.size > 0

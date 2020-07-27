@@ -5,6 +5,15 @@ module Geo3d
     def points
       [a, b, c]
     end
+    alias serialize points
+
+    def inspect
+      serialize.to_s
+    end
+
+    def to_s
+      serialize.to_s
+    end
 
     def initialize *args
       @a = args.size > 0 ? args[0] : Vector.new

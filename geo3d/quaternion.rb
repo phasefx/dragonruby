@@ -2,6 +2,18 @@ module Geo3d
   class Quaternion
     attr_reader :x, :y, :z, :w
 
+    def serialize
+      [@x,@y,@z,@w]
+    end
+
+    def inspect
+      serialize.to_s
+    end
+
+    def to_s
+      serialize.to_s
+    end
+
     def initialize *args
       @x, @y, @z, @w = 0.0, 0.0, 0.0, 0.0
       @x = args[0].to_f if args.size > 0

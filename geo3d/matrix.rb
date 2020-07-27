@@ -14,6 +14,14 @@ module Geo3d
       ]
     end
 
+    def inspect
+      serialize.to_s
+    end
+
+    #def to_s
+    #  serialize.to_s
+    #end
+
     def initialize *args
       @_11 = 0
       @_12 = 0

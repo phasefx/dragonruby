@@ -7,111 +7,125 @@ require 'geo3d/plane.rb'
 require 'geo3d/triangle.rb'
 
 class Game
-  attr :projection_matrix, :center_matrix, :scale_matrix, :p1, :pp1
+
+  attr :gx, :gy, :a, :b, :pa, :pb, :projection_matrix, :pm_fovy, :pm_aspect, :pm_left, :pm_right, :pm_bottom, :pm_top, :pm_zn, :pm_zf, :view_matrix, :vm_eye_position, :vm_look_at_position, :vm_up_direction
 
   def initialize args
     @gtk_args = args
     @gtk_grid = args.grid
+    @gtk_outputs = args.outputs
 
     @gtk_args.grid.origin_center!
 
-    def perspective
+    @grid_half_width = @gtk_args.grid.w_half
+    @grid_half_height = @gtk_args.grid.h_half
 
-      @projection = :perspective
-
-      l = -1
-      r = 1
-      b = -1
-      t = 1
-      zn = -1
-      zf = 1
-
-      @projection_matrix = Geo3d::Matrix.gl_frustum l, r, b, t, zn, zf
-
-      mid_x = (l + r) * 0.5
-      mid_y = (b + t)  * 0.5
-
-      @center_matrix = Geo3d::Matrix.identity
-      @center_matrix._14 = -mid_x
-      @center_matrix._24 = -mid_y
-
-      @perspective_matrix = Geo3d::Matrix.identity
-      @perspective_matrix._11 = zn
-      @perspective_matrix._22 = zn
-      @perspective_matrix._43 = -1
-
-      scale_x = 2.0 / (r - l)
-      scale_y = 2.0 / (t - b)
-
-      @scale_matrix = Geo3d::Matrix.identity
-      @scale_matrix._11 = scale_x
-      @scale_matrix._22 = scale_y
-
-      c1 = 2*zf*zn / (zn - zf)
-      c2 = (zf + zn) / (zf - zn)
-
-      @depth_matrix = Geo3d::Matrix.identity
-      @depth_matrix._33 = -c2
-      @depth_matrix._34 = -1
-      @depth_matrix._43 = c1
-      @depth_matrix._44 = 0
-
-      @convert_matrix = Geo3d::Matrix.identity
-      # depth_matrix handled this for us
-
-    end
-
-    def orthographic
-
-      @projection = :orthographic
-
-      l = -1
-      r = 1
-      b = -1
-      t = 1
-      zn = -1
-      zf = 1
-
-      @projection_matrix = Geo3d::Matrix.gl_ortho l, r, b, t, zn, zf
-
-      mid_x = (l + r) / 2
-      mid_y = (b + t) / 2
-      mid_z = (-zn + -zf) / 2
-
-      @center_matrix = Geo3d::Matrix.identity
-      @center_matrix._14 = -mid_x
-      @center_matrix._24 = -mid_y
-      @center_matrix._34 = -mid_z
-
-      scale_x = 2.0 / (r - l)
-      scale_y = 2.0 / (t - b)
-      scale_z = 2.0 / (zf - zn)
-
-      @scale_matrix = Geo3d::Matrix.identity
-      @scale_matrix._11 = scale_x
-      @scale_matrix._22 = scale_y
-      @scale_matrix._33 = scale_z
-
-      @depth_matrix = Geo3d::Matrix.identity
-      # don't need this for ortho
-      
-      @convert_matrix = Geo3d::Matrix.identity
-      @convert_matrix._33 = -1
-
-    end
-
-    #orthographic
-    perspective
-
-    @p1 = Geo3d::Vector.point 0.5, 0.5, 0.5
-    case @projection
-    when :orthographic then @pp1 = @projection_matrix * @convert_matrix * @scale_matrix * @center_matrix * @p1
-    when :perspective then @pp1 = @projection_matrix * @scale_matrix * @perspective_matrix * @depth_matrix * @center_matrix * @p1
-    end
+    init_geometry
   end
-end
+
+  def serialize
+    {
+      :view_matrix => @view_matrix,
+      :vm_eye_position => @vm_eye_position,
+      :vm_look_at_position => @vm_look_at_position,
+      :vm_up_direction => @vm_up_direction,
+      :projection_matrix => @projection_matrix,
+      :pm_fovy => @pm_fovy,
+      :pm_aspect => @pm_aspect,
+      :pm_left => @pm_left,
+      :pm_right => @pm_right,
+      :pm_bottom => @pm_bottom,
+      :pm_top => @pm_top,
+      :pm_zn => @pm_zn,
+      :pm_zf => @pm_zf,
+      :a => @a,
+      :b => @b,
+      :pa => @pa,
+      :pb => @pb
+    }
+  end
+
+  def inspect
+    serialize.to_s
+  end
+
+  def to_s
+    serialize.to_s
+  end
+
+  def print
+    serialize.each_with_index do |v,k|
+      puts "#{k} => #{v}"
+    end
+    nil
+  end
+
+  def gx x
+    x*@grid_half_width
+  end
+
+  def gy y
+    y*@grid_half_height
+  end
+
+  def xg x
+    @grid_half_width/x
+  end
+
+  def yg y
+    @grid_half_height/y
+  end
+
+  def init_geometry
+
+    # model space -> transformation -> world space
+    # active space -> transformation matrix (translation, scale, rotation) -> active space
+    # matrix multiplication is not commutative
+    # view/camera space, projection matrix
+    # model space -> transformation -> world space -> view matrix -> view space -> projection matrix -> projection space
+    # orthographic and perspective projections
+    # [View To Projection]x[World To View]x[Model to World]=[ModelViewProjectionMatrix]
+
+    @a = Geo3d::Vector.point 1, 0, 1
+    @b = Geo3d::Vector.point 0, 1, 1
+
+    @vm_eye_position = Geo3d::Vector.point 0, 0, 0
+    @vm_look_at_position = Geo3d::Vector.point 0, 0, 1
+    @vm_up_direction = Geo3d::Vector.direction 0, 1, 0
+    @view_matrix = Geo3d::Matrix.look_at_rh @vm_eye_position, @vm_look_at_position, @vm_up_direction
+
+    @pm_fovy = 90
+    @pm_aspect = @gtk_grid.rect.h/@gtk_grid.rect.w
+    @pm_zn = -1
+    @pm_zf = 1
+    @pm_left = -1
+    @pm_right = 1
+    @pm_bottom = -1
+    @pm_top = 1
+    @projection_matrix = Geo3d::Matrix.glu_perspective_degrees @pm_fovy, @pm_aspect, @pm_zn, @pm_zf
+    #@projection_matrix = Geo3d::Matrix.gl_ortho @pm_left, @pm_right, @pm_bottom, @pm_top, @pm_zn, @pm_zf
+
+    @pa = @view_matrix * @projection_matrix * @a
+    @pb = @view_matrix * @projection_matrix * @b
+    puts "@a = #{@a}"
+    puts "@vm * @pm * @a = #{@pa}"
+    puts "grid x,y = #{gx(@pa.x/@pa.w)},#{gy(@pa.y/@pa.w)}" 
+    puts "@b = #{@b}"
+    puts "@vm * @pm * @b = #{@pb}"
+    puts "grid x,y = #{gx(@pb.x/@pa.w)},#{gy(@pb.y/@pa.w)}" 
+
+  end
+
+  def tick
+    @gtk_outputs.lines << [ gx(@a.x), gy(@a.y), gx(@b.x), gy(@b.y), 255, 0, 0 ]
+    @gtk_outputs.lines << [ gx(@pa.x), gy(@pa.y), gx(@pb.x), gy(@pb.y), 0, 0, 255 ]
+  end
+
+end # of class Game
 
 def tick args
   args.state.game ||= Game.new args
-end
+  args.state.game.tick
+end # of def tick
+
 
