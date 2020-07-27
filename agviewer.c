@@ -14,7 +14,7 @@
  * http://www.cs.hmc.edu/people/pwinston
  */
 
-#include <GL/glut.h>
+#include <GLUT/glut.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

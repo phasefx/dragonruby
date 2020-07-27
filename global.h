@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <GL/glut.h>
+#include <GLUT/glut.h>
 
 extern int main_w;
 extern int root2_w;
