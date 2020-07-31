@@ -1,0 +1,6 @@
+devid=phasefx
+devtitle=Jason Etheridge
+gameid=bullets
+gametitle=Bullets
+version=0.1
+icon=metadata/icon.png
