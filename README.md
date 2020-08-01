@@ -1,4 +1,4 @@
-= just playing around with DragonRuby
+# just playing around with DragonRuby
 
 More properly the DragonRuby Game Toolkit
 https://dragonruby-docs.readthedocs.io/en/latest/
