@@ -1,4 +1,5 @@
-$debugging = :off
+$debug = true
+$debug_state = :program_running
 
 TEXT_HEIGHT = $gtk.calcstringbox("H")[1]
 
@@ -21,23 +22,22 @@ end
 
 def debug_keys args
   if args.inputs.keyboard.key_down.eight
-    $debugging = :paused
+    $debug_state = :paused
     puts 'paused'
   end
   if args.inputs.keyboard.key_down.nine
-    $debugging = :off
+    $debug_state = :program_running
     puts 'unpaused'
   end
   if args.inputs.keyboard.key_down.zero
-    $debugging = :step
+    $debug_state = :step
     puts 'step'
   end
 end
 
-def tick args
-  args.state.game ||= Game.new args
-  debug_keys args
-  case $debugging
+def debug args
+  debug_keys(args) if $debug
+  case $debug_state
   when :paused
     # no args.state.game.tick
   else
@@ -47,8 +47,8 @@ def tick args
     args.state.labels = []
     args.state.lines = []
     args.state.borders = []
-    args.state.game.tick
-    $debugging = :paused if $debugging == :step
+    yield # call the passed block, and then keep going
+    $debug_state = :paused if $debug_state == :step
   end
   args.outputs.solids << args.state.solids
   args.outputs.sprites << args.state.sprites
@@ -56,4 +56,11 @@ def tick args
   args.outputs.labels << args.state.labels
   args.outputs.lines << args.state.lines
   args.outputs.borders << args.state.borders
+end
+
+def tick args
+  args.state.game ||= Game.new args
+  debug args do
+    args.state.game.tick
+  end
 end
