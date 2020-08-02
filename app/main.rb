@@ -50,6 +50,29 @@ class Game
     end
   end
 
+  ######
+  # useful coordinate functions for mapping mouse x,y to cell h,v and vice versa
+
+  def x2hpos x
+    ax = x - @grid_offset[0]
+    (ax/@grid_segment_size).floor
+  end
+
+  def y2vpos y
+    ay = y - @grid_offset[1]
+    (ay/@grid_segment_size).floor
+  end
+
+  def hpos2x hpos
+    @grid_offset[0] + (@grid_segment_size * hpos)
+  end
+
+  def vpos2y vpos
+    @grid_offset[1] + (@grid_segment_size * vpos)
+  end
+
+  ######
+  # our main loop goes here
   def tick
     render_grid_borders # may turn these off during actual play
     @gtk_outputs.labels << [0,TEXT_HEIGHT,"FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}"]
