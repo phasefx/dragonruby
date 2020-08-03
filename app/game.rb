@@ -32,6 +32,18 @@ class Game
     set_state(:default)
   end
 
+  def serialize
+    { :state => @state }
+  end
+
+  def inspect
+    serialize.to_s
+  end
+
+  def to_s
+    serialize.to_s
+  end
+
   def set_state state
     puts "state change from #{@state.nil? ? 'nil' : @state} to #{state.nil? ? 'nil' : state}"
     @state = state
