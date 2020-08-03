@@ -17,6 +17,9 @@ module Grid
     end
   end
 
+  def render_title_sheet
+  end
+
   ######
   # useful coordinate functions for mapping mouse x,y to cell h,v and vice versa
 

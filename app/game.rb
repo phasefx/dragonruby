@@ -29,20 +29,28 @@ class Game
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,nil)}
     @grid_segment_size = (@h-10)/(@grid_divisions) # if we ever want to resize the grid during runtime, remember to move this
 
-    @state = :default
+    set_state(:default)
   end
 
+  def set_state state
+    puts "state change from #{@state.nil? ? 'nil' : @state} to #{state.nil? ? 'nil' : state}"
+    @state = state
+  end
 
   ######
   # our main loop goes here
   def tick
     case @state
     when :default
+      default_keys
       render_grid_borders
     when :paint
+      paint_keys
       render_grid_borders
     when :palette
+      palette_keys
       render_grid_borders
+      render_tile_sheet
     end
     @gtk_outputs.labels << [0,TEXT_HEIGHT,"FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}"]
   end
