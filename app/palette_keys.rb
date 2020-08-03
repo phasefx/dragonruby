@@ -1,0 +1,2 @@
+module PaletteKeys
+end
