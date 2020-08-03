@@ -1,5 +1,5 @@
 class Game
-  attr_accessor :state
+  attr_accessor :state, :palette_coords
 
   include DefaultKeys
   include PaintKeys
@@ -28,6 +28,9 @@ class Game
     @grid_divisions = INITIAL_GRID_SIZE
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,nil)}
     @grid_segment_size = (@h-10)/(@grid_divisions) # if we ever want to resize the grid during runtime, remember to move this
+
+    # for the palette grid
+    @palette_coords ||= [0,0]
 
     set_state(:default)
   end
