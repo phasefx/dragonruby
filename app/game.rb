@@ -1,5 +1,5 @@
 class Game
-  attr_accessor :state, :palette_coords
+  attr_accessor :state, :palette_coords, :grid_segment_size, :w, :h
 
   include CommonKeys
   include DefaultKeys

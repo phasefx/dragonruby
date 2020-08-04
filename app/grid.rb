@@ -1,8 +1,8 @@
 module Grid
   def recalc_grid_dimensions
     @grid_offset = [
-      @lx + 290,
-      @ly + 5
+      @lx + (@w-@grid_segment_size*@grid_divisions).half,
+      @ly + (@h-@grid_segment_size*@grid_divisions).half
     ]
   end
   def render_grid_outline
