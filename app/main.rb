@@ -50,6 +50,7 @@ INITIAL_GRID_SIZE = 8 # for the 64x64 lowrezjam, this would give us a grid of 8x
 KEY_HELD_DELAY = 30 # ticks; DR tries for 60 ticks per second
 
 require 'app/debug.rb'
+require 'app/common_keys.rb'
 require 'app/default_keys.rb'
 require 'app/paint_keys.rb'
 require 'app/palette_keys.rb'

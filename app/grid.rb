@@ -1,18 +1,31 @@
 module Grid
-  def render_grid_borders
+  def recalc_grid_dimensions
     @grid_offset = [
       @lx + 290,
       @ly + 5
     ]
-    @grid_divisions.times do |x|
-      @grid_divisions.times do |y|
-        @gtk_outputs.primitives << [
-          @grid_offset[0] + (@grid_segment_size * x),
-          @grid_offset[1] + (@grid_segment_size * y),
-          @grid_segment_size,
-          @grid_segment_size,
-          0, 0, 0, 64
-        ].border
+  end
+  def render_grid_outline
+    # outer border
+    @gtk_outputs.primitives << [
+      @grid_offset[0],
+      @grid_offset[1],
+      @grid_segment_size * @grid_divisions,
+      @grid_segment_size * @grid_divisions,
+      0, 0, 0, 64
+    ].border
+    # inner lattices
+    if @show_grid_outline
+      @grid_divisions.times do |x|
+        @grid_divisions.times do |y|
+          @gtk_outputs.primitives << [
+            @grid_offset[0] + (@grid_segment_size * x),
+            @grid_offset[1] + (@grid_segment_size * y),
+            @grid_segment_size,
+            @grid_segment_size,
+            0, 0, 0, 64
+          ].border
+        end
       end
     end
   end

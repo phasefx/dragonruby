@@ -1,6 +1,7 @@
 class Game
   attr_accessor :state, :palette_coords
 
+  include CommonKeys
   include DefaultKeys
   include PaintKeys
   include PaletteKeys
@@ -27,7 +28,10 @@ class Game
     @h = @uy - @ly
     @grid_divisions = INITIAL_GRID_SIZE
     @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,nil)}
-    @grid_segment_size = (@h-10)/(@grid_divisions) # if we ever want to resize the grid during runtime, remember to move this
+    @max_grid_segment_size = ((@h-10)/(@grid_divisions)).floor
+    @min_grid_segment_size = 8
+    @grid_segment_size = ((@h-10)/(@grid_divisions)).floor
+    @show_grid_outline = false
 
     # for the palette grid
     @palette_coords ||= [0,0]
@@ -55,16 +59,20 @@ class Game
   ######
   # our main loop goes here
   def tick
+    common_keys
     case @state
     when :default
       default_keys
-      render_grid_borders
+      recalc_grid_dimensions
+      render_grid_outline
     when :paint
       paint_keys
-      render_grid_borders
+      recalc_grid_dimensions
+      render_grid_outline
     when :palette
       palette_keys
-      render_grid_borders
+      recalc_grid_dimensions
+      render_grid_outline
       render_tile_sheet
     end
     @gtk_outputs.labels << [0,TEXT_HEIGHT,"FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}"]
