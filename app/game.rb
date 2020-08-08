@@ -1,10 +1,10 @@
 class Game
   attr_accessor :state, :palette_coords, :grid_segment_size, :w, :h
 
-  include CommonKeys
-  include DefaultKeys
-  include PaintKeys
-  include PaletteKeys
+  include CommonInput
+  include DefaultInput
+  include PaintInput
+  include PaletteInput
   include Grid
 
   def initialize args

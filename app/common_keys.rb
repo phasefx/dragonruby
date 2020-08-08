@@ -1,4 +1,4 @@
-module CommonKeys
+module CommonInput
   def common_keys
     @gtk_kb.key_down.truthy_keys.each do |key|
       case key
@@ -25,4 +25,4 @@ module CommonKeys
       end
     end # of key_held.truthy_keys.each
   end # of def common_keys
-end # of module CommonKeys
+end # of module CommonInput

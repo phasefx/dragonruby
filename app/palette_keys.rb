@@ -1,4 +1,4 @@
-module PaletteKeys
+module PaletteInput
   def palette_keys
     @gtk_kb.key_down.truthy_keys.each do |key|
       case key
@@ -41,4 +41,4 @@ module PaletteKeys
       end
     end # of key_held.truthy_keys.each
   end # of def palette_keys
-end # of module PaletteKeys
+end # of module PaletteInput

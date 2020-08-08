@@ -1,4 +1,4 @@
-module PaintKeys
+module PaintInput
   def paint_keys
     @gtk_kb.key_down.truthy_keys.each do |key|
       case key
@@ -9,4 +9,4 @@ module PaintKeys
       end
     end # of truthy_keys.each
   end # of def paint_keys
-end # of module PaintKeys
+end # of module PaintInput

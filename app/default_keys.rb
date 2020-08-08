@@ -1,4 +1,4 @@
-module DefaultKeys
+module DefaultInput
   def default_keys
     @gtk_kb.key_down.truthy_keys.each do |key|
       case key
@@ -9,4 +9,4 @@ module DefaultKeys
       end
     end # of truthy_keys.each
   end # of def default_keys
-end # of module DefaultKeys
+end # of module DefaultInput
