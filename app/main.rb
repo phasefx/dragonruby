@@ -29,6 +29,7 @@
       Arrow keys move cursor which highlights active grid cell
       Shift+[1-5] assigns the current tile to a numbered stamp slot
       [1-5] stamps the tile associated with the stamp slot to the active gid cell
+      Alt+[1-5] toggles the "layer" being manipulated
       Escape changes state to :default
       key 7 changes state to :palette
 
