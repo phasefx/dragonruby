@@ -7,6 +7,7 @@
   Constraints:
 
     LOWREZJAM2020 calls for 64x64 pixels or less.  I think scaling the pixels up into fat pixels is okay.
+    However, now that LOWREZJAM2020 is over (and I missed it), I'm going to relax the constraints. :D
 
   Some ideas:
 
@@ -19,7 +20,7 @@
 
     :default
 
-      Game comprises an 8x8 view grid into a larger grid space of tiles and sprites
+      Game comprises an 12x12 view grid into a larger grid space of tiles and sprites
       key 6 changes state to :paint
       key 7 changes state to :palette
 
@@ -47,7 +48,7 @@ $debug = true
 $debug_state = :program_running
 
 TEXT_HEIGHT = $gtk.calcstringbox("H")[1]
-INITIAL_GRID_SIZE = 8 # for the 64x64 lowrezjam, this would give us a grid of 8x8 cells
+INITIAL_GRID_SIZE = 12 # for the 64x64 lowrezjam, 8 would give us an 8x8 grid of cells (containing sprites of 8x8 pixels)
 KEY_HELD_DELAY = 30 # ticks; DR tries for 60 ticks per second
 
 require 'app/debug.rb'

@@ -62,9 +62,9 @@ module Grid
   end
 
   def render_tile_sheet
-    0.upto(63) do |n|
-      grid_x = n.mod(8)
-      grid_y = n.div(8)
+    0.upto(@grid_divisions*@grid_divisions) do |n|
+      grid_x = n.mod(@grid_divisions)
+      grid_y = n.div(@grid_divisions)
       @gtk_outputs.sprites << Tile.new(
         hpos2x(grid_x),
         vpos2y(grid_y),
