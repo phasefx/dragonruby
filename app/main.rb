@@ -15,6 +15,7 @@
       * Match-3 tile-swap, destroys terrain, damages enemies on terrain
       * Rotate adjacent tiles
       * Control terrain elevation (consider sea-level for draining/filling bodies of water)
+      * Tower-Defense mechanics (because, why not?:)
 
   Game State
 
