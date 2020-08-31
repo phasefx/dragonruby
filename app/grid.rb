@@ -1,10 +1,11 @@
 module Grid
   def recalc_grid_dimensions
     @grid_offset = [
-      @lx + (@w-@grid_segment_size*@grid_divisions).half,
-      @ly + (@h-@grid_segment_size*@grid_divisions).half
+      @lx + (@w - @grid_segment_size * @grid_divisions).half,
+      @ly + (@h - @grid_segment_size * @grid_divisions).half
     ]
   end
+
   def render_grid_outline
     # outer border
     @gtk_outputs.primitives << [
@@ -43,13 +44,13 @@ module Grid
       @source_h = 8
       @path = 'media/tileset.png' # 32x32 sheet of 8x8 sprites
       @tile_coords = tile_coords
-      #$gtk.args.state.seen = {} unless $gtk.args.state.seen
-      #puts self.to_s unless $gtk.args.state.seen["#{tile_coords.x}.#{tile_coords.y}"];
-      #$gtk.args.state.seen["#{tile_coords.x}.#{tile_coords.y}"] = true;
+      # $gtk.args.state.seen = {} unless $gtk.args.state.seen
+      # puts self.to_s unless $gtk.args.state.seen["#{tile_coords.x}.#{tile_coords.y}"];
+      # $gtk.args.state.seen["#{tile_coords.x}.#{tile_coords.y}"] = true;
     end
 
     def serialize
-      { :x => @x, :y => @y, :w => @w, :h => @h, :source_x => @source_x, :source_y => @source_y, :source_w => @source_w, :source_h => @source_h, :tile_coords => @tile_coords }
+      { x: @x, y: @y, w: @w, h: @h, source_x: @source_x, source_y: @source_y, source_w: @source_w, source_h: @source_h, tile_coords: @tile_coords }
     end
 
     def inspect
@@ -62,7 +63,7 @@ module Grid
   end
 
   def render_tile_sheet
-    0.upto(@grid_divisions*@grid_divisions) do |n|
+    0.upto(@grid_divisions * @grid_divisions) do |n|
       grid_x = n.mod(@grid_divisions)
       grid_y = n.div(@grid_divisions)
       @gtk_outputs.sprites << Tile.new(
@@ -83,12 +84,12 @@ module Grid
 
   def x2hpos x
     ax = x - @grid_offset[0]
-    (ax/@grid_segment_size).floor
+    (ax / @grid_segment_size).floor
   end
 
   def y2vpos y
     ay = y - @grid_offset[1]
-    (ay/@grid_segment_size).floor
+    (ay / @grid_segment_size).floor
   end
 
   def hpos2x hpos
@@ -100,16 +101,18 @@ module Grid
   end
 
   def wrap v, lb, ub
-    lb,ub = ub,lb if lb > ub
+    lb, ub = ub, lb if lb > ub
     return ub if v < lb
     return lb if v > ub
+
     v
   end
 
   def bound v, lb, ub
-    lb,ub = ub,lb if lb > ub
+    lb, ub = ub, lb if lb > ub
     return lb if v < lb
     return ub if v > ub
+
     v
   end
 end

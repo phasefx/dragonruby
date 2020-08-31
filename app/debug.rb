@@ -1,4 +1,4 @@
-def debug args
+def debug(args)
   debug_keys(args) if $debug
   case $debug_state
   when :paused

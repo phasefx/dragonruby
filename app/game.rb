@@ -27,20 +27,20 @@ class Game
     @w = @ux - @lx
     @h = @uy - @ly
     @grid_divisions = INITIAL_GRID_SIZE
-    @cells = Array.new(@grid_divisions){Array.new(@grid_divisions,nil)}
-    @max_grid_segment_size = ((@h-10)/(@grid_divisions)).floor
+    @cells = Array.new(@grid_divisions) { Array.new(@grid_divisions, nil) }
+    @max_grid_segment_size = ((@h - 10) / @grid_divisions).floor
     @min_grid_segment_size = 8
-    @grid_segment_size = ((@h-10)/(@grid_divisions)).floor
+    @grid_segment_size = ((@h - 10) / @grid_divisions).floor
     @show_grid_outline = false
 
     # for the palette grid
-    @palette_coords ||= [0,0]
+    @palette_coords ||= [0, 0]
 
     set_state(:default)
   end
 
   def serialize
-    { :state => @state }
+    { state: @state }
   end
 
   def inspect
@@ -75,6 +75,6 @@ class Game
       render_grid_outline
       render_tile_sheet
     end
-    @gtk_outputs.labels << [0,TEXT_HEIGHT,"FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}"]
+    @gtk_outputs.labels << [0, TEXT_HEIGHT, "FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}"]
   end
 end
