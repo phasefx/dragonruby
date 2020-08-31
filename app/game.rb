@@ -1,5 +1,5 @@
 class Game
-  def initialize args
+  def initialize(args)
     $gtk.set_window_title ':-)'
     @gtk_args = args
     @gtk_inputs = args.inputs
