@@ -11,7 +11,6 @@ class Game
   end
 
   def tick
-    @gtk_state.labels << [0,TEXT_HEIGHT,"FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}"]
+    @gtk_state.labels << [0, TEXT_HEIGHT, "FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}"]
   end
 end
-

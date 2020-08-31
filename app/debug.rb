@@ -1,4 +1,4 @@
-def debug args
+def debug(args)
   debug_keys(args) if $debug
   case $debug_state
   when :paused
@@ -21,7 +21,7 @@ def debug args
   args.outputs.borders << args.state.borders
 end
 
-def debug_keys args
+def debug_keys(args)
   if args.inputs.keyboard.key_down.eight
     $debug_state = :paused
     puts 'paused'

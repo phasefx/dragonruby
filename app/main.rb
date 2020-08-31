@@ -1,7 +1,7 @@
 $debug = true
 $debug_state = :program_running
 
-TEXT_HEIGHT = $gtk.calcstringbox("H")[1]
+TEXT_HEIGHT = $gtk.calcstringbox('H')[1]
 
 require 'app/game.rb'
 require 'app/debug.rb'
