@@ -2,7 +2,7 @@ def debug(args) # rubocop:disable Metrics/MethodLength
   debug_keys(args) if $debug
   case $debug_state
   when :paused
-    # no args.state.game.tick
+    # no $game.tick
   else
     args.state.solids = []
     args.state.sprites = []

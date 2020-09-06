@@ -7,8 +7,8 @@ require 'app/game.rb'
 require 'app/debug.rb'
 
 def tick(args)
-  args.state.game ||= Game.new args
+  $game ||= Game.new args
   debug args do
-    args.state.game.tick
+    $game.tick
   end
 end
