@@ -10,7 +10,7 @@ require 'app/debug.rb'
 
 def tick(args)
   $game ||= Game.new args
-  debug args do
+  my_debug args do
     $game.tick
   end
 end

@@ -7,15 +7,16 @@ def clear_fake_outputs(args)
   args.state.labels = []
   args.state.lines = []
   args.state.borders = []
+  args.state.debug = []
 end
 
 def populate_outputs(args)
-  %i[solids sprites primitives labels lines borders].each do |output_type|
+  %i[solids sprites primitives labels lines borders debug].each do |output_type|
     args.outputs.send(output_type) << args.state.send(output_type)
   end
 end
 
-def debug(args)
+def my_debug(args)
   debug_keys(args) if $debug
   case $debug_state
   when :paused
