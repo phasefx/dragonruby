@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# hey RuboCop, the game goes here :)
 class Game
   def initialize(args = nil)
     wrap_gtk_args(args) if args;
@@ -18,6 +19,10 @@ class Game
   end
 
   def tick
-    @gtk_outputs.labels << [0, TEXT_HEIGHT, "FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}"]
+    @gtk_outputs.labels << [
+      0,
+      TEXT_HEIGHT,
+      "FPS #{@gtk_args.gtk.current_framerate.floor}  Tick #{@gtk_args.tick_count}"
+    ]
   end
 end
