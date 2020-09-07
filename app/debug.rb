@@ -9,6 +9,7 @@ def clear_fake_outputs(args)
   args.state.borders = []
 end
 
+# rubocop: disable Metrics/AbcSize
 def populate_outputs(args)
   args.outputs.solids << args.state.solids
   args.outputs.sprites << args.state.sprites
@@ -17,6 +18,7 @@ def populate_outputs(args)
   args.outputs.lines << args.state.lines
   args.outputs.borders << args.state.borders
 end
+# rubocop: enable Metrics/AbcSize
 
 def debug(args)
   debug_keys(args) if $debug
