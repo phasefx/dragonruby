@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Game
   def initialize(args = nil)
     wrap_gtk_args(args) if args;

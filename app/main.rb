@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 $debug = true
 $debug_state = :program_running
 
