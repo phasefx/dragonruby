@@ -22,12 +22,13 @@ end
 def input(gtk)
   intents = []
   exit if gtk.inputs.keyboard.escape # can't escape side-effects here, harr
-  intents << 'toggle_fps' if gtk.inputs.keyboard.spacebar
+  intents << 'toggle_fps' if gtk.inputs.keyboard.space
+  puts intents if intents.length.positive?
   intents
 end
 
 def logic(state, intents)
-  state.show_fps = !state.show_fps if intents.include?('toggle_fps')
+  state[:show_fps] = !state[:show_fps] if intents.include?('toggle_fps')
   state
 end
 
@@ -40,7 +41,7 @@ end
 def render_fps(state, gtk)
   primitives = []
   text_height = gtk.gtk.calcstringbox('H')[1]
-  if state.dig(:show_fps)
+  if state[:show_fps]
     primitives << [
       gtk.grid.left,
       gtk.grid.top - text_height * 0,
