@@ -1,12 +1,20 @@
 # frozen_string_literal: true
 
+require 'app/input.rb'
+require 'app/logic.rb'
+require 'app/render.rb'
+require 'app/load_save.rb'
+
 # This is our entry-point into DragonRuby Game Toolkit
+# rubocop:disable Metrics/AbcSize
 def tick(gtk)
   gtk.state.game ||= init gtk
-  player_intents = input gtk
+  gtk.state = input_with_side_effects gtk, gtk.inputs, gtk.state.game
+  player_intents = input gtk.inputs
   gtk.state.game = logic gtk.state.game, player_intents
   gtk.outputs.primitives << render(gtk.state.game, gtk)
 end
+# rubocop:enable Metrics/AbcSize
 
 def init(gtk)
   # some side-effects...
@@ -17,36 +25,4 @@ def init(gtk)
     },
     show_fps: true
   }
-end
-
-def input(gtk)
-  intents = []
-  exit if gtk.inputs.keyboard.escape # can't escape side-effects here, harr
-  intents << 'toggle_fps' if gtk.inputs.keyboard.space
-  puts intents if intents.length.positive?
-  intents
-end
-
-def logic(state, intents)
-  state[:show_fps] = !state[:show_fps] if intents.include?('toggle_fps')
-  state
-end
-
-def render(state, gtk)
-  primitives = []
-  primitives << render_fps(state, gtk)
-  primitives
-end
-
-def render_fps(state, gtk)
-  primitives = []
-  text_height = gtk.gtk.calcstringbox('H')[1]
-  if state[:show_fps]
-    primitives << [
-      gtk.grid.left,
-      gtk.grid.top - text_height * 0,
-      "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count}"
-    ].labels
-  end
-  primitives
 end
