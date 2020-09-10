@@ -9,7 +9,7 @@ require 'app/load_save.rb'
 # rubocop:disable Metrics/AbcSize
 def tick(gtk)
   gtk.state.game ||= init gtk
-  gtk.state = input_with_side_effects gtk, gtk.inputs, gtk.state.game
+  gtk.state = input_with_side_effects gtk, gtk.inputs, gtk.state
   player_intents = input gtk.inputs
   gtk.state.game = logic gtk.state.game, player_intents
   gtk.outputs.primitives << render(gtk.state.game, gtk)
