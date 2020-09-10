@@ -6,6 +6,11 @@ def render(state, gtk)
   primitives
 end
 
+def render_player(state, gtk)
+  primitives = []
+  primitives
+end
+
 def render_fps(state, gtk)
   primitives = []
   text_height = gtk.gtk.calcstringbox('H')[1]
