@@ -37,8 +37,8 @@ require 'app/load_save.rb'
 # rubocop:disable Metrics/AbcSize
 def tick(gtk)
   gtk.state.game ||= init gtk
-  meta_intents = meta_input gtk.inputs
-  player_intents = player_input gtk.inputs
+  meta_intents = meta_input gtk.state.game[:keymaps], gtk.inputs
+  player_intents = player_input gtk.state.game[:keymaps], gtk.inputs
   gtk.state = meta_intent_handler gtk, meta_intents
   gtk.state.game = game_logic gtk.state, player_intents
   gtk.outputs.primitives << render(gtk.state.game, gtk)
@@ -46,13 +46,28 @@ def tick(gtk)
 end
 # rubocop:enable Metrics/AbcSize
 
+# rubocop:disable Metrics/MethodLength
 def init(gtk)
   # some side-effects...
   gtk.gtk.set_window_title(':-)')
   # and what we're really after, the game model/state
   {
     player: {
+      x: 0,
+      y: 0
     },
-    show_fps: true
+    show_fps: true,
+    keymaps: {
+      left: %i[left a],
+      right: %i[right d],
+      up: %i[up w],
+      down: %i[down s],
+      toggle_fps: %i[space],
+      exit: %i[escape],
+      reset: %i[r],
+      load: %i[l],
+      save: %i[m]
+    }
   }
 end
+# rubocop:enable Metrics/MethodLength

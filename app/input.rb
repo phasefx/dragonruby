@@ -1,18 +1,39 @@
 # frozen_string_literal: true
 
-def meta_input(inputs)
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/CyclomaticComplexity
+# rubocop:disable Metrics/MethodLength
+def meta_input(keymaps, inputs)
   intents = []
-  intents << 'toggle_fps' if inputs.keyboard.space
-  intents << 'exit' if inputs.keyboard.escape
-  intents << 'reset' if inputs.keyboard.r
-  intents << 'save'  if inputs.keyboard.s
-  intents << 'load' if inputs.keyboard.l
+  down_keys = inputs.keyboard.key_down.truthy_keys
+  down_keys.each do |truth|
+    intents << 'toggle_fps' if keymaps[:toggle_fps].include?(truth)
+    intents << 'exit' if keymaps[:exit].include?(truth)
+    intents << 'reset' if keymaps[:reset].include?(truth)
+    intents << 'save'  if keymaps[:save].include?(truth)
+    intents << 'load' if keymaps[:load].include?(truth)
+  end
   puts intents if intents.length.positive?
   intents
 end
+# rubocop:enable Metrics/MethodLength
+# rubocop:enable Metrics/CyclomaticComplexity
+# rubocop:enable Metrics/AbcSize
 
-def player_input(inputs)
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/MethodLength
+def player_input(keymaps, inputs)
   intents = []
+  down_keys = inputs.keyboard.key_down.truthy_keys
+  held_keys = inputs.keyboard.key_held.truthy_keys
+  (down_keys + held_keys).each do |truth|
+    intents << 'move_left' if keymaps[:left].include?(truth)
+    intents << 'move_right' if keymaps[:right].include?(truth)
+    intents << 'move_up' if keymaps[:up].include?(truth)
+    intents << 'move_down' if keymaps[:down].include?(truth)
+  end
   puts intents if intents.length.positive?
   intents
 end
+# rubocop:enable Metrics/MethodLength
+# rubocop:enable Metrics/AbcSize

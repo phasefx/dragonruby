@@ -25,7 +25,14 @@ def meta_intent_handler(gtk, intents)
   gtk.state
 end
 
-def game_logic(state, _intents)
+# rubocop:disable Metrics/AbcSize
+def game_logic(state, intents)
   gs = state.game
+  gs[:player][:x] -= 1 if intents.include?('move_left')
+  gs[:player][:x] += 1 if intents.include?('move_right')
+  gs[:player][:y] -= 1 if intents.include?('move_up')
+  gs[:player][:y] += 1 if intents.include?('move_down')
+  puts gs[:player] if intents.length.positive?
   gs
 end
+# rubocop:enable Metrics/AbcSize
