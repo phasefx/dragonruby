@@ -1,19 +1,22 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/AbcSize
 def render(game, gtk)
   primitives = []
-  primitives << render_player_and_anchor(game[:player], game[:anchors][0], gtk)
+  primitives << render_line(game[:player], game[:anchors][0], 255, 0, 0)
+  primitives << render_line(game[:anchors][0], game[:anchors][1], 0, 255, 0)
+  primitives << render_line(game[:player], game[:anchors][1], 0, 0, 255)
   primitives << render_fps(game, gtk)
   primitives
 end
+# rubocop:enable Metrics/AbcSize
 
-def render_player_and_anchor(player, anchor, _gtk)
+def render_line(point1, point2, red, green, blue)
   primitives = []
-  # return primitives unless state[:player][:coord].intersect_rec? gtk.grid.rect
   primitives << {
-    x: anchor[:coord].x, y: anchor[:coord].y,
-    x2: player[:coord].x, y2: player[:coord].y,
-    r: 255, g: 0, b: 0, a: 255
+    x: point1[:coord].x, y: point1[:coord].y,
+    x2: point2[:coord].x, y2: point2[:coord].y,
+    r: red, g: green, b: blue, a: 255
   }.line
 
   primitives

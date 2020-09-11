@@ -57,6 +57,7 @@ def init(gtk)
       coord: [0, 0]
     },
     anchors: [
+      { coord: [0, 0] },
       { coord: [0, 0] }
     ],
     theta: 0,
