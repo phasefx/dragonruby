@@ -25,14 +25,36 @@ def meta_intent_handler(gtk, intents)
   gtk.state
 end
 
+def wrap(value, lower_bound, upper_bound)
+  lower_bound, upper_bound = upper_bound, lower_bound if lower_bound > upper_bound
+  return upper_bound if value < lower_bound
+  return lower_bound if value > upper_bound
+
+  value
+end
+
+def bound(value, lower_bound, upper_bound)
+  lower_bound, upper_bound = upper_bound, lower_bound if lower_bound > upper_bound
+  return lower_bound if value < lower_bound
+  return upper_bound if value > upper_bound
+
+  value
+end
+
 # rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/PerceivedComplexity
+# rubocop:disable Metrics/CyclomaticComplexity
 def game_logic(state, intents)
   gs = state.game
-  gs[:player][:x] -= 1 if intents.include?('move_left')
-  gs[:player][:x] += 1 if intents.include?('move_right')
-  gs[:player][:y] -= 1 if intents.include?('move_up')
-  gs[:player][:y] += 1 if intents.include?('move_down')
+  gs[:theta] = wrap(gs[:theta] + 1, 0, 360)
+  gs[:player][:coord] = [200 * Math.cos(gs[:theta].to_radians), 200 * Math.sin(gs[:theta].to_radians)]
+  gs[:player][:coord].x -= 1 if intents.include?('move_left') || intents.include?('start_left')
+  gs[:player][:coord].x += 1 if intents.include?('move_right') || intents.include?('start_right')
+  gs[:player][:coord].y -= 1 if intents.include?('move_up') || intents.include?('start_up')
+  gs[:player][:coord].y += 1 if intents.include?('move_down') || intents.include?('start_down')
   puts gs[:player] if intents.length.positive?
   gs
 end
+# rubocop:enable Metrics/CyclomaticComplexity
+# rubocop:enable Metrics/PerceivedComplexity
 # rubocop:enable Metrics/AbcSize

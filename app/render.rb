@@ -1,13 +1,21 @@
 # frozen_string_literal: true
 
-def render(state, gtk)
+def render(game, gtk)
   primitives = []
-  primitives << render_fps(state, gtk)
+  primitives << render_player(game[:player], gtk)
+  primitives << render_fps(game, gtk)
   primitives
 end
 
-def render_player(state, gtk)
+def render_player(player, gtk)
   primitives = []
+  # return primitives unless state[:player][:coord].intersect_rec? gtk.grid.rect
+  primitives << {
+    x: gtk.grid.center_x, y: gtk.grid.center_y,
+    x2: player[:coord].x, y2: player[:coord].y,
+    r: 255, g: 0, b: 0, a: 255
+  }.line
+
   primitives
 end
 

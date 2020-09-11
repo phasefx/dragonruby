@@ -30,7 +30,7 @@ require 'app/load_save.rb'
 #
 #   In general, I'm trying to distance input (intent)
 #   from behavior (state change) and keep the pipeline
-#   purely functional, but there some things (usually
+#   purely functional, but there are some things (usually
 #   calls to gtk.gtk) that break that.  I'll try to put
 #   those things into def meta_intent_handler
 
@@ -50,12 +50,13 @@ end
 def init(gtk)
   # some side-effects...
   gtk.gtk.set_window_title(':-)')
+  gtk.grid.origin_center!
   # and what we're really after, the game model/state
   {
     player: {
-      x: 0,
-      y: 0
+      coord: [0, 0]
     },
+    theta: 0,
     show_fps: true,
     keymaps: {
       left: %i[left a],

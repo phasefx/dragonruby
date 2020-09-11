@@ -22,11 +22,19 @@ end
 
 # rubocop:disable Metrics/AbcSize
 # rubocop:disable Metrics/MethodLength
+# rubocop:disable Metrics/PerceivedComplexity
+# rubocop:disable Metrics/CyclomaticComplexity
 def player_input(keymaps, inputs)
   intents = []
   down_keys = inputs.keyboard.key_down.truthy_keys
   held_keys = inputs.keyboard.key_held.truthy_keys
-  (down_keys + held_keys).each do |truth|
+  down_keys.each do |truth|
+    intents << 'start_left' if keymaps[:left].include?(truth)
+    intents << 'start_right' if keymaps[:right].include?(truth)
+    intents << 'start_up' if keymaps[:up].include?(truth)
+    intents << 'start_down' if keymaps[:down].include?(truth)
+  end
+  held_keys.each do |truth|
     intents << 'move_left' if keymaps[:left].include?(truth)
     intents << 'move_right' if keymaps[:right].include?(truth)
     intents << 'move_up' if keymaps[:up].include?(truth)
@@ -35,5 +43,7 @@ def player_input(keymaps, inputs)
   puts intents if intents.length.positive?
   intents
 end
+# rubocop:enable Metrics/CyclomaticComplexity
+# rubocop:enable Metrics/PerceivedComplexity
 # rubocop:enable Metrics/MethodLength
 # rubocop:enable Metrics/AbcSize
