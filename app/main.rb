@@ -52,10 +52,13 @@ def init(gtk)
   gtk.gtk.set_window_title(':-)')
   gtk.grid.origin_center!
   # and what we're really after, the game model/state
-  {
+  game = {
     player: {
       coord: [0, 0]
     },
+    anchors: [
+      { coord: [0, 0] }
+    ],
     theta: 0,
     show_fps: true,
     keymaps: {
@@ -70,5 +73,7 @@ def init(gtk)
       save: %i[m]
     }
   }
+  puts game
+  game
 end
 # rubocop:enable Metrics/MethodLength

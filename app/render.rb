@@ -2,16 +2,16 @@
 
 def render(game, gtk)
   primitives = []
-  primitives << render_player(game[:player], gtk)
+  primitives << render_player_and_anchor(game[:player], game[:anchors][0], gtk)
   primitives << render_fps(game, gtk)
   primitives
 end
 
-def render_player(player, gtk)
+def render_player_and_anchor(player, anchor, _gtk)
   primitives = []
   # return primitives unless state[:player][:coord].intersect_rec? gtk.grid.rect
   primitives << {
-    x: gtk.grid.center_x, y: gtk.grid.center_y,
+    x: anchor[:coord].x, y: anchor[:coord].y,
     x2: player[:coord].x, y2: player[:coord].y,
     r: 255, g: 0, b: 0, a: 255
   }.line

@@ -47,7 +47,8 @@ end
 def game_logic(state, intents)
   gs = state.game
   gs[:theta] = wrap(gs[:theta] + 1, 0, 360)
-  gs[:player][:coord] = [200 * Math.cos(gs[:theta].to_radians), 200 * Math.sin(gs[:theta].to_radians)]
+  gs[:player][:coord] = [200 * Math.cos(3 * gs[:theta].to_radians), 200 * Math.sin(2 * gs[:theta].to_radians)]
+  gs[:anchors][0][:coord] = [200 * Math.cos(gs[:theta].to_radians), 200 * Math.sin(gs[:theta].to_radians)]
   gs[:player][:coord].x -= 1 if intents.include?('move_left') || intents.include?('start_left')
   gs[:player][:coord].x += 1 if intents.include?('move_right') || intents.include?('start_right')
   gs[:player][:coord].y -= 1 if intents.include?('move_up') || intents.include?('start_up')
