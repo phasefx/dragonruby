@@ -18,10 +18,10 @@ module Logic
     # (because it itself is implemented via a flag in gtk.state)
     # so we'll call later at the end of the tick
 
-    save gtk, gtk.state if intents.include?('save')
+    State.save gtk, gtk.state if intents.include?('save')
 
     # gtk.state
-    parsed_state = load gtk if intents.include?('load')
+    parsed_state = State.load gtk if intents.include?('load')
     return parsed_state if parsed_state
 
     gtk.state
@@ -43,6 +43,14 @@ module Logic
     value
   end
 
+  def self.cos(coefficient, theta)
+    Math.cos(coefficient * theta.to_radians)
+  end
+
+  def self.sin(coefficient, theta)
+    Math.sin(coefficient * theta.to_radians)
+  end
+
   # rubocop:disable Metrics/AbcSize
   # _rubocop:disable Metrics/PerceivedComplexity
   # _rubocop:disable Metrics/CyclomaticComplexity
@@ -50,9 +58,9 @@ module Logic
   def self.game_logic(state, _intents)
     gs = state.game
     gs[:theta] = wrap(gs[:theta] + 1, 0, 360)
-    gs[:anchors][0][:coord] = [200 * Math.cos(3 * gs[:theta].to_radians), 200 * Math.sin(2 * gs[:theta].to_radians)]
-    gs[:anchors][1][:coord] = [200 * Math.cos(gs[:theta].to_radians), 200 * Math.sin(gs[:theta].to_radians)]
-    gs[:anchors][2][:coord] = [200 * Math.cos(2 * gs[:theta].to_radians), 200 * Math.sin(3 * gs[:theta].to_radians)]
+    gs[:actors][:triangles][0][:points][0][:coord] = [200 * cos(3, gs[:theta]), 200 * sin(2, gs[:theta])]
+    gs[:actors][:triangles][0][:points][1][:coord] = [200 * cos(1, gs[:theta]), 200 * sin(1, gs[:theta])]
+    gs[:actors][:triangles][0][:points][2][:coord] = [200 * cos(2, gs[:theta]), 200 * sin(3, gs[:theta])]
     gs
   end
   # _rubocop:enable Metrics/MethodLength

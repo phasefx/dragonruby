@@ -3,14 +3,25 @@
 # output methods
 module Output
   # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def self.render(game, gtk)
     primitives = []
-    primitives << render_line(game[:anchors][0], game[:anchors][1], 255, 0, 0)
-    primitives << render_line(game[:anchors][1], game[:anchors][2], 0, 255, 0)
-    primitives << render_line(game[:anchors][0], game[:anchors][2], 0, 0, 255)
+    primitives << render_line(
+      game[:actors][:triangles][0][:points][0],
+      game[:actors][:triangles][0][:points][1], 255, 0, 0
+    )
+    primitives << render_line(
+      game[:actors][:triangles][0][:points][1],
+      game[:actors][:triangles][0][:points][2], 0, 255, 0
+    )
+    primitives << render_line(
+      game[:actors][:triangles][0][:points][0],
+      game[:actors][:triangles][0][:points][2], 0, 0, 255
+    )
     primitives << render_fps(game, gtk)
     primitives
   end
+  # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
 
   def self.render_line(point1, point2, red, green, blue)

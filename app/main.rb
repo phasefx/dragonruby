@@ -55,11 +55,18 @@ module Game
     gtk.grid.origin_center!
     # and what we're really after, the game model/state
     game = {
-      anchors: [
-        { coord: [0, 0], offset: [0, 0] },
-        { coord: [0, 0], offset: [0, 0] },
-        { coord: [0, 0], offset: [0, 0] }
-      ],
+      actors: {
+        player: { coord: [0, 0], visible: false },
+        triangles: [
+          {
+            points: [
+              { coord: [0, 0], offset: [0, 0] },
+              { coord: [0, 0], offset: [0, 0] },
+              { coord: [0, 0], offset: [0, 0] }
+            ]
+          }
+        ]
+      },
       theta: 0,
       show_fps: true,
       keymaps: {
