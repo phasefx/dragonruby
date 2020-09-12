@@ -52,11 +52,12 @@ module Logic
   end
 
   def self.test_and_move_point(point, equation, player)
-    proposed_theta = wrap(point[:theta] + 1, 0, 360)
+    p = Game.deep_clone point
+    proposed_theta = wrap(p[:theta] + 1, 0, 360)
     proposed_coord = equation.call(proposed_theta)
-    point[:theta] = proposed_theta unless player[:visible] && proposed_coord.intersect_rect?(player[:rect], 0)
-    point[:coord] = proposed_coord
-    point
+    p[:theta] = proposed_theta unless player[:visible] && proposed_coord.intersect_rect?(player[:rect], 0)
+    p[:coord] = proposed_coord
+    p
   end
 
   # rubocop:disable Metrics/AbcSize
@@ -64,7 +65,7 @@ module Logic
   # _rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
   def self.game_logic(state, mouse, intents)
-    gs = state.game
+    gs = Game.deep_clone state.game
     player = gs[:actors][:player]
     player = player_logic(player, mouse, intents)
 
@@ -75,7 +76,7 @@ module Logic
     ]
 
     gs[:actors][:triangles][0][:points].each_with_index do |point, idx|
-      test_and_move_point(point, equations[idx], player)
+      gs[:actors][:triangles][0][:points][idx] = test_and_move_point(point, equations[idx], player)
     end
 
     gs[:actors][:player] = player
@@ -89,19 +90,20 @@ module Logic
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def self.player_logic(player, mouse, intents)
-    player[:size] = bound(player[:size] + 10, 1, 100)
-    player[:coord] = mouse.position if intents.include?('standard_action')
-    player[:visible] = true         if intents.include?('standard_action')
-    player[:size] = 1               if intents.include?('standard_action')
-    player[:visible] = false        if intents.include?('mouse_up')
-    player[:size] = 1               if intents.include?('mouse_up')
-    player[:rect] = [
-      player[:coord].x - player[:size].half,
-      player[:coord].y - player[:size].half,
-      player[:size], player[:size]
+    p = Game.deep_clone player
+    p[:size] = bound(player[:size] + 10, 1, 100)
+    p[:coord] = mouse.position if intents.include?('standard_action')
+    p[:visible] = true         if intents.include?('standard_action')
+    p[:size] = 1               if intents.include?('standard_action')
+    p[:visible] = false        if intents.include?('mouse_up')
+    p[:size] = 1               if intents.include?('mouse_up')
+    p[:rect] = [
+      p[:coord].x - p[:size].half,
+      p[:coord].y - p[:size].half,
+      p[:size], p[:size]
     ]
 
-    player
+    p
   end
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize

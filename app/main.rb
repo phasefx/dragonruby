@@ -48,6 +48,13 @@ end
 
 # housekeeping
 module Game
+  # rubocop:disable Security/Eval
+  def self.deep_clone(obj)
+    # using $gtk is just too convenient to pass up here
+    eval $gtk.serialize_state obj
+  end
+  # rubocop:enable Security/Eval
+
   # rubocop:disable Metrics/MethodLength
   def self.init(gtk)
     # some side-effects...
