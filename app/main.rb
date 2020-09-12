@@ -36,43 +36,46 @@ require 'app/load_save.rb'
 
 # rubocop:disable Metrics/AbcSize
 def tick(gtk)
-  gtk.state.game ||= init gtk
-  meta_intents = meta_input gtk.state.game[:keymaps], gtk.inputs
-  player_intents = player_input gtk.state.game[:keymaps], gtk.inputs
-  gtk.state = meta_intent_handler gtk, meta_intents
-  gtk.state.game = game_logic gtk.state, player_intents
-  gtk.outputs.primitives << render(gtk.state.game, gtk)
+  gtk.state.game ||= Game.init gtk
+  meta_intents = Input.meta_input gtk.state.game[:keymaps], gtk.inputs
+  player_intents = Input.player_input gtk.state.game[:keymaps], gtk.inputs
+  gtk.state = Logic.meta_intent_handler gtk, meta_intents
+  gtk.state.game = Logic.game_logic gtk.state, player_intents
+  gtk.outputs.primitives << Output.render(gtk.state.game, gtk)
   gtk.gtk.reset if meta_intents.include?('reset')
 end
 # rubocop:enable Metrics/AbcSize
 
-# rubocop:disable Metrics/MethodLength
-def init(gtk)
-  # some side-effects...
-  gtk.gtk.set_window_title(':-)')
-  gtk.grid.origin_center!
-  # and what we're really after, the game model/state
-  game = {
-    anchors: [
-      { coord: [0, 0], offset: [0, 0] },
-      { coord: [0, 0], offset: [0, 0] },
-      { coord: [0, 0], offset: [0, 0] }
-    ],
-    theta: 0,
-    show_fps: true,
-    keymaps: {
-      left: %i[left a],
-      right: %i[right d],
-      up: %i[up w],
-      down: %i[down s],
-      toggle_fps: %i[space],
-      exit: %i[escape],
-      reset: %i[r],
-      load: %i[l],
-      save: %i[m]
+# housekeeping
+module Game
+  # rubocop:disable Metrics/MethodLength
+  def self.init(gtk)
+    # some side-effects...
+    gtk.gtk.set_window_title(':-)')
+    gtk.grid.origin_center!
+    # and what we're really after, the game model/state
+    game = {
+      anchors: [
+        { coord: [0, 0], offset: [0, 0] },
+        { coord: [0, 0], offset: [0, 0] },
+        { coord: [0, 0], offset: [0, 0] }
+      ],
+      theta: 0,
+      show_fps: true,
+      keymaps: {
+        left: %i[left a],
+        right: %i[right d],
+        up: %i[up w],
+        down: %i[down s],
+        toggle_fps: %i[space],
+        exit: %i[escape],
+        reset: %i[r],
+        load: %i[l],
+        save: %i[m]
+      }
     }
-  }
-  puts game
-  game
+    puts game
+    game
+  end
+  # rubocop:enable Metrics/MethodLength
 end
-# rubocop:enable Metrics/MethodLength
