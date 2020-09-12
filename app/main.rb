@@ -67,30 +67,30 @@ module Game
         triangles: [
           {
             points: [
-              { coord: [0, 0], offset: [0, 0], theta: 0 },
-              { coord: [0, 0], offset: [0, 0], theta: 0 },
-              { coord: [0, 0], offset: [0, 0], theta: 0 }
+              { coord: [0, 0], offset: [0, 0], theta: 0, equation: 0 },
+              { coord: [0, 0], offset: [0, 0], theta: 0, equation: 1 },
+              { coord: [0, 0], offset: [0, 0], theta: 0, equation: 2 }
             ]
           },
           {
             points: [
-              { coord: [0, 0], offset: [0, 0], theta: 15 },
-              { coord: [0, 0], offset: [0, 0], theta: 15 },
-              { coord: [0, 0], offset: [0, 0], theta: 15 }
+              { coord: [0, 0], offset: [0, 0], theta: 15, equation: 0 },
+              { coord: [0, 0], offset: [0, 0], theta: 15, equation: 1 },
+              { coord: [0, 0], offset: [0, 0], theta: 15, equation: 2 }
             ]
           },
           {
             points: [
-              { coord: [0, 0], offset: [0, 0], theta: 30 },
-              { coord: [0, 0], offset: [0, 0], theta: 30 },
-              { coord: [0, 0], offset: [0, 0], theta: 30 }
+              { coord: [0, 0], offset: [0, 0], theta: 30, equation: 0 },
+              { coord: [0, 0], offset: [0, 0], theta: 30, equation: 1 },
+              { coord: [0, 0], offset: [0, 0], theta: 30, equation: 2 }
             ]
           },
           {
             points: [
-              { coord: [0, 0], offset: [0, 0], theta: 90 },
-              { coord: [0, 0], offset: [0, 0], theta: 90 },
-              { coord: [0, 0], offset: [0, 0], theta: 90 }
+              { coord: [0, 0], offset: [0, 0], theta: 90, equation: 0 },
+              { coord: [0, 0], offset: [0, 0], theta: 90, equation: 1 },
+              { coord: [0, 0], offset: [0, 0], theta: 90, equation: 2 }
             ]
           }
         ]

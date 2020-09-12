@@ -79,7 +79,7 @@ module Logic
       triangle[:points].each_with_index do |point, p_idx|
         gs[:actors][:triangles][t_idx][:points][p_idx] = test_and_move_point(
           point,
-          equations[p_idx],
+          equations[point[:equation]],
           player
         )
       end
@@ -98,7 +98,7 @@ module Logic
   def self.player_logic(player, mouse, intents)
     p = Game.deep_clone player
     p[:size] = bound(player[:size] + 10, 1, 100)
-    p[:coord] = mouse.position if intents.include?('standard_action')
+    p[:coord] = mouse.position
     p[:visible] = true         if intents.include?('standard_action')
     p[:size] = 1               if intents.include?('standard_action')
     p[:visible] = false        if intents.include?('mouse_up')

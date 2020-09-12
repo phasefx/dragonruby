@@ -58,6 +58,8 @@ module Output
   # _rubocop:enable Metrics/MethodLength
   # _rubocop:enable Metrics/AbcSize
 
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def self.render_fps(state, gtk)
     primitives = []
     text_height = gtk.gtk.calcstringbox('H')[1]
@@ -67,7 +69,19 @@ module Output
         gtk.grid.top - text_height * 0,
         "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count}"
       ].labels
+      primitives << [
+        gtk.grid.left,
+        gtk.grid.top - text_height * 1,
+        'R for Reset / M for Save / L for Load'
+      ].labels
+      primitives << [
+        gtk.grid.left,
+        gtk.grid.top - text_height * 2,
+        'Hold Left Mouse Button for square to trap vertices'
+      ].labels
     end
     primitives
   end
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
 end
