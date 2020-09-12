@@ -75,8 +75,14 @@ module Logic
       ->(t) { [200 * cos(2, t), 200 * sin(3, t)] }
     ]
 
-    gs[:actors][:triangles][0][:points].each_with_index do |point, idx|
-      gs[:actors][:triangles][0][:points][idx] = test_and_move_point(point, equations[idx], player)
+    gs[:actors][:triangles].each_with_index do |triangle, t_idx|
+      triangle[:points].each_with_index do |point, p_idx|
+        gs[:actors][:triangles][t_idx][:points][p_idx] = test_and_move_point(
+          point,
+          equations[p_idx],
+          player
+        )
+      end
     end
 
     gs[:actors][:player] = player

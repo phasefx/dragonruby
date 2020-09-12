@@ -71,6 +71,27 @@ module Game
               { coord: [0, 0], offset: [0, 0], theta: 0 },
               { coord: [0, 0], offset: [0, 0], theta: 0 }
             ]
+          },
+          {
+            points: [
+              { coord: [0, 0], offset: [0, 0], theta: 15 },
+              { coord: [0, 0], offset: [0, 0], theta: 15 },
+              { coord: [0, 0], offset: [0, 0], theta: 15 }
+            ]
+          },
+          {
+            points: [
+              { coord: [0, 0], offset: [0, 0], theta: 30 },
+              { coord: [0, 0], offset: [0, 0], theta: 30 },
+              { coord: [0, 0], offset: [0, 0], theta: 30 }
+            ]
+          },
+          {
+            points: [
+              { coord: [0, 0], offset: [0, 0], theta: 90 },
+              { coord: [0, 0], offset: [0, 0], theta: 90 },
+              { coord: [0, 0], offset: [0, 0], theta: 90 }
+            ]
           }
         ]
       },

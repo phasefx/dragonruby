@@ -6,7 +6,7 @@ module Output
   # _rubocop:disable Metrics/MethodLength
   def self.render(game, gtk)
     primitives = []
-    primitives << render_triangle(game[:actors][:triangles][0])
+    primitives << game[:actors][:triangles].map { |t| render_triangle(t) }
     primitives << render_player(game[:actors][:player])
     primitives << render_fps(game, gtk)
     primitives
