@@ -53,12 +53,10 @@ def init(gtk)
   gtk.grid.origin_center!
   # and what we're really after, the game model/state
   game = {
-    player: {
-      coord: [0, 0]
-    },
     anchors: [
-      { coord: [0, 0] },
-      { coord: [0, 0] }
+      { coord: [0, 0], offset: [0, 0] },
+      { coord: [0, 0], offset: [0, 0] },
+      { coord: [0, 0], offset: [0, 0] }
     ],
     theta: 0,
     show_fps: true,

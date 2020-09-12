@@ -3,9 +3,9 @@
 # rubocop:disable Metrics/AbcSize
 def render(game, gtk)
   primitives = []
-  primitives << render_line(game[:player], game[:anchors][0], 255, 0, 0)
-  primitives << render_line(game[:anchors][0], game[:anchors][1], 0, 255, 0)
-  primitives << render_line(game[:player], game[:anchors][1], 0, 0, 255)
+  primitives << render_line(game[:anchors][0], game[:anchors][1], 255, 0, 0)
+  primitives << render_line(game[:anchors][1], game[:anchors][2], 0, 255, 0)
+  primitives << render_line(game[:anchors][0], game[:anchors][2], 0, 0, 255)
   primitives << render_fps(game, gtk)
   primitives
 end
