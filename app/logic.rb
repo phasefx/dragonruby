@@ -51,20 +51,58 @@ module Logic
     Math.sin(coefficient * theta.to_radians)
   end
 
+  def self.test_and_move_point(point, equation, player)
+    proposed_theta = wrap(point[:theta] + 1, 0, 360)
+    proposed_coord = equation.call(proposed_theta)
+    point[:theta] = proposed_theta unless player[:visible] && proposed_coord.intersect_rect?(player[:rect], 0)
+    point[:coord] = proposed_coord
+    point
+  end
+
   # rubocop:disable Metrics/AbcSize
   # _rubocop:disable Metrics/PerceivedComplexity
   # _rubocop:disable Metrics/CyclomaticComplexity
-  # _rubocop:disable Metrics/MethodLength
-  def self.game_logic(state, _intents)
+  # rubocop:disable Metrics/MethodLength
+  def self.game_logic(state, mouse, intents)
     gs = state.game
-    gs[:theta] = wrap(gs[:theta] + 1, 0, 360)
-    gs[:actors][:triangles][0][:points][0][:coord] = [200 * cos(3, gs[:theta]), 200 * sin(2, gs[:theta])]
-    gs[:actors][:triangles][0][:points][1][:coord] = [200 * cos(1, gs[:theta]), 200 * sin(1, gs[:theta])]
-    gs[:actors][:triangles][0][:points][2][:coord] = [200 * cos(2, gs[:theta]), 200 * sin(3, gs[:theta])]
+    player = gs[:actors][:player]
+    player = player_logic(player, mouse, intents)
+
+    equations = [
+      ->(t) { [200 * cos(3, t), 200 * sin(2, t)] },
+      ->(t) { [200 * cos(1, t), 200 * sin(1, t)] },
+      ->(t) { [200 * cos(2, t), 200 * sin(3, t)] }
+    ]
+
+    gs[:actors][:triangles][0][:points].each_with_index do |point, idx|
+      test_and_move_point(point, equations[idx], player)
+    end
+
+    gs[:actors][:player] = player
     gs
   end
-  # _rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/MethodLength
   # _rubocop:enable Metrics/CyclomaticComplexity
   # _rubocop:enable Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/AbcSize
+
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
+  def self.player_logic(player, mouse, intents)
+    player[:size] = bound(player[:size] + 10, 1, 100)
+    player[:coord] = mouse.position if intents.include?('standard_action')
+    player[:visible] = true         if intents.include?('standard_action')
+    player[:size] = 1               if intents.include?('standard_action')
+    player[:visible] = false        if intents.include?('mouse_up')
+    player[:size] = 1               if intents.include?('mouse_up')
+    player[:rect] = [
+      player[:coord].x - player[:size].half,
+      player[:coord].y - player[:size].half,
+      player[:size], player[:size]
+    ]
+
+    player
+  end
+  # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
 end

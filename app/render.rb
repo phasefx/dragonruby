@@ -2,23 +2,34 @@
 
 # output methods
 module Output
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
+  # _rubocop:disable Metrics/AbcSize
+  # _rubocop:disable Metrics/MethodLength
   def self.render(game, gtk)
     primitives = []
-    primitives << render_line(
-      game[:actors][:triangles][0][:points][0],
-      game[:actors][:triangles][0][:points][1], 255, 0, 0
-    )
-    primitives << render_line(
-      game[:actors][:triangles][0][:points][1],
-      game[:actors][:triangles][0][:points][2], 0, 255, 0
-    )
-    primitives << render_line(
-      game[:actors][:triangles][0][:points][0],
-      game[:actors][:triangles][0][:points][2], 0, 0, 255
-    )
+    primitives << render_triangle(game[:actors][:triangles][0])
+    primitives << render_player(game[:actors][:player])
     primitives << render_fps(game, gtk)
+    primitives
+  end
+  # _rubocop:enable Metrics/MethodLength
+  # _rubocop:enable Metrics/AbcSize
+
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
+  def self.render_triangle(triangle)
+    primitives = []
+    primitives << render_line(
+      triangle[:points][0][:coord],
+      triangle[:points][1][:coord], 255, 0, 0
+    )
+    primitives << render_line(
+      triangle[:points][1][:coord],
+      triangle[:points][2][:coord], 0, 255, 0
+    )
+    primitives << render_line(
+      triangle[:points][0][:coord],
+      triangle[:points][2][:coord], 0, 0, 255
+    )
     primitives
   end
   # rubocop:enable Metrics/MethodLength
@@ -27,13 +38,25 @@ module Output
   def self.render_line(point1, point2, red, green, blue)
     primitives = []
     primitives << {
-      x: point1[:coord].x, y: point1[:coord].y,
-      x2: point2[:coord].x, y2: point2[:coord].y,
+      x: point1.x, y: point1.y,
+      x2: point2.x, y2: point2.y,
       r: red, g: green, b: blue, a: 255
     }.line
 
     primitives
   end
+
+  # _rubocop:disable Metrics/AbcSize
+  # _rubocop:disable Metrics/MethodLength
+  def self.render_player(player)
+    primitives = []
+    return primitives unless player[:visible]
+
+    primitives << player[:rect].border
+    primitives
+  end
+  # _rubocop:enable Metrics/MethodLength
+  # _rubocop:enable Metrics/AbcSize
 
   def self.render_fps(state, gtk)
     primitives = []

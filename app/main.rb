@@ -38,9 +38,9 @@ require 'app/load_save.rb'
 def tick(gtk)
   gtk.state.game ||= Game.init gtk
   meta_intents = Input.meta_input gtk.state.game[:keymaps], gtk.inputs
-  player_intents = Input.player_input gtk.state.game[:keymaps], gtk.inputs
+  player_intents = Input.player_input gtk.state.game[:keymaps], gtk.state.game[:mousemaps], gtk.inputs
   gtk.state = Logic.meta_intent_handler gtk, meta_intents
-  gtk.state.game = Logic.game_logic gtk.state, player_intents
+  gtk.state.game = Logic.game_logic gtk.state, gtk.inputs.mouse, player_intents
   gtk.outputs.primitives << Output.render(gtk.state.game, gtk)
   gtk.gtk.reset if meta_intents.include?('reset')
 end
@@ -56,19 +56,21 @@ module Game
     # and what we're really after, the game model/state
     game = {
       actors: {
-        player: { coord: [0, 0], visible: false },
+        player: { coord: [0, 0], visible: false, size: 1 },
         triangles: [
           {
             points: [
-              { coord: [0, 0], offset: [0, 0] },
-              { coord: [0, 0], offset: [0, 0] },
-              { coord: [0, 0], offset: [0, 0] }
+              { coord: [0, 0], offset: [0, 0], theta: 0 },
+              { coord: [0, 0], offset: [0, 0], theta: 0 },
+              { coord: [0, 0], offset: [0, 0], theta: 0 }
             ]
           }
         ]
       },
-      theta: 0,
       show_fps: true,
+      mousemaps: {
+        standard_action: %i[button_left]
+      },
       keymaps: {
         left: %i[left a],
         right: %i[right d],

@@ -26,10 +26,11 @@ module Input
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/CyclomaticComplexity
-  def self.player_input(keymaps, inputs)
+  def self.player_input(keymaps, mousemaps, inputs)
     intents = []
     down_keys = inputs.keyboard.key_down.truthy_keys
     held_keys = inputs.keyboard.key_held.truthy_keys
+    # there aren't actually used currently but are an early example of what I'm going for
     down_keys.each do |truth|
       intents << 'start_left' if keymaps[:left].include?(truth)
       intents << 'start_right' if keymaps[:right].include?(truth)
@@ -42,6 +43,9 @@ module Input
       intents << 'move_up' if keymaps[:up].include?(truth)
       intents << 'move_down' if keymaps[:down].include?(truth)
     end
+    # the mouse input, however, is being used at the moment
+    intents << 'standard_action' if inputs.mouse.down && inputs.mouse.send(mousemaps[:standard_action][0])
+    intents << 'mouse_up' if inputs.mouse.up
     puts intents if intents.length.positive?
     intents
   end
