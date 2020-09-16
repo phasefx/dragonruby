@@ -68,7 +68,7 @@ module Game
   end
 
   def self.next_level(game)
-    game[:levels][:current_level].deep_clone
+    deep_clone game[:levels][game[:current_level]]
   end
 
   # rubocop:disable Metrics/MethodLength
