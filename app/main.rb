@@ -37,7 +37,8 @@ require 'app/load_save.rb'
 # rubocop:disable Metrics/AbcSize
 def tick(gtk)
   gtk.state.game ||= Game.init gtk
-  gtk.state.game[:actors] = Game.next_level gtk.state.game unless gtk.state.game[:actors]
+  gtk.state.game = Game.next_level gtk.state.game unless gtk.state.game[:actors]
+  gtk.state.game = Game.next_level gtk.state.game if gtk.state.game[:actors][:player][:winner]
   meta_intents = Input.meta_input gtk.state.game[:keymaps], gtk.inputs
   player_intents = Input.player_input gtk.state.game[:keymaps], gtk.state.game[:mousemaps], gtk.inputs
   gtk.state = Logic.meta_intent_handler gtk, meta_intents
@@ -68,7 +69,12 @@ module Game
   end
 
   def self.next_level(game)
-    deep_clone game[:levels][game[:current_level]]
+    return game if game[:current_level] == game[:levels].length - 1
+
+    gs = deep_clone game
+    gs[:current_level] += 1
+    gs[:actors] = deep_clone gs[:levels][gs[:current_level]]
+    gs
   end
 
   def self.tick_count
@@ -83,7 +89,8 @@ module Game
     gtk.grid.origin_center!
     # and what we're really after, the game model/state
     game = {
-      current_level: 0,
+      game_over: false,
+      current_level: -1,
       levels: [
         {
           player: { coord: [0, 0], visible: false, size: 1, winner: false },
@@ -101,6 +108,26 @@ module Game
                 { coord: [0, 0], offset: [0, 0], theta: 0, equation: 1 },
                 { coord: [0, 0], offset: [0, 0], theta: 90, equation: 1 },
                 { coord: [0, 0], offset: [0, 0], theta: 270, equation: 1 }
+              ]
+            }
+          ]
+        },
+        {
+          player: { coord: [0, 0], visible: false, size: 1, winner: false },
+          show_locus: false,
+          targets: [
+            { rect: [100, 100, 50, 50], hit: false },
+            { rect: [-180, -110, 50, 50], hit: false },
+            { rect: [170, 50, 50, 50], hit: false }
+          ],
+          triangles: [
+            {
+              locus: [0, 0],
+              throttle: 1, # increase theta on tick_count.mod(throttle).zero?
+              points: [
+                { coord: [0, 0], offset: [0, 0], theta: 0, equation: 0 },
+                { coord: [0, 0], offset: [0, 0], theta: 90, equation: 0 },
+                { coord: [0, 0], offset: [0, 0], theta: 270, equation: 0 }
               ]
             }
           ]

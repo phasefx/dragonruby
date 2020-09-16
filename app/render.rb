@@ -2,7 +2,7 @@
 
 # output methods
 module Output
-  # _rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/AbcSize
   # _rubocop:disable Metrics/MethodLength
   def self.render(game, gtk)
     primitives = []
@@ -13,7 +13,7 @@ module Output
     primitives
   end
   # _rubocop:enable Metrics/MethodLength
-  # _rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/AbcSize
 
   def self.render_target(target)
     primitives = []
@@ -88,34 +88,39 @@ module Output
   def self.render_fps(state, gtk)
     primitives = []
     text_height = gtk.gtk.calcstringbox('H')[1]
-    if state[:show_fps]
-      primitives << [
-        gtk.grid.left,
-        gtk.grid.top - text_height * 0,
-        "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count}"
-      ].labels
-      primitives << [
-        gtk.grid.left,
-        gtk.grid.top - text_height * 1,
-        'R for Reset / M for Save / L for Load'
-      ].labels
-      primitives << [
-        gtk.grid.left,
-        gtk.grid.top - text_height * 2,
-        'Hold Left Mouse Button for square to trap vertices'
-      ].labels
-    end
+    primitives << if state[:show_fps]
+                    [
+                      gtk.grid.left,
+                      gtk.grid.top - text_height * 0,
+                      "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count} Level #{state[:current_level]}"
+                    ].labels
+                  else
+                    [
+                      gtk.grid.left,
+                      gtk.grid.top - text_height * 0,
+                      "Level #{state[:current_level]}"
+                    ].labels
+                  end
+    primitives << [
+      gtk.grid.left,
+      gtk.grid.top - text_height * 1,
+      'R for Reset / M for Save / L for Load'
+    ].labels
+    primitives << [
+      gtk.grid.left,
+      gtk.grid.top - text_height * 2,
+      'Hold Left Mouse Button for square to trap vertices'
+    ].labels
     if state[:actors][:show_locus]
       primitives << [
         gtk.grid.left,
         gtk.grid.top - text_height * 3,
         'Showing Loci'
       ].labels
-    end
-    if state[:actors][:player][:winner]
+    elsif state[:actors][:player][:winner]
       primitives << [
         gtk.grid.left,
-        gtk.grid.top - text_height * 4,
+        gtk.grid.top - text_height * 3,
         'WINNER!'
       ].labels
     end

@@ -95,7 +95,7 @@ module Logic
       end
     end
 
-    player[:winner] = true if targets.all? { |t| t[:hit] }
+    player[:winner] = Game.tick_count if targets.all? { |t| t[:hit] }
 
     gs[:actors][:player] = player
     gs
