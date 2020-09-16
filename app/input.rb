@@ -45,6 +45,7 @@ module Input
     end
     # the mouse input, however, is being used at the moment
     intents << 'standard_action' if inputs.mouse.down && inputs.mouse.send(mousemaps[:standard_action][0])
+    intents << 'alternate_action' if inputs.mouse.down && inputs.mouse.send(mousemaps[:alternate_action][0])
     intents << 'mouse_up' if inputs.mouse.up
     puts intents if intents.length.positive?
     intents

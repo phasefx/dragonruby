@@ -37,6 +37,7 @@ require 'app/load_save.rb'
 # rubocop:disable Metrics/AbcSize
 def tick(gtk)
   gtk.state.game ||= Game.init gtk
+  gtk.state.game[:actors] = Game.next_level gtk.state.game unless gtk.state.game[:actors]
   meta_intents = Input.meta_input gtk.state.game[:keymaps], gtk.inputs
   player_intents = Input.player_input gtk.state.game[:keymaps], gtk.state.game[:mousemaps], gtk.inputs
   gtk.state = Logic.meta_intent_handler gtk, meta_intents
@@ -55,6 +56,21 @@ module Game
   end
   # rubocop:enable Security/Eval
 
+  def self.v_add(*vectors)
+    sum = []
+    vectors.each do |v|
+      v.each_with_index do |e, i|
+        sum[i] = 0 if sum[i].nil?
+        sum[i] += e
+      end
+    end
+    sum
+  end
+
+  def self.next_level(game)
+    game[:levels][:current_level].deep_clone
+  end
+
   # rubocop:disable Metrics/MethodLength
   def self.init(gtk)
     # some side-effects...
@@ -62,42 +78,27 @@ module Game
     gtk.grid.origin_center!
     # and what we're really after, the game model/state
     game = {
-      actors: {
-        player: { coord: [0, 0], visible: false, size: 1 },
-        triangles: [
-          {
-            points: [
-              { coord: [0, 0], offset: [0, 0], theta: 0, equation: 0 },
-              { coord: [0, 0], offset: [0, 0], theta: 0, equation: 1 },
-              { coord: [0, 0], offset: [0, 0], theta: 0, equation: 2 }
-            ]
-          },
-          {
-            points: [
-              { coord: [0, 0], offset: [0, 0], theta: 15, equation: 0 },
-              { coord: [0, 0], offset: [0, 0], theta: 15, equation: 1 },
-              { coord: [0, 0], offset: [0, 0], theta: 15, equation: 2 }
-            ]
-          },
-          {
-            points: [
-              { coord: [0, 0], offset: [0, 0], theta: 30, equation: 0 },
-              { coord: [0, 0], offset: [0, 0], theta: 30, equation: 1 },
-              { coord: [0, 0], offset: [0, 0], theta: 30, equation: 2 }
-            ]
-          },
-          {
-            points: [
-              { coord: [0, 0], offset: [0, 0], theta: 90, equation: 0 },
-              { coord: [0, 0], offset: [0, 0], theta: 90, equation: 1 },
-              { coord: [0, 0], offset: [0, 0], theta: 90, equation: 2 }
-            ]
-          }
-        ]
-      },
+      current_level: 0,
+      levels: [
+        {
+          player: { coord: [0, 0], visible: false, size: 1 },
+          show_locus: false,
+          triangles: [
+            {
+              locus: [0, 0],
+              points: [
+                { coord: [0, 0], offset: [0, 0], theta: 0, equation: 1 },
+                { coord: [0, 0], offset: [0, 0], theta: 90, equation: 1 },
+                { coord: [0, 0], offset: [0, 0], theta: 270, equation: 1 }
+              ]
+            }
+          ]
+        }
+      ],
       show_fps: true,
       mousemaps: {
-        standard_action: %i[button_left]
+        standard_action: %i[button_left],
+        alternate_action: %i[button_right]
       },
       keymaps: {
         left: %i[left a],

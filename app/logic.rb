@@ -69,6 +69,9 @@ module Logic
     player = gs[:actors][:player]
     player = player_logic(player, mouse, intents)
 
+    gs[:actors][:show_locus] = true if intents.include?('alternate_action')
+    gs[:actors][:show_locus] = false if intents.include?('mouse_up')
+
     equations = [
       ->(t) { [200 * cos(3, t), 200 * sin(2, t)] },
       ->(t) { [200 * cos(1, t), 200 * sin(1, t)] },

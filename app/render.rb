@@ -6,7 +6,7 @@ module Output
   # _rubocop:disable Metrics/MethodLength
   def self.render(game, gtk)
     primitives = []
-    primitives << game[:actors][:triangles].map { |t| render_triangle(t) }
+    primitives << game[:actors][:triangles].map { |t| render_triangle(t, game[:actors][:show_locus]) }
     primitives << render_player(game[:actors][:player])
     primitives << render_fps(game, gtk)
     primitives
@@ -16,19 +16,33 @@ module Output
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
-  def self.render_triangle(triangle)
+  def self.render_triangle(triangle, show_locus)
     primitives = []
+    if show_locus
+      primitives << render_line(
+        Game.v_add(triangle[:locus], triangle[:points][0][:coord], triangle[:points][0][:offset]),
+        triangle[:locus], 128, 128, 128
+      )
+      primitives << render_line(
+        Game.v_add(triangle[:locus], triangle[:points][1][:coord], triangle[:points][0][:offset]),
+        triangle[:locus], 128, 128, 128
+      )
+      primitives << render_line(
+        Game.v_add(triangle[:locus], triangle[:points][2][:coord], triangle[:points][0][:offset]),
+        triangle[:locus], 128, 128, 128
+      )
+    end
     primitives << render_line(
-      triangle[:points][0][:coord],
-      triangle[:points][1][:coord], 255, 0, 0
+      Game.v_add(triangle[:locus], triangle[:points][0][:coord], triangle[:points][0][:offset]),
+      Game.v_add(triangle[:locus], triangle[:points][1][:coord], triangle[:points][1][:offset]), 255, 0, 0
     )
     primitives << render_line(
-      triangle[:points][1][:coord],
-      triangle[:points][2][:coord], 0, 255, 0
+      Game.v_add(triangle[:locus], triangle[:points][1][:coord], triangle[:points][1][:offset]),
+      Game.v_add(triangle[:locus], triangle[:points][2][:coord], triangle[:points][2][:offset]), 0, 255, 0
     )
     primitives << render_line(
-      triangle[:points][0][:coord],
-      triangle[:points][2][:coord], 0, 0, 255
+      Game.v_add(triangle[:locus], triangle[:points][0][:coord], triangle[:points][0][:offset]),
+      Game.v_add(triangle[:locus], triangle[:points][2][:coord], triangle[:points][2][:offset]), 0, 0, 255
     )
     primitives
   end
@@ -78,6 +92,13 @@ module Output
         gtk.grid.left,
         gtk.grid.top - text_height * 2,
         'Hold Left Mouse Button for square to trap vertices'
+      ].labels
+    end
+    if state[:actors][:show_locus]
+      primitives << [
+        gtk.grid.left,
+        gtk.grid.top - text_height * 3,
+        'Showing Loci'
       ].labels
     end
     primitives
