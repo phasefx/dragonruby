@@ -71,6 +71,11 @@ module Game
     deep_clone game[:levels][game[:current_level]]
   end
 
+  def self.tick_count
+    # why am I wrapping this?
+    $gtk.args.tick_count
+  end
+
   # rubocop:disable Metrics/MethodLength
   def self.init(gtk)
     # some side-effects...
@@ -81,11 +86,17 @@ module Game
       current_level: 0,
       levels: [
         {
-          player: { coord: [0, 0], visible: false, size: 1 },
+          player: { coord: [0, 0], visible: false, size: 1, winner: false },
           show_locus: false,
+          targets: [
+            { rect: [100, 100, 50, 50], hit: false },
+            { rect: [-180, -110, 50, 50], hit: false },
+            { rect: [170, 50, 50, 50], hit: false }
+          ],
           triangles: [
             {
               locus: [0, 0],
+              throttle: 1, # increase theta on tick_count.mod(throttle).zero?
               points: [
                 { coord: [0, 0], offset: [0, 0], theta: 0, equation: 1 },
                 { coord: [0, 0], offset: [0, 0], theta: 90, equation: 1 },

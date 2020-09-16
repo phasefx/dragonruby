@@ -7,12 +7,23 @@ module Output
   def self.render(game, gtk)
     primitives = []
     primitives << game[:actors][:triangles].map { |t| render_triangle(t, game[:actors][:show_locus]) }
+    primitives << game[:actors][:targets].map { |t| render_target(t) }
     primitives << render_player(game[:actors][:player])
     primitives << render_fps(game, gtk)
     primitives
   end
   # _rubocop:enable Metrics/MethodLength
   # _rubocop:enable Metrics/AbcSize
+
+  def self.render_target(target)
+    primitives = []
+    primitives << if target[:hit]
+                    target[:rect].solid
+                  else
+                    target[:rect].border
+                  end
+    primitives
+  end
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
@@ -99,6 +110,13 @@ module Output
         gtk.grid.left,
         gtk.grid.top - text_height * 3,
         'Showing Loci'
+      ].labels
+    end
+    if state[:actors][:player][:winner]
+      primitives << [
+        gtk.grid.left,
+        gtk.grid.top - text_height * 4,
+        'WINNER!'
       ].labels
     end
     primitives

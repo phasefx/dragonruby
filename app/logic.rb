@@ -51,9 +51,9 @@ module Logic
     Math.sin(coefficient * theta.to_radians)
   end
 
-  def self.test_and_move_point(point, equation, player)
+  def self.test_and_move_point(point, equation, player, throttle)
     p = Game.deep_clone point
-    proposed_theta = wrap(p[:theta] + 1, 0, 360)
+    proposed_theta = Game.tick_count.mod(throttle).zero? ? wrap(p[:theta] + 1, 0, 360) : p[:theta]
     proposed_coord = equation.call(proposed_theta)
     p[:theta] = proposed_theta unless player[:visible] && proposed_coord.intersect_rect?(player[:rect], 0)
     p[:coord] = proposed_coord
@@ -61,13 +61,14 @@ module Logic
   end
 
   # rubocop:disable Metrics/AbcSize
-  # _rubocop:disable Metrics/PerceivedComplexity
-  # _rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
   def self.game_logic(state, mouse, intents)
     gs = Game.deep_clone state.game
     player = gs[:actors][:player]
     player = player_logic(player, mouse, intents)
+    targets = gs[:actors][:targets]
 
     gs[:actors][:show_locus] = true if intents.include?('alternate_action')
     gs[:actors][:show_locus] = false if intents.include?('mouse_up')
@@ -78,22 +79,30 @@ module Logic
       ->(t) { [200 * cos(2, t), 200 * sin(3, t)] }
     ]
 
+    targets.each { |t| t[:hit] = false }
+
     gs[:actors][:triangles].each_with_index do |triangle, t_idx|
       triangle[:points].each_with_index do |point, p_idx|
         gs[:actors][:triangles][t_idx][:points][p_idx] = test_and_move_point(
           point,
           equations[point[:equation]],
-          player
+          player,
+          triangle[:throttle]
         )
+        targets.each do |target|
+          target[:hit] = true if gs[:actors][:triangles][t_idx][:points][p_idx][:coord].inside_rect? target[:rect]
+        end
       end
     end
+
+    player[:winner] = true if targets.all? { |t| t[:hit] }
 
     gs[:actors][:player] = player
     gs
   end
   # rubocop:enable Metrics/MethodLength
-  # _rubocop:enable Metrics/CyclomaticComplexity
-  # _rubocop:enable Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Metrics/AbcSize
 
   # rubocop:disable Metrics/AbcSize
