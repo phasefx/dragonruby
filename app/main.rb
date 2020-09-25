@@ -3,6 +3,9 @@
 require 'app/flight_input.rb'
 require 'app/flight_logic.rb'
 require 'app/flight_render.rb'
+require 'app/editor_input.rb'
+require 'app/editor_logic.rb'
+require 'app/editor_render.rb'
 require 'app/load_save.rb'
 
 # This is our entry-point into DragonRuby Game Toolkit
@@ -139,19 +142,38 @@ module Game
       ],
       show_fps: true,
       mousemaps: {
-        standard_action: %i[button_left],
-        alternate_action: %i[button_right]
+        Flight: {
+          standard_action: %i[button_left],
+          alternate_action: %i[button_right]
+        },
+        Editor: {
+          standard_action: %i[button_left],
+          alternate_action: %i[button_right]
+        }
       },
       keymaps: {
-        left: %i[left a],
-        right: %i[right d],
-        up: %i[up w],
-        down: %i[down s],
-        toggle_fps: %i[space],
-        exit: %i[escape],
-        reset: %i[r],
-        load: %i[l],
-        save: %i[m]
+        Flight: {
+          left: %i[left a],
+          right: %i[right d],
+          up: %i[up w],
+          down: %i[down s],
+          toggle_fps: %i[space],
+          exit: %i[escape],
+          reset: %i[r],
+          load: %i[l],
+          save: %i[m]
+        },
+        Editor: {
+          left: %i[left a],
+          right: %i[right d],
+          up: %i[up w],
+          down: %i[down s],
+          toggle_fps: %i[space],
+          exit: %i[escape],
+          reset: %i[r],
+          load: %i[l],
+          save: %i[m]
+        }
       }
     }
     puts game
