@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'app/input.rb'
-require 'app/logic.rb'
-require 'app/render.rb'
+require 'app/flight_input.rb'
+require 'app/flight_logic.rb'
+require 'app/flight_render.rb'
 require 'app/load_save.rb'
 
 # This is our entry-point into DragonRuby Game Toolkit
@@ -39,11 +39,14 @@ def tick(gtk)
   gtk.state.game ||= Game.init gtk
   gtk.state.game = Game.next_level gtk.state.game unless gtk.state.game[:actors]
   gtk.state.game = Game.next_level gtk.state.game if gtk.state.game[:actors][:player][:winner]
-  meta_intents = Input.meta_input gtk.state.game[:keymaps], gtk.inputs
-  player_intents = Input.player_input gtk.state.game[:keymaps], gtk.state.game[:mousemaps], gtk.inputs
-  gtk.state = Logic.meta_intent_handler gtk, meta_intents
-  gtk.state.game = Logic.game_logic gtk.state, gtk.inputs.mouse, player_intents
-  gtk.outputs.primitives << Output.render(gtk.state.game, gtk)
+  input = Kernel.const_get("#{gtk.state.game[:scene]}Input")
+  logic = Kernel.const_get("#{gtk.state.game[:scene]}Logic")
+  output = Kernel.const_get("#{gtk.state.game[:scene]}Output")
+  meta_intents = input.meta_input gtk.state.game[:keymaps], gtk.inputs
+  player_intents = input.player_input gtk.state.game[:keymaps], gtk.state.game[:mousemaps], gtk.inputs
+  gtk.state = logic.meta_intent_handler gtk, meta_intents
+  gtk.state.game = logic.game_logic gtk.state, gtk.inputs.mouse, player_intents
+  gtk.outputs.primitives << output.render(gtk.state.game, gtk)
   gtk.gtk.reset if meta_intents.include?('reset')
 end
 # rubocop:enable Metrics/AbcSize
@@ -89,6 +92,7 @@ module Game
     gtk.grid.origin_center!
     # and what we're really after, the game model/state
     game = {
+      scene: :Flight,
       game_over: false,
       current_level: -1,
       levels: [

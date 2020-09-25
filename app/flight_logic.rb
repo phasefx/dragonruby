@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # game logic
-module Logic
+module FlightLogic
   def self.toggle_fps(gtk)
     gtk.state.game[:show_fps] = !gtk.state.game[:show_fps]
   end

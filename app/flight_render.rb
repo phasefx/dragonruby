@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # output methods
-module Output
+module FlightOutput
   # rubocop:disable Metrics/AbcSize
   # _rubocop:disable Metrics/MethodLength
   def self.render(game, gtk)

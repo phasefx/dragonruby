@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Input methods
-module Input
+module FlightInput
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
