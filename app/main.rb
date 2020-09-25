@@ -38,6 +38,7 @@ require 'app/load_save.rb'
 #   those things into def meta_intent_handler
 
 # rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/MethodLength
 def tick(gtk)
   gtk.state.game ||= Game.init gtk
   gtk.state.game = Game.next_level gtk.state.game unless gtk.state.game[:actors]
@@ -52,9 +53,11 @@ def tick(gtk)
   gtk.outputs.primitives << output.render(gtk.state.game, gtk)
   gtk.gtk.reset if meta_intents.include?('reset')
 end
+# rubocop:enable Metrics/MethodLength
 # rubocop:enable Metrics/AbcSize
 
 # housekeeping
+# rubocop:disable Metrics/ModuleLength
 module Game
   # rubocop:disable Security/Eval
   def self.deep_clone(obj)
@@ -181,3 +184,4 @@ module Game
   end
   # rubocop:enable Metrics/MethodLength
 end
+# rubocop:enable Metrics/ModuleLength

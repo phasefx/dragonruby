@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # output methods
+# rubocop:disable Metrics/ModuleLength
 module EditorOutput
   # rubocop:disable Metrics/AbcSize
   # _rubocop:disable Metrics/MethodLength
@@ -129,3 +130,4 @@ module EditorOutput
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
 end
+# rubocop:enable Metrics/ModuleLength
