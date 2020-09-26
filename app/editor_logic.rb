@@ -60,10 +60,6 @@ module EditorLogic
     p
   end
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/PerceivedComplexity
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/MethodLength
   def self.game_logic(state, mouse, intents)
     gs = Game.deep_clone state.game
     player = gs[:actors][:player]
@@ -100,13 +96,7 @@ module EditorLogic
     gs[:actors][:player] = player
     gs
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Metrics/AbcSize
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def self.player_logic(player, mouse, intents)
     p = Game.deep_clone player
     p[:size] = bound(player[:size] + 10, 1, 100)
@@ -123,6 +113,4 @@ module EditorLogic
 
     p
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 end

@@ -37,13 +37,10 @@ require 'app/load_save.rb'
 #   calls to gtk.gtk) that break that.  I'll try to put
 #   those things into def meta_intent_handler
 
-# rubocop:disable Metrics/AbcSize
-# rubocop:disable Metrics/MethodLength
 def tick(gtk)
   # everything is stored here
   gtk.state.game ||= Game.init gtk
-  gtk.state.game = Game.next_level gtk.state.game unless gtk.state.game[:actors]
-  gtk.state.game = Game.next_level gtk.state.game if gtk.state.game[:actors][:player][:winner]
+  gtk.state.game = Game.next_level gtk.state.game if gtk.state.game[:desire_next_level]
 
   # our scene management
   input = Kernel.const_get("#{gtk.state.game[:scene]}Input")
@@ -80,11 +77,8 @@ def tick(gtk)
 
   gtk.gtk.reset if meta_intents.include?('reset')
 end
-# rubocop:enable Metrics/MethodLength
-# rubocop:enable Metrics/AbcSize
 
 # housekeeping
-# rubocop:disable Metrics/ModuleLength
 module Game
   # rubocop:disable Security/Eval
   def self.deep_clone(obj)
@@ -105,11 +99,11 @@ module Game
   end
 
   def self.next_level(game)
-    return game if game[:current_level] == game[:levels].length - 1
+    return game if game[:level_index] == game[:levels].length - 1
 
     gs = deep_clone game
-    gs[:current_level] += 1
-    gs[:actors] = deep_clone gs[:levels][gs[:current_level]]
+    gs[:level_index] += 1
+    gs[:current_level] = deep_clone gs[:levels][gs[:current_level]]
     gs
   end
 
@@ -118,58 +112,20 @@ module Game
     $gtk.args.tick_count
   end
 
-  # rubocop:disable Metrics/MethodLength
   def self.init(gtk)
     # some side-effects...
     gtk.gtk.set_window_title(':-)')
     gtk.grid.origin_center!
     # and what we're really after, the game model/state
     game = {
-      scene: :Flight,
+      scene: :Editor,
       game_over: false,
       current_level: -1,
-      levels: [
-        {
-          player: { coord: [0, 0], visible: false, size: 1, winner: false },
-          show_locus: false,
-          targets: [
-            { rect: [100, 100, 50, 50], hit: false },
-            { rect: [-180, -110, 50, 50], hit: false },
-            { rect: [170, 50, 50, 50], hit: false }
-          ],
-          triangles: [
-            {
-              locus: [0, 0],
-              throttle: 1, # increase theta on tick_count.mod(throttle).zero?
-              points: [
-                { coord: [0, 0], offset: [0, 0], theta: 0, equation: 1 },
-                { coord: [0, 0], offset: [0, 0], theta: 90, equation: 1 },
-                { coord: [0, 0], offset: [0, 0], theta: 270, equation: 1 }
-              ]
-            }
-          ]
-        },
-        {
-          player: { coord: [0, 0], visible: false, size: 1, winner: false },
-          show_locus: false,
-          targets: [
-            { rect: [100, 100, 50, 50], hit: false },
-            { rect: [-180, -110, 50, 50], hit: false },
-            { rect: [170, 50, 50, 50], hit: false }
-          ],
-          triangles: [
-            {
-              locus: [0, 0],
-              throttle: 1, # increase theta on tick_count.mod(throttle).zero?
-              points: [
-                { coord: [0, 0], offset: [0, 0], theta: 0, equation: 0 },
-                { coord: [0, 0], offset: [0, 0], theta: 90, equation: 0 },
-                { coord: [0, 0], offset: [0, 0], theta: 270, equation: 0 }
-              ]
-            }
-          ]
-        }
-      ],
+      desire_next_level: true,
+      actors: {
+
+      },
+      levels: [],
       show_fps: true,
       mousemaps: {
         Flight: {
@@ -209,6 +165,4 @@ module Game
     puts game
     game
   end
-  # rubocop:enable Metrics/MethodLength
 end
-# rubocop:enable Metrics/ModuleLength

@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
 # output methods
-# rubocop:disable Metrics/ModuleLength
 module FlightOutput
-  # rubocop:disable Metrics/AbcSize
-  # _rubocop:disable Metrics/MethodLength
   def self.render(game, gtk)
     primitives = []
     primitives << game[:actors][:triangles].map { |t| render_triangle(t, game[:actors][:show_locus]) }
@@ -13,8 +10,6 @@ module FlightOutput
     primitives << render_fps(game, gtk)
     primitives
   end
-  # _rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 
   def self.render_target(target)
     primitives = []
@@ -26,8 +21,6 @@ module FlightOutput
     primitives
   end
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def self.render_triangle(triangle, show_locus)
     primitives = []
     if show_locus
@@ -58,8 +51,6 @@ module FlightOutput
     )
     primitives
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 
   def self.render_line(point1, point2, red, green, blue)
     primitives = []
@@ -72,8 +63,6 @@ module FlightOutput
     primitives
   end
 
-  # _rubocop:disable Metrics/AbcSize
-  # _rubocop:disable Metrics/MethodLength
   def self.render_player(player)
     primitives = []
     return primitives unless player[:visible]
@@ -81,11 +70,7 @@ module FlightOutput
     primitives << player[:rect].border
     primitives
   end
-  # _rubocop:enable Metrics/MethodLength
-  # _rubocop:enable Metrics/AbcSize
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def self.render_fps(state, gtk)
     primitives = []
     text_height = gtk.gtk.calcstringbox('H')[1]
@@ -127,7 +112,4 @@ module FlightOutput
     end
     primitives
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 end
-# rubocop:enable Metrics/ModuleLength

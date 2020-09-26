@@ -2,9 +2,6 @@
 
 # Input methods
 module EditorInput
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/MethodLength
   def self.meta_input(inputs, keymaps)
     intents = []
     down_keys = inputs.keyboard.key_down.truthy_keys
@@ -18,14 +15,7 @@ module EditorInput
     puts intents if intents.length.positive?
     intents
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/AbcSize
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/PerceivedComplexity
-  # rubocop:disable Metrics/CyclomaticComplexity
   def self.player_input(inputs, keymaps, mousemaps)
     intents = []
     down_keys = inputs.keyboard.key_down.truthy_keys
@@ -50,8 +40,4 @@ module EditorInput
     puts intents if intents.length.positive?
     intents
   end
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 end
