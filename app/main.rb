@@ -123,7 +123,32 @@ module Game
       current_level: -1,
       desire_next_level: true,
       actors: {
-
+        ship: {
+          position: [0, 0],
+          parts: [
+            {
+              type: :helm,
+              shape: :cell,
+              hitpoints: 1,
+              relative_position: [0, 0],
+              rotation: 0
+            },
+            {
+              type: :life_support,
+              shape: :cell,
+              hitpoints: 1,
+              relative_position: [0, -1],
+              rotation: 0
+            },
+            {
+              type: :main_thruster,
+              shape: :cell,
+              hitpoints: 1,
+              relative_position: [0, -1],
+              rotation: 0
+            }
+          ]
+        }
       },
       levels: [],
       show_fps: true,
