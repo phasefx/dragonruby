@@ -51,6 +51,7 @@ def tick(gtk)
   output = Kernel.const_get("#{gtk.state.game[:scene]}Output")
 
   # input
+  gtk.state.game[:mouse] = { position: gtk.inputs.mouse.position }
   meta_intents = input.meta_input(
     gtk.inputs,
     gtk.state.game[:keymaps]
@@ -68,7 +69,6 @@ def tick(gtk)
   )
   gtk.state.game = logic.game_logic(
     gtk.state,
-    gtk.inputs.mouse,
     player_intents
   )
 

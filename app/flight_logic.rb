@@ -64,10 +64,10 @@ module FlightLogic
   # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
-  def self.game_logic(state, mouse, intents)
+  def self.game_logic(state, intents)
     gs = Game.deep_clone state.game
     player = gs[:actors][:player]
-    player = player_logic(player, mouse, intents)
+    player = player_logic(player, gs, intents)
     targets = gs[:actors][:targets]
 
     gs[:actors][:show_locus] = true if intents.include?('alternate_action')
@@ -107,10 +107,10 @@ module FlightLogic
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
-  def self.player_logic(player, mouse, intents)
+  def self.player_logic(player, state, intents)
     p = Game.deep_clone player
     p[:size] = bound(player[:size] + 10, 1, 100)
-    p[:coord] = mouse.position
+    p[:coord] = Game.deep_clone state[:mouse][:position]
     p[:visible] = true         if intents.include?('standard_action')
     p[:size] = 1               if intents.include?('standard_action')
     p[:visible] = false        if intents.include?('mouse_up')
