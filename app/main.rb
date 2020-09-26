@@ -40,17 +40,44 @@ require 'app/load_save.rb'
 # rubocop:disable Metrics/AbcSize
 # rubocop:disable Metrics/MethodLength
 def tick(gtk)
+  # everything is stored here
   gtk.state.game ||= Game.init gtk
   gtk.state.game = Game.next_level gtk.state.game unless gtk.state.game[:actors]
   gtk.state.game = Game.next_level gtk.state.game if gtk.state.game[:actors][:player][:winner]
+
+  # our scene management
   input = Kernel.const_get("#{gtk.state.game[:scene]}Input")
   logic = Kernel.const_get("#{gtk.state.game[:scene]}Logic")
   output = Kernel.const_get("#{gtk.state.game[:scene]}Output")
-  meta_intents = input.meta_input gtk.state.game[:keymaps], gtk.inputs
-  player_intents = input.player_input gtk.state.game[:keymaps], gtk.state.game[:mousemaps], gtk.inputs
-  gtk.state = logic.meta_intent_handler gtk, meta_intents
-  gtk.state.game = logic.game_logic gtk.state, gtk.inputs.mouse, player_intents
-  gtk.outputs.primitives << output.render(gtk.state.game, gtk)
+
+  # input
+  meta_intents = input.meta_input(
+    gtk.inputs,
+    gtk.state.game[:keymaps]
+  )
+  player_intents = input.player_input(
+    gtk.inputs,
+    gtk.state.game[:keymaps],
+    gtk.state.game[:mousemaps]
+  )
+
+  # logic
+  gtk.state = logic.meta_intent_handler(
+    gtk,
+    meta_intents
+  )
+  gtk.state.game = logic.game_logic(
+    gtk.state,
+    gtk.inputs.mouse,
+    player_intents
+  )
+
+  # output
+  gtk.outputs.primitives << output.render(
+    gtk.state.game,
+    gtk
+  )
+
   gtk.gtk.reset if meta_intents.include?('reset')
 end
 # rubocop:enable Metrics/MethodLength

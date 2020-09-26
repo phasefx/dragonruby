@@ -5,7 +5,7 @@ module FlightInput
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
-  def self.meta_input(keymaps, inputs)
+  def self.meta_input(inputs, keymaps)
     intents = []
     down_keys = inputs.keyboard.key_down.truthy_keys
     down_keys.each do |truth|
@@ -26,7 +26,7 @@ module FlightInput
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/CyclomaticComplexity
-  def self.player_input(keymaps, mousemaps, inputs)
+  def self.player_input(inputs, keymaps, mousemaps)
     intents = []
     down_keys = inputs.keyboard.key_down.truthy_keys
     held_keys = inputs.keyboard.key_held.truthy_keys
