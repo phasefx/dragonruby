@@ -45,7 +45,10 @@ def tick(gtk)
   output = Kernel.const_get("#{gtk.state.game[:scene]}Output")
 
   # input
-  gtk.state.game[:mouse] = { position: gtk.inputs.mouse.position }
+  gtk.state.game[:mouse] = {
+    position: gtk.inputs.mouse.position,
+    any_mouse_down: gtk.inputs.mouse.button_bits.positive?
+  }
   meta_intents = input.meta_input(
     gtk.inputs,
     gtk.state.game[:keymaps]
@@ -67,6 +70,7 @@ def tick(gtk)
   )
 
   # output
+  gtk.outputs.background_color = GameOutput::BACKGROUND
   gtk.outputs.primitives << output.render(
     gtk.state.game,
     gtk
@@ -120,6 +124,21 @@ module Game
       current_level: nil,
       desire_next_level: true,
       actors: {
+        blocks: Array.new(100).map do
+          {
+            rect: [
+              gtk.grid.left + rand(gtk.grid.w),
+              gtk.grid.bottom + rand(gtk.grid.h),
+              rand(100) + 100,
+              rand(100) + 100
+            ],
+            direction: [
+              (rand(5) + 1).randomize(:sign),
+              (rand(5) + 1).randomize(:sign)
+            ],
+            color: [GameOutput::ZESTY.sample, 128]
+          }
+        end
       },
       levels: [],
       show_fps: true,

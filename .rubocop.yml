@@ -18,3 +18,5 @@ Style/EndOfLine:
 Metrics:
   Enabled: false
 
+Style/RandomWithOffset:
+  Enabled: false

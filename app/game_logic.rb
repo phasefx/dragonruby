@@ -43,18 +43,26 @@ module GameLogic
     value
   end
 
-  def self.game_logic(state, intents)
+  def self.game_logic(state, _intents)
     gs = Game.deep_clone state.game
-    player = gs[:actors][:player]
-    player = player_logic(player, gs, intents)
 
-    gs[:actors][:player] = player
+    gs[:actors][:blocks].each do |b|
+      if gs[:mouse][:any_mouse_down] && gs[:mouse][:position].intersect_rect?(b[:rect])
+        b[:direction].x = if gs[:mouse][:position].x > b[:rect].x + b[:rect].w.half
+                            -b[:direction].x.abs
+                          else
+                            b[:direction].x.abs
+                          end
+        b[:direction].y = if gs[:mouse][:position].y > b[:rect].y + b[:rect].h.half
+                            -b[:direction].y.abs
+                          else
+                            b[:direction].y.abs
+                          end
+      end
+      b[:rect].x = wrap(b[:rect].x + b[:direction].x, $gtk.args.grid.left - 200, $gtk.args.grid.right + 200)
+      b[:rect].y = wrap(b[:rect].y + b[:direction].y, $gtk.args.grid.bottom - 200, $gtk.args.grid.top + 200)
+    end
+
     gs
-  end
-
-  def self.player_logic(player, _state, _intents)
-    p = Game.deep_clone player
-
-    p
   end
 end

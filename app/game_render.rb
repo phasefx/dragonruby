@@ -13,6 +13,13 @@
 
 # output methods
 module GameOutput
+  ZESTY1 = [245, 121, 58].freeze
+  ZESTY2 = [169, 90, 161].freeze
+  ZESTY3 = [133, 192, 249].freeze
+  ZESTY4 = [15, 32, 128].freeze
+  BACKGROUND = [0, 0, 0].freeze
+  ZESTY = [ZESTY1, ZESTY2, ZESTY3, ZESTY4].freeze
+
   def self.render(game, gtk)
     primitives = []
     primitives << render_actors(game[:actors])
@@ -20,8 +27,15 @@ module GameOutput
     primitives
   end
 
-  def self.render_actors(_actors)
+  def self.render_actors(actors)
     primitives = []
+    primitives << render_blocks(actors[:blocks])
+    primitives
+  end
+
+  def self.render_blocks(blocks)
+    primitives = []
+    primitives << blocks.map { |b| [b[:rect], b[:color]].solid }
     primitives
   end
 
@@ -32,19 +46,22 @@ module GameOutput
                     [
                       gtk.grid.left,
                       gtk.grid.top - text_height * 0,
-                      "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count} Level #{state[:current_level]}"
+                      "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count} Level #{state[:current_level]}",
+                      ZESTY1
                     ].labels
                   else
                     [
                       gtk.grid.left,
                       gtk.grid.top - text_height * 0,
-                      "Level #{state[:current_level]}"
+                      "Level #{state[:current_level]}",
+                      ZESTY1
                     ].labels
                   end
     primitives << [
       gtk.grid.left,
       gtk.grid.top - text_height * 1,
-      'R for Reset / M for Save / L for Load'
+      'R for Reset / M for Save / L for Load',
+      ZESTY1
     ].labels
     primitives
   end
