@@ -78,7 +78,10 @@ def tick(gtk)
   gtk.outputs.primitives << outputs[:primitives]
   outputs[:sounds].each { |s| gtk.outputs.sounds << s }
 
-  gtk.gtk.reset if meta_intents.include?('reset')
+  if meta_intents.include?('reset')
+    gtk.state.game = Game.init gtk
+    gtk.gtk.reset
+  end
 end
 
 # housekeeping
@@ -137,7 +140,8 @@ module Game
           visible: false,
           became_visible: false,
           size: 1,
-          winner: false
+          winner: false,
+          total_targets_caught: 0
         },
         targets: Array.new(5).map do
           {

@@ -80,6 +80,15 @@ module GameLogic
 
     gs[:timer] = bound(gs[:timer] - 1, 0, 20) if state.tick_count.mod(60).zero?
 
+    gs[:actors][:targets].each do |t|
+      coord = [ t[:label].x, t[:label].y ]
+      if !t[:caught] && player[:visible] && coord.intersect_rect?(player[:rect], 0)
+        t[:caught] = true
+        t[:label][2] = 'o'
+        player[:total_targets_caught] += 1
+      end
+    end
+
     gs[:actors][:blocks].each do |b|
       if player[:visible] && b[:rect].intersect_rect?(player[:rect], 0)
         b[:direction].x = if player[:coord].x > b[:rect].x + b[:rect].w.half
@@ -95,16 +104,30 @@ module GameLogic
       end
       b[:direction].x = throttle(b[:direction].x)
       b[:direction].y = throttle(b[:direction].y)
-      b[:rect].x = wrap(
-        b[:rect].x + b[:direction].x,
-        $gtk.args.grid.left - 200,
-        $gtk.args.grid.right + 200
-      )
-      b[:rect].y = wrap(
-        b[:rect].y + b[:direction].y,
-        $gtk.args.grid.bottom - 200,
-        $gtk.args.grid.top + 200
-      )
+      if gs[:timer].positive?
+        b[:rect].x = wrap(
+          b[:rect].x + b[:direction].x,
+          $gtk.args.grid.left - 200,
+          $gtk.args.grid.right + 200
+        )
+        b[:rect].y = wrap(
+          b[:rect].y + b[:direction].y,
+          $gtk.args.grid.bottom - 200,
+          $gtk.args.grid.top + 200
+        )
+      else
+        b[:game_over] = true
+        b[:rect].x = bound(
+          b[:rect].x + b[:direction].x,
+          $gtk.args.grid.left - 200,
+          $gtk.args.grid.right + 200
+        )
+        b[:rect].y = bound(
+          b[:rect].y + b[:direction].y,
+          $gtk.args.grid.bottom - 200,
+          $gtk.args.grid.top + 200
+        )
+      end
     end
 
     gs[:actors][:player] = player
