@@ -83,7 +83,11 @@ end
 module Game
   # rubocop:disable Security/Eval
   def self.deep_clone(obj)
+
     # using $gtk is just too convenient to pass up here
+
+    return obj if $gtk.production # for performance
+
     eval $gtk.serialize_state obj
   end
   # rubocop:enable Security/Eval
@@ -124,7 +128,7 @@ module Game
       current_level: nil,
       desire_next_level: true,
       actors: {
-        blocks: Array.new(100).map do
+        blocks: Array.new(200).map do
           {
             rect: [
               gtk.grid.left + rand(gtk.grid.w),
