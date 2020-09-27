@@ -30,6 +30,7 @@ module GameOutput
 
   def self.render_actors(actors)
     primitives = []
+    primitives << render_targets(actors[:targets])
     primitives << render_blocks(actors[:blocks])
     primitives << render_player(actors[:player])
     primitives
@@ -46,6 +47,12 @@ module GameOutput
   def self.render_blocks(blocks)
     primitives = []
     primitives << blocks.map { |b| [b[:rect], b[:color]].solid }
+    primitives
+  end
+
+  def self.render_targets(targets)
+    primitives = []
+    primitives << targets.reject { |t| t[:captured] }.map { |t| t[:label].label }
     primitives
   end
 

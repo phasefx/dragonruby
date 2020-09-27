@@ -130,6 +130,17 @@ module Game
       desire_next_level: true,
       actors: {
         player: { coord: [0, 0], visible: false, size: 1, winner: false },
+        targets: Array.new(5).map do
+          {
+            label: [
+              gtk.grid.left + rand(gtk.grid.w - 12),
+              gtk.grid.bottom + rand(gtk.grid.h - 12),
+              '*', # '靶',
+              GameOutput::ZESTY.sample
+            ],
+            captured: false
+          }
+        end,
         blocks: Array.new(200).map do
           {
             rect: [
