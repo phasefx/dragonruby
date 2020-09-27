@@ -79,7 +79,11 @@ end
 module Game
   # rubocop:disable Security/Eval
   def self.deep_clone(obj)
+
     # using $gtk is just too convenient to pass up here
+
+    return obj if $gtk.production # for performance
+
     eval $gtk.serialize_state obj
   end
   # rubocop:enable Security/Eval
