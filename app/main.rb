@@ -128,7 +128,7 @@ module Game
       current_level: nil,
       desire_next_level: true,
       actors: {
-        blocks: Array.new(200).map do
+        blocks: Array.new(2).map do
           {
             rect: [
               gtk.grid.left + rand(gtk.grid.w),
