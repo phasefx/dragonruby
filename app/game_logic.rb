@@ -53,17 +53,37 @@ module GameLogic
     value
   end
 
-  def self.game_logic(state, _intents)
+  def self.player_logic(player, mouse, intents)
+    p = Game.deep_clone player
+    p[:size] = bound(player[:size] + 10, 1, 100)
+    p[:coord] = mouse[:position]
+    p[:visible] = true         if intents.include?('standard_action')
+    p[:size] = 1               if intents.include?('standard_action')
+    p[:visible] = false        if intents.include?('mouse_up')
+    p[:size] = 1               if intents.include?('mouse_up')
+    p[:rect] = [
+      p[:coord].x - p[:size].half,
+      p[:coord].y - p[:size].half,
+      p[:size], p[:size],
+      GameOutput::TEXT
+    ]
+
+    p
+  end
+
+  def self.game_logic(state, intents)
     gs = Game.deep_clone state.game
+    player = gs[:actors][:player]
+    player = player_logic(player, gs[:mouse], intents)
 
     gs[:actors][:blocks].each do |b|
-      if gs[:mouse][:any_mouse_down] && gs[:mouse][:position].intersect_rect?(b[:rect])
-        b[:direction].x = if gs[:mouse][:position].x > b[:rect].x + b[:rect].w.half
+      if player[:visible] && b[:rect].intersect_rect?(player[:rect], 0)
+        b[:direction].x = if player[:coord].x > b[:rect].x + b[:rect].w.half
                             -2 * b[:direction].x.abs
                           else
                             2 * b[:direction].x.abs
                           end
-        b[:direction].y = if gs[:mouse][:position].y > b[:rect].y + b[:rect].h.half
+        b[:direction].y = if player[:coord].y > b[:rect].y + b[:rect].h.half
                             -2 * b[:direction].y.abs
                           else
                             2 * b[:direction].y.abs
@@ -83,6 +103,7 @@ module GameLogic
       )
     end
 
+    gs[:actors][:player] = player
     gs
   end
 end

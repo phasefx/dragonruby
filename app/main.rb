@@ -124,11 +124,13 @@ module Game
     # and what we're really after, the game model/state
     game = {
       scene: :Game,
+      game_over: false,
       level_index: -1,
       current_level: nil,
       desire_next_level: true,
       actors: {
-        blocks: Array.new(2).map do
+        player: { coord: [0, 0], visible: false, size: 1, winner: false },
+        blocks: Array.new(200).map do
           {
             rect: [
               gtk.grid.left + rand(gtk.grid.w),
