@@ -62,27 +62,24 @@ module GameOutput
   def self.render_fps(state, gtk)
     primitives = []
     text_height = gtk.gtk.calcstringbox('H')[1]
+    targets_caught_this_level = state[:actors][:targets].select { |t| t[:caught] }.length
+    targets_this_level = state[:actors][:targets].length
+    targets_total_caught = state[:actors][:player][:total_targets_caught]
     primitives << if state[:show_fps]
                     [
                       gtk.grid.left,
                       gtk.grid.top - text_height * 0,
-                      "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count} Level #{state[:current_level]}",
+                      "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count} Score: #{targets_total_caught} Level: #{state[:level_index]} Targets: #{targets_caught_this_level} out of #{targets_this_level} Time Remaining: #{state[:timer]}",
                       TEXT
                     ].labels
                   else
                     [
                       gtk.grid.left,
                       gtk.grid.top - text_height * 0,
-                      "Level #{state[:current_level]}",
+                      "Score: #{targets_total_caught} Level: #{state[:level_index]} Targets: #{targets_caught_this_level} out of #{targets_this_level} Time Remaining: #{state[:timer]}",
                       TEXT
                     ].labels
                   end
-    primitives << [
-      gtk.grid.left,
-      gtk.grid.top - text_height * 1,
-      'R for Reset / M for Save / L for Load',
-      TEXT
-    ].labels
     primitives
   end
 end

@@ -126,6 +126,7 @@ module Game
     # and what we're really after, the game model/state
     game = {
       scene: :Game,
+      timer: 20,
       game_over: false,
       level_index: -1,
       current_level: nil,

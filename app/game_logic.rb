@@ -78,6 +78,8 @@ module GameLogic
     player = gs[:actors][:player]
     player = player_logic(player, gs[:mouse], intents)
 
+    gs[:timer] = bound(gs[:timer] - 1, 0, 20) if state.tick_count.mod(60).zero?
+
     gs[:actors][:blocks].each do |b|
       if player[:visible] && b[:rect].intersect_rect?(player[:rect], 0)
         b[:direction].x = if player[:coord].x > b[:rect].x + b[:rect].w.half
