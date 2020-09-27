@@ -71,10 +71,12 @@ def tick(gtk)
 
   # output
   gtk.outputs.background_color = GameOutput::BACKGROUND
-  gtk.outputs.primitives << output.render(
+  outputs = output.render(
     gtk.state.game,
     gtk
   )
+  gtk.outputs.primitives << outputs[:primitives]
+  outputs[:sounds].each { |s| gtk.outputs.sounds << s }
 
   gtk.gtk.reset if meta_intents.include?('reset')
 end
@@ -129,7 +131,13 @@ module Game
       current_level: nil,
       desire_next_level: true,
       actors: {
-        player: { coord: [0, 0], visible: false, size: 1, winner: false },
+        player: {
+          coord: [0, 0],
+          visible: false,
+          became_visible: false,
+          size: 1,
+          winner: false
+        },
         targets: Array.new(5).map do
           {
             label: [

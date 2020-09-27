@@ -23,9 +23,12 @@ module GameOutput
 
   def self.render(game, gtk)
     primitives = []
+    sounds = []
+    sounds << 'media/MagicDark.wav' if game[:actors][:player][:became_visible]
+    sounds << 'media/TransportUp.wav' if game[:actors][:player][:hit_target]
     primitives << render_actors(game[:actors])
     primitives << render_fps(game, gtk)
-    primitives
+    { primitives: primitives, sounds: sounds }
   end
 
   def self.render_actors(actors)

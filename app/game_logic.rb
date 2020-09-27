@@ -57,6 +57,8 @@ module GameLogic
     p = Game.deep_clone player
     p[:size] = bound(player[:size] + 10, 1, 100)
     p[:coord] = mouse[:position]
+    p[:became_visible] = false
+    p[:became_visible] = true  if intents.include?('standard_action')
     p[:visible] = true         if intents.include?('standard_action')
     p[:size] = 1               if intents.include?('standard_action')
     p[:visible] = false        if intents.include?('mouse_up')
