@@ -88,7 +88,8 @@ module GameOutput
     primitives = []
     return primitives unless state[:game_over]
 
-    string = "Finis.  Right-click to restart"
+    string = 'Finis.  Right-click to restart' unless MINIGAME
+    string = 'Finis.  Right-click for next mini-game' if MINIGAME
     text_size = gtk.gtk.calcstringbox(string)
     primitives << [
       -text_size.x.half,

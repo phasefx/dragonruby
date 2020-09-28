@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+MINIGAME = false
+
 require 'app/game_input.rb'
 require 'app/game_logic.rb'
 require 'app/game_render.rb'
@@ -58,7 +60,10 @@ def tick(gtk)
     gtk.state.game[:keymaps],
     gtk.state.game[:mousemaps]
   )
-  meta_intents << 'reset' if player_intents.include?('alternate_action') && gtk.state.game[:game_over]
+  if player_intents.include?('alternate_action') && gtk.state.game[:game_over]
+    meta_intents << 'reset' unless MINIGAME
+    exit if MINIGAME
+  end
 
   # logic
   gtk.state = logic.meta_intent_handler(
