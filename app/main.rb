@@ -116,6 +116,7 @@ module Game
 
   def self.next_level(game,gtk)
     gs = deep_clone game
+    gs[:palette] = rand(GameOutput::PALETTES.length)
     gs[:level_index] += 1
     gs[:desire_next_level] = false
     gs[:desire_next_level_at] = nil
@@ -125,7 +126,7 @@ module Game
           gtk.grid.left + rand(gtk.grid.w - 12),
           gtk.grid.bottom + rand(gtk.grid.h - 12),
           '*', # '靶',
-          GameOutput::ZESTY.sample
+          GameOutput::PALETTES[gs[:palette]].sample
         ],
         captured: false
       }
@@ -142,7 +143,7 @@ module Game
           (rand(5) + 1).randomize(:sign),
           (rand(5) + 1).randomize(:sign)
         ],
-        color: [GameOutput::ZESTY.sample, 128]
+        color: [GameOutput::PALETTES[gs[:palette]].sample, 128]
       }
     end
     gs
@@ -162,6 +163,7 @@ module Game
       scene: :Game,
       timer: 20,
       game_over: false,
+      palette: 0,
       level_index: 0,
       desire_next_level: true,
       desire_next_level_at: -100,
