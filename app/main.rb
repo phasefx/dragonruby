@@ -113,6 +113,7 @@ module Game
     gs = deep_clone game
     gs[:level_index] += 1
     gs[:desire_next_level] = false
+    gs[:desire_next_level_at] = nil
     gs[:actors][:targets] = Array.new(5).map do
       {
         label: [
@@ -158,6 +159,7 @@ module Game
       game_over: false,
       level_index: 0,
       desire_next_level: true,
+      desire_next_level_at: -100,
       actors: {
         player: {
           coord: [0, 0],

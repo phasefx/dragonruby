@@ -97,7 +97,11 @@ module GameLogic
     targets_caught_this_level = gs[:actors][:targets].select { |t| t[:caught] }.length
     targets_this_level = gs[:actors][:targets].length
     if targets_caught_this_level >= targets_this_level
-      gs[:desire_next_level] = true
+      gs[:desire_next_level_at] = $gtk.args.tick_count if gs[:desire_next_level_at].nil?
+      if $gtk.args.tick_count - gs[:desire_next_level_at] >= 30
+        gs[:desire_next_level] = true
+        gs[:desire_next_level_at] = nil
+      end
     end
 
     gs[:actors][:blocks].each do |b|
