@@ -12,6 +12,7 @@ module GameLogic
   def self.meta_intent_handler(gtk, intents)
     # gtk.state.game (more for config options than game logic)
     toggle_fps(gtk) if intents.include?('toggle_fps')
+    gtk.state.game[:desire_next_level] = true if intents.include?('next_level')
 
     # side-effects
     exit if intents.include?('exit')
@@ -79,14 +80,24 @@ module GameLogic
     player = player_logic(player, gs[:mouse], intents)
 
     gs[:timer] = bound(gs[:timer] - 1, 0, 20) if state.tick_count.mod(60).zero?
+    gs[:game_over] = true unless gs[:timer].positive?
 
+    player[:hit_target] = false
     gs[:actors][:targets].each do |t|
+      next if t[:caught] || gs[:game_over]
       coord = [ t[:label].x, t[:label].y ]
-      if !t[:caught] && player[:visible] && coord.intersect_rect?(player[:rect], 0)
+      if player[:visible] && coord.intersect_rect?(player[:rect], 0)
+        player[:hit_target] = true
         t[:caught] = true
         t[:label][2] = 'o'
         player[:total_targets_caught] += 1
       end
+    end
+
+    targets_caught_this_level = gs[:actors][:targets].select { |t| t[:caught] }.length
+    targets_this_level = gs[:actors][:targets].length
+    if targets_caught_this_level >= targets_this_level
+      gs[:desire_next_level] = true
     end
 
     gs[:actors][:blocks].each do |b|
@@ -104,25 +115,24 @@ module GameLogic
       end
       b[:direction].x = throttle(b[:direction].x)
       b[:direction].y = throttle(b[:direction].y)
-      if gs[:timer].positive?
-        b[:rect].x = wrap(
-          b[:rect].x + b[:direction].x,
-          $gtk.args.grid.left - 200,
-          $gtk.args.grid.right + 200
-        )
-        b[:rect].y = wrap(
-          b[:rect].y + b[:direction].y,
-          $gtk.args.grid.bottom - 200,
-          $gtk.args.grid.top + 200
-        )
-      else
-        b[:game_over] = true
+      if gs[:game_over]
         b[:rect].x = bound(
           b[:rect].x + b[:direction].x,
           $gtk.args.grid.left - 200,
           $gtk.args.grid.right + 200
         )
         b[:rect].y = bound(
+          b[:rect].y + b[:direction].y,
+          $gtk.args.grid.bottom - 200,
+          $gtk.args.grid.top + 200
+        )
+      else
+        b[:rect].x = wrap(
+          b[:rect].x + b[:direction].x,
+          $gtk.args.grid.left - 200,
+          $gtk.args.grid.right + 200
+        )
+        b[:rect].y = wrap(
           b[:rect].y + b[:direction].y,
           $gtk.args.grid.bottom - 200,
           $gtk.args.grid.top + 200

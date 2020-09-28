@@ -37,7 +37,7 @@ require 'app/load_save.rb'
 def tick(gtk)
   # everything is stored here
   gtk.state.game ||= Game.init gtk
-  gtk.state.game = Game.next_level gtk.state.game if gtk.state.game[:desire_next_level]
+  gtk.state.game = Game.next_level(gtk.state.game, gtk) if gtk.state.game[:desire_next_level]
 
   # our scene management
   input = Kernel.const_get("#{gtk.state.game[:scene]}Input")
@@ -108,12 +108,36 @@ module Game
     sum
   end
 
-  def self.next_level(game)
-    return game if game[:level_index] == game[:levels].length - 1
-
+  def self.next_level(game,gtk)
     gs = deep_clone game
     gs[:level_index] += 1
-    gs[:current_level] = deep_clone gs[:levels][gs[:level_index]]
+    gs[:desire_next_level] = false
+    gs[:actors][:targets] = Array.new(5).map do
+      {
+        label: [
+          gtk.grid.left + rand(gtk.grid.w - 12),
+          gtk.grid.bottom + rand(gtk.grid.h - 12),
+          '*', # '靶',
+          GameOutput::ZESTY.sample
+        ],
+        captured: false
+      }
+    end
+    gs[:actors][:blocks] = Array.new(200).map do
+      {
+        rect: [
+          gtk.grid.left + rand(gtk.grid.w),
+          gtk.grid.bottom + rand(gtk.grid.h),
+          rand(100) + 100,
+          rand(100) + 100
+        ],
+        direction: [
+          (rand(5) + 1).randomize(:sign),
+          (rand(5) + 1).randomize(:sign)
+        ],
+        color: [GameOutput::ZESTY.sample, 128]
+      }
+    end
     gs
   end
 
@@ -131,8 +155,7 @@ module Game
       scene: :Game,
       timer: 20,
       game_over: false,
-      level_index: -1,
-      current_level: nil,
+      level_index: 0,
       desire_next_level: true,
       actors: {
         player: {
@@ -142,35 +165,8 @@ module Game
           size: 1,
           winner: false,
           total_targets_caught: 0
-        },
-        targets: Array.new(5).map do
-          {
-            label: [
-              gtk.grid.left + rand(gtk.grid.w - 12),
-              gtk.grid.bottom + rand(gtk.grid.h - 12),
-              '*', # '靶',
-              GameOutput::ZESTY.sample
-            ],
-            captured: false
-          }
-        end,
-        blocks: Array.new(200).map do
-          {
-            rect: [
-              gtk.grid.left + rand(gtk.grid.w),
-              gtk.grid.bottom + rand(gtk.grid.h),
-              rand(100) + 100,
-              rand(100) + 100
-            ],
-            direction: [
-              (rand(5) + 1).randomize(:sign),
-              (rand(5) + 1).randomize(:sign)
-            ],
-            color: [GameOutput::ZESTY.sample, 128]
-          }
-        end
+        }
       },
-      levels: [],
       show_fps: true,
       mousemaps: {
         Game: {
@@ -188,7 +184,8 @@ module Game
           exit: %i[escape],
           reset: %i[r],
           load: %i[l],
-          save: %i[m]
+          save: %i[m],
+          next_level: %i[n]
         }
       }
     }
