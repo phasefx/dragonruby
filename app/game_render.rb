@@ -28,6 +28,7 @@ module GameOutput
     sounds << 'media/TransportUp.wav' if game[:actors][:player][:hit_target]
     primitives << render_actors(game[:actors])
     primitives << render_fps(game, gtk)
+    primitives << render_gameover(game, gtk)
     { primitives: primitives, sounds: sounds }
   end
 
@@ -80,6 +81,20 @@ module GameOutput
                       TEXT
                     ].labels
                   end
+    primitives
+  end
+
+  def self.render_gameover(state, gtk)
+    primitives = []
+    return primitives unless state[:game_over]
+
+    _text_height = gtk.gtk.calcstringbox('H')[1]
+    primitives << [
+      0,
+      0,
+      "Finis",
+      TEXT
+    ].labels
     primitives
   end
 end
