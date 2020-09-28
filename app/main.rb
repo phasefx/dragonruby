@@ -58,6 +58,7 @@ def tick(gtk)
     gtk.state.game[:keymaps],
     gtk.state.game[:mousemaps]
   )
+  meta_intents << 'reset' if player_intents.include?('alternate_action') && gtk.state.game[:game_over]
 
   # logic
   gtk.state = logic.meta_intent_handler(

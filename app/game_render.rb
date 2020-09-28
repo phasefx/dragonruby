@@ -88,11 +88,12 @@ module GameOutput
     primitives = []
     return primitives unless state[:game_over]
 
-    _text_height = gtk.gtk.calcstringbox('H')[1]
+    string = "Finis.  Right-click to restart"
+    text_size = gtk.gtk.calcstringbox(string)
     primitives << [
-      0,
-      0,
-      "Finis",
+      -text_size.x.half,
+      text_size.y.half,
+      string,
       TEXT
     ].labels
     primitives
