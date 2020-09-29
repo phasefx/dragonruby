@@ -31,55 +31,29 @@ module Output
     a = sorted[0]
     b = sorted[1]
     c = sorted[2]
-    dx1 = if (b.y - a.y).positive?
-            (b.x - a.x) / (b.y - a.y)
-          else
-            0
-          end
-    dx2 = if (c.y - a.y).positive?
-            (c.x - a.x) / (c.y - a.y)
-          else
-            0
-          end
-    dx3 = if (c.y - b.y).positive?
-            (c.x - b.x) / (c.y - b.y)
-          else
-            0
-          end
+    dx1 = (b.y - a.y).positive? ? (b.x - a.x) / (b.y - a.y) : 0
+    dx2 = (c.y - a.y).positive? ? (c.x - a.x) / (c.y - a.y) : 0
+    dx3 = (c.y - b.y).positive? ? (c.x - b.x) / (c.y - b.y) : 0
     s = a.clone
     e = a.clone
+    while s.y <= b.y
+      primitives << [s.x, s.y, e.x, s.y, 128, 128, 128].line
+      s.y += 1
+      e.y += 1
+      s.x += (dx1 > dx2) ? dx2 : dx1
+      e.x += (dx1 > dx2) ? dx1 : dx2
+    end
     if dx1 > dx2
-      while s.y <= b.y
-        primitives << [s.x, s.y, e.x, s.y, 128, 128, 128].line
-        s.y += 1
-        e.y += 1
-        s.x += dx2
-        e.x += dx1
-      end
       e = b.clone
-      while s.y <= c.y
-        primitives << [s.x, s.y, e.x, s.y, 128, 128, 128].line
-        s.y += 1
-        e.y += 1
-        s.x += dx2
-        e.x += dx3
-      end
     else
-      while s.y <= b.y
-        primitives << [s.x, s.y, e.x, s.y, 128, 128, 128].line
-        s.y += 1
-        e.y += 1
-        s.x += dx2
-        e.x += dx2
-      end
       s = b.clone
-      while s.y <= c.y
-        primitives << [s.x, s.y, e.x, s.y, 128, 128, 128].line
-        s.y += 1
-        e.y += 1
-        s.x += dx3
-        e.x += dx2
-      end
+    end
+    while s.y <= c.y
+      primitives << [s.x, s.y, e.x, s.y, 128, 128, 128].line
+      s.y += 1
+      e.y += 1
+      s.x += (dx1 > dx2) ? dx2 : dx3
+      e.x += (dx1 > dx2) ? dx3 : dx2
     end
     primitives
   end
