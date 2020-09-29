@@ -25,6 +25,65 @@ module Output
     primitives
   end
 
+  def self.fill_triangle(points)
+    primitives = []
+    sorted = points.sort_by { |p| p.y }
+    A = sorted[0]
+    B = sorted[1]
+    C = sorted[2]
+    dx1 = if (B.y-A.y > 0)
+            (B.x-A.x)/(B.y-A.y)
+          else
+            0
+          end
+    dx2 = if (C.y-A.y > 0)
+            (C.x-A.x)/(C.y-A.y)
+          else
+            0
+          end
+    dx3 = if (C.y-B.y > 0)
+            (C.x-B.x)/(C.y-B.y)
+          else
+            0
+          end
+    S = A.clone
+    E = A.clone
+    if dx1 > dx2
+      while S.y <= B.y
+        primitives << [S.x, S.y, E.x, S.y, 128, 128, 128]
+        S.y++
+        E.y++
+        S.x += dx2
+        E.x += dx1
+      end
+      E = B.clone
+      while S.y <= C.y
+        primitives << [S.x, S.y, E.x, S.y, 128, 128, 128]
+        S.y++
+        E.y++
+        S.x += dx2
+        E.x += dx3
+      end
+    else
+      while S.y <= B.y
+        primitives << [S.x, S.y, E.x, S.y, 128, 128, 128]
+        S.y++
+        E.y++
+        S.x += dx1
+        E.x += dx2
+      end
+      S = B.clone
+      while S.y <= C.y
+        primitives << [S.x, S.y, E.x, S.y, 128, 128, 128]
+        S.y++
+        E.y++
+        S.x += dx3
+        E.x += dx2
+      end
+    end
+    primitives
+  end
+
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def self.render_triangle(triangle, show_locus)
@@ -43,6 +102,11 @@ module Output
         triangle[:locus], 128, 128, 128
       )
     end
+    primitives << fill_triangle([
+      triangle[:points][0][:coord],
+      triangle[:points][1][:coord],
+      triangle[:points][2][:coord]
+    ])
     primitives << render_line(
       Game.v_add(triangle[:locus], triangle[:points][0][:coord], triangle[:points][0][:offset]),
       Game.v_add(triangle[:locus], triangle[:points][1][:coord], triangle[:points][1][:offset]), 255, 0, 0
