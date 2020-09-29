@@ -27,58 +27,58 @@ module Output
 
   def self.fill_triangle(points)
     primitives = []
-    sorted = points.sort_by { |p| p.y }
-    A = sorted[0]
-    B = sorted[1]
-    C = sorted[2]
-    dx1 = if (B.y-A.y > 0)
-            (B.x-A.x)/(B.y-A.y)
+    sorted = points.sort_by(&:y)
+    a = sorted[0]
+    b = sorted[1]
+    c = sorted[2]
+    dx1 = if (b.y - a.y).positive?
+            (b.x - a.x) / (b.y - a.y)
           else
             0
           end
-    dx2 = if (C.y-A.y > 0)
-            (C.x-A.x)/(C.y-A.y)
+    dx2 = if (c.y - a.y).positive?
+            (c.x - a.x) / (c.y - a.y)
           else
             0
           end
-    dx3 = if (C.y-B.y > 0)
-            (C.x-B.x)/(C.y-B.y)
+    dx3 = if (c.y - b.y).positive?
+            (c.x - b.x) / (c.y - b.y)
           else
             0
           end
-    S = A.clone
-    E = A.clone
+    s = a.clone
+    e = a.clone
     if dx1 > dx2
-      while S.y <= B.y
-        primitives << [S.x, S.y, E.x, S.y, 128, 128, 128]
-        S.y++
-        E.y++
-        S.x += dx2
-        E.x += dx1
+      while s.y <= b.y
+        primitives << [s.x, s.y, e.x, s.y, 128, 128, 128].line
+        s.y += 1
+        e.y += 1
+        s.x += dx2
+        e.x += dx1
       end
-      E = B.clone
-      while S.y <= C.y
-        primitives << [S.x, S.y, E.x, S.y, 128, 128, 128]
-        S.y++
-        E.y++
-        S.x += dx2
-        E.x += dx3
+      e = b.clone
+      while s.y <= c.y
+        primitives << [s.x, s.y, e.x, s.y, 128, 128, 128].line
+        s.y += 1
+        e.y += 1
+        s.x += dx2
+        e.x += dx3
       end
     else
-      while S.y <= B.y
-        primitives << [S.x, S.y, E.x, S.y, 128, 128, 128]
-        S.y++
-        E.y++
-        S.x += dx1
-        E.x += dx2
+      while s.y <= b.y
+        primitives << [s.x, s.y, e.x, s.y, 128, 128, 128].line
+        s.y += 1
+        e.y += 1
+        s.x += dx2
+        e.x += dx2
       end
-      S = B.clone
-      while S.y <= C.y
-        primitives << [S.x, S.y, E.x, S.y, 128, 128, 128]
-        S.y++
-        E.y++
-        S.x += dx3
-        E.x += dx2
+      s = b.clone
+      while s.y <= c.y
+        primitives << [s.x, s.y, e.x, s.y, 128, 128, 128].line
+        s.y += 1
+        e.y += 1
+        s.x += dx3
+        e.x += dx2
       end
     end
     primitives
