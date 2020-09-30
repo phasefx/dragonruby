@@ -68,7 +68,7 @@ module GameOutput
 
   def self.render_targets(targets)
     primitives = []
-    primitives << targets.reject { |t| t[:captured] }.map { |t| t[:label].label }
+    primitives << targets.map { |t| t[:label].label }
     primitives
   end
 
