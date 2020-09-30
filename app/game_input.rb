@@ -10,7 +10,7 @@ module GameInput
       intents << 'exit' if keymaps[:Game][:exit].include?(truth)
       intents << 'reset' if keymaps[:Game][:reset].include?(truth)
       intents << 'next_level' if keymaps[:Game][:next_level].include?(truth)
-      intents << 'save'  if keymaps[:Game][:save].include?(truth)
+      intents << 'save' if keymaps[:Game][:save].include?(truth)
       intents << 'load' if keymaps[:Game][:load].include?(truth)
     end
     puts intents if intents.length.positive?

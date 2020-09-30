@@ -2,7 +2,6 @@
 
 # game logic
 module GameLogic
-
   SPEED_THRESHOLD = 5 # if above this speed, start throttling
 
   def self.toggle_fps(gtk)
@@ -85,13 +84,14 @@ module GameLogic
     player[:hit_target] = false
     gs[:actors][:targets].each do |t|
       next if t[:caught] || gs[:game_over]
-      coord = [ t[:label].x, t[:label].y ]
-      if player[:visible] && coord.intersect_rect?(player[:rect], 0)
-        player[:hit_target] = true
-        t[:caught] = true
-        t[:label][2] = 'o'
-        player[:total_targets_caught] += 1
-      end
+
+      coord = [t[:label].x, t[:label].y]
+      next unless player[:visible] && coord.intersect_rect?(player[:rect], 0)
+
+      player[:hit_target] = true
+      t[:caught] = true
+      t[:label][2] = 'o'
+      player[:total_targets_caught] += 1
     end
 
     targets_caught_this_level = gs[:actors][:targets].select { |t| t[:caught] }.length

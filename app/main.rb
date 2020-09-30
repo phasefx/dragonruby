@@ -94,7 +94,6 @@ end
 module Game
   # rubocop:disable Security/Eval
   def self.deep_clone(obj)
-
     # using $gtk is just too convenient to pass up here
 
     return obj if $gtk.production # for performance
@@ -114,7 +113,7 @@ module Game
     sum
   end
 
-  def self.next_level(game,gtk)
+  def self.next_level(game, gtk)
     gs = deep_clone game
     gs[:palette] = rand(GameOutput::PALETTES.length)
     gs[:level_index] += 1

@@ -2,27 +2,27 @@
 
 # output methods
 module GameOutput
-# from https://venngage.com/blog/color-blind-friendly-palette/
-# Color Palettes for Color Blindness
-#     Zesty Color Palette: #F5793A, #A95AA1, #85C0F9, #0F2080
+  # from https://venngage.com/blog/color-blind-friendly-palette/
+  # Color Palettes for Color Blindness
+  # Zesty Color Palette: #F5793A, #A95AA1, #85C0F9, #0F2080
   ZESTY1 = [245, 121, 58].freeze
   ZESTY2 = [169, 90, 161].freeze
   ZESTY3 = [133, 192, 249].freeze
   ZESTY4 = [15, 32, 128].freeze
   ZESTY = [ZESTY1, ZESTY2, ZESTY3, ZESTY4].freeze
-# Corporate Color Palette: #BDB8AD, #EBE7E0, #C6D4E1, #44749D
+  # Corporate Color Palette: #BDB8AD, #EBE7E0, #C6D4E1, #44749D
   CORP1 = [189, 184, 173].freeze
   CORP2 = [235, 231, 224].freeze
   CORP3 = [198, 212, 225].freeze
   CORP4 = [68, 116, 157].freeze
   CORP = [CORP1, CORP2, CORP3, CORP4].freeze
-#   Elegant Color Palette: #ABC3C9, #E0DCD3, #CCBE9F, #382119
+  # Elegant Color Palette: #ABC3C9, #E0DCD3, #CCBE9F, #382119
   ELEG1 = [171, 195, 201].freeze
   ELEG2 = [224, 220, 211].freeze
   ELEG3 = [204, 190, 159].freeze
   ELEG4 = [56, 33, 25].freeze
   ELEG = [ELEG1, ELEG2, ELEG3, ELEG4].freeze
-#     Retro Color Palette: #601A4A, #EE442F, #63ACBE, #F9F4EC
+  # Retro Color Palette: #601A4A, #EE442F, #63ACBE, #F9F4EC
   RETRO1 = [96, 26, 74].freeze
   RETRO2 = [238, 68, 47].freeze
   RETRO3 = [99, 172, 190].freeze
