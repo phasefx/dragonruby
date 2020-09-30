@@ -95,7 +95,7 @@ module GameOutput
         TEXT
       ].labels
     end
-    unless state[:actors][:player][:click_count].positive?
+    unless state[:actors][:player][:click_count].positive? || state[:game_over]
       instructions = 'left-click or hold left-click to find hidden targets'
       text_size = gtk.gtk.calcstringbox(instructions)
       primitives << [
