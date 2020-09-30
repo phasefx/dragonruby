@@ -78,21 +78,13 @@ module GameOutput
     targets_caught_this_level = state[:actors][:targets].select { |t| t[:caught] }.length
     targets_this_level = state[:actors][:targets].length
     targets_total_caught = state[:actors][:player][:total_targets_caught]
-    primitives << if state[:show_fps]
-                    [
-                      gtk.grid.left,
-                      gtk.grid.top - text_height * 0,
-                      "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count} Score: #{targets_total_caught} Level: #{state[:level_index]} Targets: #{targets_caught_this_level} out of #{targets_this_level} Time Remaining: #{state[:timer]}",
-                      TEXT
-                    ].labels
-                  else
-                    [
-                      gtk.grid.left,
-                      gtk.grid.top - text_height * 0,
-                      "Score: #{targets_total_caught} Level: #{state[:level_index]} Targets: #{targets_caught_this_level} out of #{targets_this_level} Time Remaining: #{state[:timer]}",
-                      TEXT
-                    ].labels
-                  end
+    fps_line = "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count}"
+    score_line = "Score: #{targets_total_caught}"
+    level_line = "Level: #{state[:level_index]}"
+    targets_line = "Targets: #{targets_caught_this_level} out of #{targets_this_level}"
+    time_line = "Time Remaining: #{state[:timer]}"
+    whole_line = (state[:show_fps] ? fps_line + ' ' : '') + "#{score_line} #{level_line} #{targets_line} #{time_line}"
+    primitives << [gtk.grid.left, gtk.grid.top - text_height * 0, whole_line, TEXT].labels
     primitives
   end
 
