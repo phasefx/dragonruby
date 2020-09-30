@@ -55,10 +55,16 @@ module GameLogic
 
   def self.player_logic(player, mouse, intents)
     p = Game.deep_clone player
-    p[:size] = bound(player[:size] + 10, 1, 100)
+    if p[:grow_crosshair] # click vs hold => temporary increased area vs smaller sustained area
+      p[:size] = bound(player[:size] + 10, 1, 200)
+      p[:grow_crosshair] = false if p[:size] >= 200
+    else
+      p[:size] = bound(player[:size] - 10, 100, 200)
+    end
     p[:coord] = mouse[:position]
     p[:became_visible] = false
     p[:became_visible] = true  if intents.include?('standard_action')
+    p[:grow_crosshair] = true  if intents.include?('standard_action')
     p[:visible] = true         if intents.include?('standard_action')
     p[:size] = 1               if intents.include?('standard_action')
     p[:visible] = false        if intents.include?('mouse_up')
@@ -105,16 +111,19 @@ module GameLogic
     end
 
     gs[:actors][:blocks].each do |b|
+      # repulse blocks around active reticule
       if player[:visible] && b[:rect].intersect_rect?(player[:rect], 0)
+        # magnitude = player[:size] < 100 ? 2.5 : 2 # slight boost with click vs hold
+        magnitude = 2
         b[:direction].x = if player[:coord].x > b[:rect].x + b[:rect].w.half
-                            -2 * b[:direction].x.abs
+                            -magnitude * b[:direction].x.abs
                           else
-                            2 * b[:direction].x.abs
+                            magnitude * b[:direction].x.abs
                           end
         b[:direction].y = if player[:coord].y > b[:rect].y + b[:rect].h.half
-                            -2 * b[:direction].y.abs
+                            -magnitude * b[:direction].y.abs
                           else
-                            2 * b[:direction].y.abs
+                            magnitude * b[:direction].y.abs
                           end
       end
       b[:direction].x = throttle(b[:direction].x)
