@@ -171,7 +171,7 @@ module Game
           coord: [0, 0],
           visible: false,
           became_visible: false,
-          size: 1,
+          size: 20,
           click_count: 0,
           winner: false,
           total_targets_caught: 0

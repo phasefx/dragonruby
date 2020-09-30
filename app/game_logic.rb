@@ -66,10 +66,10 @@ module GameLogic
     p[:became_visible] = true  if intents.include?('standard_action')
     p[:grow_crosshair] = true  if intents.include?('standard_action')
     p[:visible] = true         if intents.include?('standard_action')
-    p[:size] = 1               if intents.include?('standard_action')
+    p[:size] = 50              if intents.include?('standard_action')
     p[:click_count] += 1       if intents.include?('standard_action')
     p[:visible] = false        if intents.include?('mouse_up')
-    p[:size] = 1               if intents.include?('mouse_up')
+    p[:size] = 50              if intents.include?('mouse_up')
     p[:rect] = [
       p[:coord].x - p[:size].half,
       p[:coord].y - p[:size].half,
@@ -93,7 +93,7 @@ module GameLogic
       next if t[:caught] || gs[:game_over]
 
       coord = [t[:label].x, t[:label].y]
-      next unless player[:visible] && coord.intersect_rect?(player[:rect], 0)
+      next unless player[:visible] && coord.intersect_rect?(player[:rect], 10)
 
       player[:hit_target] = true
       t[:caught] = true
