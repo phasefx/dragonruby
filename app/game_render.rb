@@ -39,7 +39,7 @@ module GameOutput
     sounds << 'media/MagicDark.wav' if game[:actors][:player][:became_visible]
     sounds << 'media/TransportUp.wav' if game[:actors][:player][:hit_target]
     primitives << render_actors(game[:actors])
-    primitives << render_fps(game, gtk)
+    primitives << render_info(game, gtk)
     primitives << render_gameover(game, gtk)
     { primitives: primitives, sounds: sounds }
   end
@@ -72,7 +72,7 @@ module GameOutput
     primitives
   end
 
-  def self.render_fps(state, gtk)
+  def self.render_info(state, gtk)
     primitives = []
     text_height = gtk.gtk.calcstringbox('H')[1]
     targets_caught_this_level = state[:actors][:targets].select { |t| t[:caught] }.length
@@ -85,6 +85,16 @@ module GameOutput
     time_line = "Time Remaining: #{state[:timer]}"
     whole_line = (state[:show_fps] ? fps_line + ' ' : '') + "#{score_line} #{level_line} #{targets_line} #{time_line}"
     primitives << [gtk.grid.left, gtk.grid.top - text_height * 0, whole_line, TEXT].labels
+    next_level = 'Next Level'
+    text_size = gtk.gtk.calcstringbox(next_level)
+    if targets_caught_this_level >= targets_this_level
+      primitives << [
+        -text_size.x.half,
+        text_size.y.half,
+        next_level,
+        TEXT
+      ].labels
+    end
     primitives
   end
 
