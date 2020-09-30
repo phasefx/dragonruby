@@ -172,6 +172,7 @@ module Game
           visible: false,
           became_visible: false,
           size: 1,
+          click_count: 0,
           winner: false,
           total_targets_caught: 0
         }

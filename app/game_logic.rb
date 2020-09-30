@@ -67,6 +67,7 @@ module GameLogic
     p[:grow_crosshair] = true  if intents.include?('standard_action')
     p[:visible] = true         if intents.include?('standard_action')
     p[:size] = 1               if intents.include?('standard_action')
+    p[:click_count] += 1       if intents.include?('standard_action')
     p[:visible] = false        if intents.include?('mouse_up')
     p[:size] = 1               if intents.include?('mouse_up')
     p[:rect] = [

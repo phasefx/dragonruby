@@ -85,13 +85,23 @@ module GameOutput
     time_line = "Time Remaining: #{state[:timer]}"
     whole_line = (state[:show_fps] ? fps_line + ' ' : '') + "#{score_line} #{level_line} #{targets_line} #{time_line}"
     primitives << [gtk.grid.left, gtk.grid.top - text_height * 0, whole_line, TEXT].labels
-    next_level = 'Next Level'
-    text_size = gtk.gtk.calcstringbox(next_level)
     if targets_caught_this_level >= targets_this_level
+      next_level = 'Next Level'
+      text_size = gtk.gtk.calcstringbox(next_level)
       primitives << [
         -text_size.x.half,
         text_size.y.half,
         next_level,
+        TEXT
+      ].labels
+    end
+    unless state[:actors][:player][:click_count].positive?
+      instructions = 'left-click or hold left-click to find hidden targets'
+      text_size = gtk.gtk.calcstringbox(instructions)
+      primitives << [
+        -text_size.x.half,
+        text_size.y.half,
+        instructions,
         TEXT
       ].labels
     end
