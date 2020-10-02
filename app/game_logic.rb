@@ -111,43 +111,45 @@ module GameLogic
       end
     end
 
-    gs[:actors][:blocks].each do |b|
+    gs[:actors][:blocks].each_with_index do |b, idx|
+      actor_block = b
+      volatile_block = state.volatile[:blocks][idx]
       # repulse blocks around active reticule
-      if player[:visible] && b[:rect].intersect_rect?(player[:rect], 0)
+      if player[:visible] && volatile_block.intersect_rect?(player[:rect], 0)
         # magnitude = player[:size] < 100 ? 2.5 : 2 # slight boost with click vs hold
         magnitude = 2
-        b[:direction].x = if player[:coord].x > b[:rect].x + b[:rect].w.half
-                            -magnitude * b[:direction].x.abs
-                          else
-                            magnitude * b[:direction].x.abs
-                          end
-        b[:direction].y = if player[:coord].y > b[:rect].y + b[:rect].h.half
-                            -magnitude * b[:direction].y.abs
-                          else
-                            magnitude * b[:direction].y.abs
-                          end
+        actor_block[:direction].x = if player[:coord].x > volatile_block.x + volatile_block.w.half
+                                      -magnitude * actor_block[:direction].x.abs
+                                    else
+                                      magnitude * actor_block[:direction].x.abs
+                                    end
+        actor_block[:direction].y = if player[:coord].y > volatile_block.y + volatile_block.h.half
+                                      -magnitude * actor_block[:direction].y.abs
+                                    else
+                                      magnitude * actor_block[:direction].y.abs
+                                    end
       end
-      b[:direction].x = throttle(b[:direction].x)
-      b[:direction].y = throttle(b[:direction].y)
+      actor_block[:direction].x = throttle(actor_block[:direction].x)
+      actor_block[:direction].y = throttle(actor_block[:direction].y)
       if gs[:game_over]
-        b[:rect].x = bound(
-          b[:rect].x + b[:direction].x,
+        volatile_block.x = bound(
+          volatile_block.x + actor_block[:direction].x,
           $gtk.args.grid.left - 200,
           $gtk.args.grid.right + 200
         )
-        b[:rect].y = bound(
-          b[:rect].y + b[:direction].y,
+        volatile_block.y = bound(
+          volatile_block.y + actor_block[:direction].y,
           $gtk.args.grid.bottom - 200,
           $gtk.args.grid.top + 200
         )
       else
-        b[:rect].x = wrap(
-          b[:rect].x + b[:direction].x,
+        volatile_block.x = wrap(
+          volatile_block.x + actor_block[:direction].x,
           $gtk.args.grid.left - 200,
           $gtk.args.grid.right + 200
         )
-        b[:rect].y = wrap(
-          b[:rect].y + b[:direction].y,
+        volatile_block.y = wrap(
+          volatile_block.y + actor_block[:direction].y,
           $gtk.args.grid.bottom - 200,
           $gtk.args.grid.top + 200
         )

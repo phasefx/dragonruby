@@ -2,6 +2,44 @@
 
 # output methods
 module GameOutput
+  # more performant than arrays or hashes
+  class Solid
+    attr_accessor :x, :y, :w, :h, :r, :g, :b, :a
+
+    def serialize
+      [@x, @y, @w, @h, @r, @g, @b, @a]
+    end
+
+    def inspect
+      serialize.to_s
+    end
+
+    def to_s
+      serialize.to_s
+    end
+
+    def primitive_marker
+      :solid
+    end
+
+    def intersect_rect?(rect, fuzz)
+      [@x, @y, @w, @h].intersect_rect?(rect, fuzz)
+    end
+
+    # rubocop:disable Naming/MethodParameterName
+    def initialize(x, y, w, h, color, a)
+      self.x = x
+      self.y = y
+      self.w = w
+      self.h = h
+      self.r = color[0]
+      self.g = color[1]
+      self.b = color[2]
+      self.a = a
+    end
+    # rubocop:enable Naming/MethodParameterName
+  end
+
   # from https://venngage.com/blog/color-blind-friendly-palette/
   # Color Palettes for Color Blindness
   # Zesty Color Palette: #F5793A, #A95AA1, #85C0F9, #0F2080
@@ -38,16 +76,16 @@ module GameOutput
     sounds = []
     sounds << 'media/MagicDark.wav' if game[:actors][:player][:became_visible]
     sounds << 'media/TransportUp.wav' if game[:actors][:player][:hit_target]
-    primitives << render_actors(game[:actors])
+    primitives << render_actors(game[:actors], gtk)
     primitives << render_info(game, gtk)
     primitives << render_gameover(game, gtk)
     { primitives: primitives, sounds: sounds }
   end
 
-  def self.render_actors(actors)
+  def self.render_actors(actors, gtk)
     primitives = []
     primitives << render_targets(actors[:targets])
-    primitives << render_blocks(actors[:blocks])
+    primitives << render_blocks(gtk.state.volatile[:blocks])
     primitives << render_player(actors[:player])
     primitives
   end
@@ -62,7 +100,7 @@ module GameOutput
 
   def self.render_blocks(blocks)
     primitives = []
-    primitives << blocks.map { |b| [b[:rect], b[:color]].solid }
+    primitives << blocks
     primitives
   end
 

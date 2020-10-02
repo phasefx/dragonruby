@@ -84,14 +84,16 @@ def tick(gtk)
   gtk.outputs.primitives << outputs[:primitives]
   outputs[:sounds].each { |s| gtk.outputs.sounds << s }
 
-  if meta_intents.include?('reset')
-    gtk.state.game = Game.init gtk
-    gtk.gtk.reset
-  end
+  Game.reset(gtk) if meta_intents.include?('reset')
 end
 
 # housekeeping
 module Game
+  def self.reset(gtk)
+    gtk.state.game = init gtk
+    gtk.gtk.reset
+  end
+
   # rubocop:disable Security/Eval
   def self.deep_clone(obj)
     # using $gtk is just too convenient to pass up here
@@ -124,25 +126,31 @@ module Game
         label: [
           gtk.grid.left + rand(gtk.grid.w - 12),
           gtk.grid.bottom + rand(gtk.grid.h - 12),
-          '*', # '靶',
+          '*',
           GameOutput::PALETTES[gs[:palette]].sample
         ],
         captured: false
       }
     end
-    gs[:actors][:blocks] = Array.new(200).map do
-      {
-        rect: [
+    gtk.state.volatile = {
+      blocks: Array.new(200).map do
+        GameOutput::Solid.new(
           gtk.grid.left + rand(gtk.grid.w),
           gtk.grid.bottom + rand(gtk.grid.h),
           rand(100) + 100,
-          rand(100) + 100
-        ],
+          rand(100) + 100,
+          GameOutput::PALETTES[gs[:palette]].sample,
+          128
+        )
+      end
+    }
+    gs[:actors][:blocks] = gtk.state.volatile[:blocks].map do |b|
+      {
+        object_id: b.object_id,
         direction: [
           (rand(5) + 1).randomize(:sign),
           (rand(5) + 1).randomize(:sign)
-        ],
-        color: [GameOutput::PALETTES[gs[:palette]].sample, 128]
+        ]
       }
     end
     gs
