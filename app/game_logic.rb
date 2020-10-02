@@ -89,16 +89,17 @@ module GameLogic
     gs[:game_over] = true unless gs[:timer].positive?
 
     player[:hit_target] = false
-    gs[:actors][:targets].each do |t|
-      next if t[:caught]
+    gs[:actors][:targets].each_with_index do |t, idx|
+      actor_target = t
+      volatile_target = state.volatile[:targets][idx]
+      next if actor_target[:caught]
 
-      coord = [t[:label].x, t[:label].y]
-      next unless player[:visible] && coord.intersect_rect?(player[:rect], 10)
+      next unless player[:visible] && volatile_target.intersect_rect?(player[:rect], 10)
 
       player[:hit_target] = true
-      t[:caught] = true
+      actor_target[:caught] = true
       player[:score] += 1 unless gs[:game_over]
-      t[:label][2] = 'o'
+      volatile_target.text = 'o'
       player[:total_targets_caught] += 1
     end
 

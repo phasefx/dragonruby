@@ -40,6 +40,46 @@ module GameOutput
     # rubocop:enable Naming/MethodParameterName
   end
 
+  # more performant than arrays or hashes
+  class Label
+    attr_accessor :x, :y, :text, :size_enum, :alignment_enum, :r, :g, :b, :a, :font
+
+    def serialize
+      [@x, @y, @text, @size_enum, @alignment_enum, @r, @g, @b, @a, @font]
+    end
+
+    def inspect
+      serialize.to_s
+    end
+
+    def to_s
+      serialize.to_s
+    end
+
+    def primitive_marker
+      :label
+    end
+
+    def intersect_rect?(rect, fuzz)
+      [@x, @y - 12, 12, 12].intersect_rect?(rect, fuzz)
+    end
+
+    # rubocop:disable Naming/MethodParameterName
+    def initialize(x, y, text, color, a)
+      self.x = x
+      self.y = y
+      self.text = text
+      self.size_enum = 3
+      self.alignment_enum = 1
+      self.font = 'font.ttf'
+      self.r = color[0]
+      self.g = color[1]
+      self.b = color[2]
+      self.a = a
+    end
+    # rubocop:enable Naming/MethodParameterName
+  end
+
   # from https://venngage.com/blog/color-blind-friendly-palette/
   # Color Palettes for Color Blindness
   # Zesty Color Palette: #F5793A, #A95AA1, #85C0F9, #0F2080
@@ -84,8 +124,7 @@ module GameOutput
 
   def self.render_actors(actors)
     primitives = []
-    primitives << render_targets(actors[:targets])
-    # blocks break form here and are put into static_solids during next_level call
+    # blocks and targets break form here and are put into static_primitives during next_level call
     primitives << render_player(actors[:player])
     primitives
   end
@@ -95,12 +134,6 @@ module GameOutput
     return primitives unless player[:visible]
 
     primitives << player[:rect].border
-    primitives
-  end
-
-  def self.render_targets(targets)
-    primitives = []
-    primitives << targets.map { |t| t[:label].label }
     primitives
   end
 

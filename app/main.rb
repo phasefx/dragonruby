@@ -123,31 +123,32 @@ module Game
     gs[:level_index] += 1
     gs[:desire_next_level] = false
     gs[:desire_next_level_at] = nil
-    gs[:actors][:targets] = Array.new(5).map do
+    gtk.state.volatile = {}
+    gtk.state.volatile[:targets] = Array.new(5).map do
+      GameOutput::Label.new(
+        gtk.grid.left + rand(gtk.grid.w - 12),
+        gtk.grid.bottom + 12 + GameLogic.bound(rand(gtk.grid.h - 12), 0, gtk.grid.h),
+        '*',
+        GameOutput::PALETTES[gs[:palette]].sample,
+        128
+      )
+    end
+    gs[:actors][:targets] = gtk.state.volatile[:targets].map do |t|
       {
-        label: [
-          gtk.grid.left + rand(gtk.grid.w - 12),
-          gtk.grid.bottom + 12 + GameLogic.bound(rand(gtk.grid.h - 12), 0, gtk.grid.h),
-          '*',
-          GameOutput::PALETTES[gs[:palette]].sample
-        ],
+        object_id: t.object_id,
         captured: false
       }
     end
-    gtk.state.volatile = {
-      blocks: Array.new(200).map do
-        GameOutput::Solid.new(
-          gtk.grid.left + rand(gtk.grid.w),
-          gtk.grid.bottom + rand(gtk.grid.h),
-          rand(100) + 100,
-          rand(100) + 100,
-          GameOutput::PALETTES[gs[:palette]].sample,
-          128
-        )
-      end
-    }
-    gtk.outputs.static_solids.clear
-    gtk.outputs.static_solids << gtk.state.volatile[:blocks]
+    gtk.state.volatile[:blocks] = Array.new(200).map do
+      GameOutput::Solid.new(
+        gtk.grid.left + rand(gtk.grid.w),
+        gtk.grid.bottom + rand(gtk.grid.h),
+        rand(100) + 100,
+        rand(100) + 100,
+        GameOutput::PALETTES[gs[:palette]].sample,
+        128
+      )
+    end
     gs[:actors][:blocks] = gtk.state.volatile[:blocks].map do |b|
       {
         object_id: b.object_id,
@@ -157,6 +158,9 @@ module Game
         ]
       }
     end
+    gtk.outputs.static_primitives.clear
+    gtk.outputs.static_primitives << gtk.state.volatile[:targets] # targets first to make them more obscure
+    gtk.outputs.static_primitives << gtk.state.volatile[:blocks]
     gs
   end
 
