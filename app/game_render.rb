@@ -22,8 +22,8 @@ module GameOutput
       :solid
     end
 
-    def intersect_rect?(rect, fuzz)
-      [@x, @y, @w, @h].intersect_rect?(rect, fuzz)
+    def rect
+      [@x, @y, @w, @h]
     end
 
     # rubocop:disable Naming/MethodParameterName
@@ -42,7 +42,7 @@ module GameOutput
 
   # more performant than arrays or hashes
   class Label
-    attr_accessor :x, :y, :text, :size_enum, :alignment_enum, :r, :g, :b, :a, :font
+    attr_accessor :x, :y, :text, :size_enum, :alignment_enum, :r, :g, :b, :a, :font, :text_size
 
     def serialize
       [@x, @y, @text, @size_enum, @alignment_enum, @r, @g, @b, @a, @font]
@@ -60,8 +60,8 @@ module GameOutput
       :label
     end
 
-    def intersect_rect?(rect, fuzz)
-      [@x, @y - 12, 12, 12].intersect_rect?(rect, fuzz)
+    def rect
+      [@x - @text_size[0].half, @y - @text_size[1], @text_size[0], @text_size[1]]
     end
 
     # rubocop:disable Naming/MethodParameterName
@@ -76,6 +76,7 @@ module GameOutput
       self.g = color[1]
       self.b = color[2]
       self.a = a
+      self.text_size = $gtk.calcstringbox(text)
     end
     # rubocop:enable Naming/MethodParameterName
   end

@@ -94,7 +94,9 @@ module GameLogic
       volatile_target = state.volatile[:targets][idx]
       next if actor_target[:caught]
 
-      next unless player[:visible] && volatile_target.intersect_rect?(player[:rect], 10)
+      # calcstringbox is wonky
+      # $gtk.args.outputs.debug << volatile_target.rect.append([255, 255, 255]).flatten.border
+      next unless player[:visible] && volatile_target.rect.intersect_rect?(player[:rect], 0)
 
       player[:hit_target] = true
       actor_target[:caught] = true
@@ -117,7 +119,7 @@ module GameLogic
       actor_block = b
       volatile_block = state.volatile[:blocks][idx]
       # repulse blocks around active reticule
-      if player[:visible] && volatile_block.intersect_rect?(player[:rect], 0)
+      if player[:visible] && volatile_block.rect.intersect_rect?(player[:rect], 0)
         # magnitude = player[:size] < 100 ? 2.5 : 2 # slight boost with click vs hold
         magnitude = 2
         actor_block[:direction].x = if player[:coord].x > volatile_block.x + volatile_block.w.half
