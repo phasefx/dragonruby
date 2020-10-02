@@ -38,7 +38,9 @@ require 'app/load_save.rb'
 
 def tick(gtk)
   # everything is stored here
-  gtk.state.game ||= Game.init gtk
+  if gtk.state.tick_count.zero? || (gtk.state.game[:desire_next_level] && gtk.state.game[:game_over])
+    gtk.state.game = Game.init gtk
+  end
   gtk.state.game = Game.next_level(gtk.state.game, gtk) if gtk.state.game[:desire_next_level]
 
   # our scene management
@@ -184,6 +186,7 @@ module Game
           size: 20,
           click_count: 0,
           winner: false,
+          score: 0,
           total_targets_caught: 0
         }
       },

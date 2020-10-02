@@ -90,13 +90,14 @@ module GameLogic
 
     player[:hit_target] = false
     gs[:actors][:targets].each do |t|
-      next if t[:caught] || gs[:game_over]
+      next if t[:caught]
 
       coord = [t[:label].x, t[:label].y]
       next unless player[:visible] && coord.intersect_rect?(player[:rect], 10)
 
       player[:hit_target] = true
       t[:caught] = true
+      player[:score] += 1 unless gs[:game_over]
       t[:label][2] = 'o'
       player[:total_targets_caught] += 1
     end

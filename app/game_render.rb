@@ -109,9 +109,9 @@ module GameOutput
     text_height = gtk.gtk.calcstringbox('H')[1]
     targets_caught_this_level = state[:actors][:targets].select { |t| t[:caught] }.length
     targets_this_level = state[:actors][:targets].length
-    targets_total_caught = state[:actors][:player][:total_targets_caught]
+    _targets_total_caught = state[:actors][:player][:total_targets_caught]
     fps_line = "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count}"
-    score_line = "Score: #{targets_total_caught}"
+    score_line = "Score: #{state[:actors][:player][:score]}"
     level_line = "Level: #{state[:level_index]}"
     targets_line = "Targets: #{targets_caught_this_level} out of #{targets_this_level}"
     time_line = "Time Remaining: #{state[:timer]}"
@@ -128,7 +128,14 @@ module GameOutput
       ].labels
     end
     unless state[:actors][:player][:click_count].positive? || state[:game_over]
-      instructions = 'left-click or hold left-click to find hidden targets'
+      instructions = case $gtk.platform # Emscripten, Windows, Mac OS X, Linux, Android, iOS
+                     when 'Android'
+                       'touch screen to find hidden targets'
+                     when 'iOS'
+                       'touch screen to find hidden targets'
+                     else
+                       'left-click or hold left-click to find hidden targets'
+                     end
       text_size = gtk.gtk.calcstringbox(instructions)
       primitives << [
         -text_size.x.half,
@@ -144,8 +151,16 @@ module GameOutput
     primitives = []
     return primitives unless state[:game_over]
 
-    string = 'Finis.  Right-click to restart' unless MINIGAME
-    string = 'Finis.  Right-click for next mini-game' if MINIGAME
+    substring = 'to restart' unless MINIGAME
+    substring = 'for next mini-game' if MINIGAME
+    string = case $gtk.platform # Emscripten, Windows, Mac OS X, Linux, Android, iOS
+             when 'Android'
+               "capture remaining targets #{substring}"
+             when 'iOS'
+               "capture remaining targets #{substring}"
+             else
+               "right-click or capture remaining targets #{substring}"
+             end
     text_size = gtk.gtk.calcstringbox(string)
     primitives << [
       -text_size.x.half,
