@@ -127,7 +127,7 @@ module Game
       {
         label: [
           gtk.grid.left + rand(gtk.grid.w - 12),
-          gtk.grid.bottom + rand(gtk.grid.h - 12),
+          gtk.grid.bottom + 12 + GameLogic.bound(rand(gtk.grid.h - 12), 0, gtk.grid.h),
           '*',
           GameOutput::PALETTES[gs[:palette]].sample
         ],
