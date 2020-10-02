@@ -76,16 +76,16 @@ module GameOutput
     sounds = []
     sounds << 'media/MagicDark.wav' if game[:actors][:player][:became_visible]
     sounds << 'media/TransportUp.wav' if game[:actors][:player][:hit_target]
-    primitives << render_actors(game[:actors], gtk)
+    primitives << render_actors(game[:actors])
     primitives << render_info(game, gtk)
     primitives << render_gameover(game, gtk)
     { primitives: primitives, sounds: sounds }
   end
 
-  def self.render_actors(actors, gtk)
+  def self.render_actors(actors)
     primitives = []
     primitives << render_targets(actors[:targets])
-    primitives << render_blocks(gtk.state.volatile[:blocks])
+    # blocks break form here and are put into static_solids during next_level call
     primitives << render_player(actors[:player])
     primitives
   end
@@ -95,12 +95,6 @@ module GameOutput
     return primitives unless player[:visible]
 
     primitives << player[:rect].border
-    primitives
-  end
-
-  def self.render_blocks(blocks)
-    primitives = []
-    primitives << blocks
     primitives
   end
 

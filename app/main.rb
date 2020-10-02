@@ -144,6 +144,8 @@ module Game
         )
       end
     }
+    gtk.outputs.static_solids.clear
+    gtk.outputs.static_solids << gtk.state.volatile[:blocks]
     gs[:actors][:blocks] = gtk.state.volatile[:blocks].map do |b|
       {
         object_id: b.object_id,
