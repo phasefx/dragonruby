@@ -173,7 +173,7 @@ module GameOutput
       text_size = gtk.gtk.calcstringbox(instructions)
       primitives << [
         -text_size.x.half,
-        text_size.y.half,
+        text_size.y.half * 2,
         instructions,
         TEXT
       ].labels
@@ -198,7 +198,7 @@ module GameOutput
     text_size = gtk.gtk.calcstringbox(string)
     primitives << [
       -text_size.x.half,
-      text_size.y.half,
+      text_size.y.half * 4,
       string,
       TEXT
     ].labels
