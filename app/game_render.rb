@@ -115,11 +115,21 @@ module GameOutput
   def self.render(game, gtk)
     primitives = []
     sounds = []
+
+    primitives << render_actors(game[:actors])
+
+    primitives << render_info(game, gtk)
+
+    primitives << render_gameover(game, gtk)
+
     sounds << 'media/MagicDark.wav' if game[:actors][:player][:became_visible]
     sounds << 'media/TransportUp.wav' if game[:actors][:player][:hit_target]
-    primitives << render_actors(game[:actors])
-    primitives << render_info(game, gtk)
-    primitives << render_gameover(game, gtk)
+    sounds << 'media/SpookyHigh.wav' if game[:desire_next_level]
+    if game[:game_over]
+      sounds << 'media/SpookyLow.wav' unless game[:game_over_sound_played]
+      game[:game_over_sound_played] = true
+    end
+
     { primitives: primitives, sounds: sounds }
   end
 
