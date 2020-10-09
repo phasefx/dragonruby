@@ -2,6 +2,42 @@
 
 # output methods
 module GameOutput
+  # Create type with ALL sprite properties AND primitive_marker
+  class Sprite
+    attr_accessor :x, :y, :w, :h, :path, :angle, :a, :r, :g, :b,
+                  :source_x, :source_y, :source_w, :source_h,
+                  :tile_x, :tile_y, :tile_w, :tile_h,
+                  :flip_horizontally, :flip_vertically,
+                  :angle_anchor_x, :angle_anchor_y
+
+    def primitive_marker
+      :sprite
+    end
+  end
+
+  # more performant than arrays or hashes
+  class Background < Sprite
+    def serialize
+      [@x, @y, @w, @h, @path]
+    end
+
+    def inspect
+      serialize.to_s
+    end
+
+    def to_s
+      serialize.to_s
+    end
+
+    def initialize(path)
+      @x = $gtk.args.grid.left
+      @y = $gtk.args.grid.bottom
+      @w = $gtk.args.grid.w
+      @h = $gtk.args.grid.h
+      @path = path
+    end
+  end
+
   # more performant than arrays or hashes
   class Solid
     attr_accessor :x, :y, :w, :h, :r, :g, :b, :a
@@ -115,6 +151,8 @@ module GameOutput
   def self.render(game, gtk)
     primitives = []
     sounds = []
+
+    primitives << gtk.state.volatile[:backgrounds][game[:bg_index]]
 
     primitives << render_actors(game[:actors])
 

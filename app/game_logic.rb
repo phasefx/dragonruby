@@ -86,6 +86,7 @@ module GameLogic
     player = player_logic(player, gs[:mouse], intents)
 
     gs[:timer] = bound(gs[:timer] - 1, 0, 20) if state.tick_count.mod(60).zero?
+    gs[:bg_index] = wrap(gs[:bg_index] + 1, 0, gs[:bg_size] - 1) if state.tick_count.mod(2).zero?
     gs[:game_over] = true unless gs[:timer].positive?
 
     player[:hit_target] = false

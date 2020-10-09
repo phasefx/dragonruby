@@ -117,13 +117,32 @@ module Game
     sum
   end
 
+  def self.different_from_previous_level?(game)
+    game[:previous_cloud_or_tunnel] != game[:cloud_or_tunnel] # && game[:previous_palette] != game[:palette]
+  end
+
   def self.next_level(game, gtk)
     gs = deep_clone game
-    gs[:palette] = rand(GameOutput::PALETTES.length)
     gs[:level_index] += 1
     gs[:desire_next_level] = false
     gs[:desire_next_level_at] = nil
     gtk.state.volatile = {}
+    loop do
+      gs[:cloud_or_tunnel] = rand(2) == 1 ? :cloud : :tunnel
+      gs[:palette] = rand(GameOutput::PALETTES.length)
+      break if different_from_previous_level?(gs)
+    end
+    gs[:previous_cloud_or_tunnel] = gs[:cloud_or_tunnel]
+    gs[:previous_palette] = gs[:palette]
+    tunnel_set_size = [200, 200, 101, 100]
+    tunnel_set = rand(4)
+    gs[:bg_size] = tunnel_set_size[tunnel_set]
+    idx = 0
+    gtk.state.volatile[:backgrounds] = Array.new(gs[:cloud_or_tunnel] == :tunnel ? gs[:bg_size] : 0).map do
+      idx += 1
+      path = "media/tunnel#{tunnel_set}/ezgif-frame-#{format('%03<frame>d', frame: idx)}.jpg"
+      GameOutput::Background.new(path)
+    end
     gtk.state.volatile[:targets] = Array.new(5).map do
       GameOutput::Label.new(
         gtk.grid.left + rand(gtk.grid.w - 12),
@@ -139,7 +158,7 @@ module Game
         captured: false
       }
     end
-    gtk.state.volatile[:blocks] = Array.new(200).map do
+    gtk.state.volatile[:blocks] = Array.new(gs[:cloud_or_tunnel] == :cloud ? 200 : 0).map do
       GameOutput::Solid.new(
         gtk.grid.left + rand(gtk.grid.w),
         gtk.grid.bottom + rand(gtk.grid.h),
@@ -178,7 +197,11 @@ module Game
       scene: :Game,
       timer: 20,
       game_over: false,
+      bg_index: 0,
+      previous_palette: nil,
       palette: 0,
+      previous_cloud_or_tunnel: :tunnel, # let's start with clouds
+      cloud_or_tunnel: nil,
       level_index: 0,
       desire_next_level: true,
       desire_next_level_at: -100,
