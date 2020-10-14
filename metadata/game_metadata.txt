@@ -1,6 +1,6 @@
-#devid=
-#devtitle=
-#gameid=
-#gametitle=
-#version=
-#icon=metadata/icon.png
+devid=phasefx
+devtitle=Jason Etheridge
+gameid=fuafua
+gametitle=fuafua
+version=0.1
+icon=metadata/icon.png
