@@ -45,7 +45,9 @@ def tick(gtk)
   output = Kernel.const_get("#{gtk.state.game[:scene]}Output")
 
   # input
-  gtk.state.game[:mouse] = { position: gtk.inputs.mouse.position }
+  gtk.state.game[:mouse] ||= {}
+  gtk.state.game[:mouse][:position] = gtk.inputs.mouse.position 
+  gtk.state.game[:mouse][:last_click] = gtk.inputs.mouse.click if gtk.inputs.mouse.click
   meta_intents = input.meta_input(
     gtk.inputs,
     gtk.state.game[:keymaps]
@@ -67,6 +69,7 @@ def tick(gtk)
   )
 
   # output
+  gtk.outputs.background_color = [168, 168, 168]
   gtk.outputs.primitives << output.render(
     gtk.state.game,
     gtk
@@ -123,8 +126,9 @@ module Game
       level_index: -1,
       current_level: nil,
       desire_next_level: true,
-      actors: {
-      },
+      target_buffer: [1,4,21,3,'__'],
+      input_buffer: [1,4],
+      buttons: [],
       levels: [],
       show_fps: true,
       mousemaps: {
@@ -147,7 +151,21 @@ module Game
         }
       }
     }
+    text_dimensions = GameOutput::text_dimensions('123')
+    [-1, 0, 1].map do |shift_y|
+      [-1, 0, 1].map do |shift_x|
+        game[:buttons] << {
+          x: -1.5*text_dimensions.x.half + shift_x*1.5*text_dimensions.x,
+          y: -1.5*text_dimensions.y.half + shift_y*1.5*text_dimensions.y - 60,
+          w: 1.5*text_dimensions.x,
+          h: 1.5*text_dimensions.y,
+          primitive_marker: :border
+        }
+      end
+    end
     puts game
     game
   end
 end
+
+$gtk.reset

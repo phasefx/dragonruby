@@ -39,6 +39,7 @@ module GameInput
     intents << 'standard_action' if inputs.mouse.down && inputs.mouse.send(mousemaps[:Game][:standard_action][0])
     intents << 'alternate_action' if inputs.mouse.down && inputs.mouse.send(mousemaps[:Game][:alternate_action][0])
     intents << 'mouse_up' if inputs.mouse.up
+    intents << 'mouse_down' if inputs.mouse.down
 
     puts intents if intents.length.positive?
     intents

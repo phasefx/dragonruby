@@ -13,39 +13,61 @@
 
 # output methods
 module GameOutput
+  TEXT_SIZE = 30
+
+  def self.text_dimensions(string)
+    $gtk.calcstringbox(string,TEXT_SIZE,'app/Eighty-Four.ttf')
+  end
+
   def self.render(game, gtk)
     primitives = []
-    primitives << render_actors(game[:actors])
-    primitives << render_fps(game, gtk)
+    primitives << render_buttons(game[:buttons], gtk)
+    primitives << render_display(game, gtk)
     primitives
   end
 
-  def self.render_actors(_actors)
+  def self.render_buttons(buttons, _gtk)
     primitives = []
+    primitives << buttons
+    primitives << buttons.each_with_index.map do |b, idx|
+      {
+         x: b.x + b.w.half,
+         y: b.y + b.h.half.half*3.5,
+         text: idx+1,
+         size_enum: TEXT_SIZE,
+         alignment_enum: 1,
+         r: 0, g: 0, b: 0,
+         font: "app/Eighty-Four.ttf" }.label
+    end
     primitives
   end
 
-  def self.render_fps(state, gtk)
+  def self.render_display(game, gtk)
     primitives = []
-    text_height = gtk.gtk.calcstringbox('H')[1]
-    primitives << if state[:show_fps]
-                    [
-                      gtk.grid.left,
-                      gtk.grid.top - text_height * 0,
-                      "FPS #{gtk.gtk.current_framerate.floor}  Tick #{gtk.tick_count} Level #{state[:current_level]}"
-                    ].labels
-                  else
-                    [
-                      gtk.grid.left,
-                      gtk.grid.top - text_height * 0,
-                      "Level #{state[:current_level]}"
-                    ].labels
-                  end
-    primitives << [
-      gtk.grid.left,
-      gtk.grid.top - text_height * 1,
-      'R for Reset / M for Save / L for Load'
-    ].labels
+    text_height = text_dimensions('0123456789_').y
+    primitives << {
+       x: 0,
+       y: gtk.grid.top - text_height * 0,
+       text: game[:target_buffer].join(' '),
+       size_enum: TEXT_SIZE,
+       alignment_enum: 1,
+       r: 0, g: 0, b: 0,
+       font: "app/Eighty-Four.ttf" }.label
+    input_display = game[:target_buffer].each_with_index.map do |n,i|
+      if game[:input_buffer][i].nil?
+        n.to_s.chars.map { '_' }.join
+      else
+        game[:input_buffer][i]
+      end
+    end.join(' ')
+    primitives << {
+       x: 0,
+       y: gtk.grid.top - text_height * 1,
+       text: input_display,
+       size_enum: TEXT_SIZE,
+       alignment_enum: 1,
+       r: 0, g: 0, b: 0,
+       font: "app/Eighty-Four.ttf" }.label
     primitives
   end
 end

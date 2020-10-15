@@ -45,16 +45,15 @@ module GameLogic
 
   def self.game_logic(state, intents)
     gs = Game.deep_clone state.game
-    player = gs[:actors][:player]
-    player = player_logic(player, gs, intents)
-
-    gs[:actors][:player] = player
+    gs[:buttons].each_with_index do |b,i|
+      if intents.include?('standard_action') and gs[:mouse][:last_click].inside_rect? b
+        puts "clicked #{i}"
+      elsif state[:mouse][:position].inside_rect? b
+        puts "hovered #{i}"
+      else
+        #b.merge({target: :border, r:168,g:168,b:168})
+      end
+    end
     gs
-  end
-
-  def self.player_logic(player, _state, _intents)
-    p = Game.deep_clone player
-
-    p
   end
 end
