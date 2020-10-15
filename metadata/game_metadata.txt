@@ -1,0 +1,6 @@
+devid=phasefx
+devtitle=Jason Etheridge
+gameid=experiment.005
+gametitle=experiment.005
+version=0.1
+icon=metadata/icon.png
