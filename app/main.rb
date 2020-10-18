@@ -47,7 +47,8 @@ def tick(gtk)
   # input
   gtk.state.game[:mouse] ||= {}
   gtk.state.game[:mouse][:position] = gtk.inputs.mouse.position 
-  gtk.state.game[:mouse][:last_click] = gtk.inputs.mouse.click if gtk.inputs.mouse.click
+  gtk.state.game[:mouse][:prev_click] = gtk.inputs.mouse.previous_click
+  gtk.state.game[:mouse][:last_click] = gtk.inputs.mouse.click
   meta_intents = input.meta_input(
     gtk.inputs,
     gtk.state.game[:keymaps]
@@ -69,13 +70,17 @@ def tick(gtk)
   )
 
   # output
-  gtk.outputs.background_color = [168, 168, 168]
+  gtk.outputs.background_color = GameOutput::BACKGROUND_COLOR
   gtk.outputs.primitives << output.render(
     gtk.state.game,
     gtk
   )
 
   gtk.gtk.reset if meta_intents.include?('reset')
+  if gtk.state.game[:desire_pause]
+    gtk.state.game[:desire_pause] = false
+    gtk.gtk.pause!
+  end
 end
 
 # housekeeping
@@ -126,10 +131,11 @@ module Game
       level_index: -1,
       current_level: nil,
       desire_next_level: true,
-      target_buffer: [1,4,21,3,'__'],
-      input_buffer: [1,4],
+      input_buffer: [],
       buttons: [],
-      levels: [],
+      levels: [
+        { target_buffer: [1,2,3,4], display_target: [1,2,3,'_'] }
+      ],
       show_fps: true,
       mousemaps: {
         Game: {
@@ -143,11 +149,20 @@ module Game
           right: %i[right d],
           up: %i[up w],
           down: %i[down s],
-          toggle_fps: %i[space],
           exit: %i[escape],
           reset: %i[r],
           load: %i[l],
-          save: %i[m]
+          save: %i[m],
+          button0: %i[zero],
+          button1: %i[one],
+          button2: %i[two],
+          button3: %i[three],
+          button4: %i[four],
+          button5: %i[five],
+          button6: %i[six],
+          button7: %i[seven],
+          button8: %i[eight],
+          button9: %i[nine]
         }
       }
     }

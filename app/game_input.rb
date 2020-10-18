@@ -6,7 +6,6 @@ module GameInput
     intents = []
     down_keys = inputs.keyboard.key_down.truthy_keys
     down_keys.each do |truth|
-      intents << 'toggle_fps' if keymaps[:Game][:toggle_fps].include?(truth)
       intents << 'exit' if keymaps[:Game][:exit].include?(truth)
       intents << 'reset' if keymaps[:Game][:reset].include?(truth)
       intents << 'save'  if keymaps[:Game][:save].include?(truth)
@@ -27,6 +26,16 @@ module GameInput
       intents << 'start_right' if keymaps[:Game][:right].include?(truth)
       intents << 'start_up' if keymaps[:Game][:up].include?(truth)
       intents << 'start_down' if keymaps[:Game][:down].include?(truth)
+      intents << 'button 0' if keymaps[:Game][:button0].include?(truth)
+      intents << 'button 1' if keymaps[:Game][:button1].include?(truth)
+      intents << 'button 2' if keymaps[:Game][:button2].include?(truth)
+      intents << 'button 3' if keymaps[:Game][:button3].include?(truth)
+      intents << 'button 4' if keymaps[:Game][:button4].include?(truth)
+      intents << 'button 5' if keymaps[:Game][:button5].include?(truth)
+      intents << 'button 6' if keymaps[:Game][:button6].include?(truth)
+      intents << 'button 7' if keymaps[:Game][:button7].include?(truth)
+      intents << 'button 8' if keymaps[:Game][:button8].include?(truth)
+      intents << 'button 9' if keymaps[:Game][:button9].include?(truth)
     end
 
     held_keys.each do |truth|

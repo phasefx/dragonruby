@@ -14,6 +14,13 @@
 # output methods
 module GameOutput
   TEXT_SIZE = 30
+  BACKGROUND_COLOR = [168, 168, 168].freeze
+  CLICKED_COLOR_TEXT = {r: 0, g: 0, b: 0}.freeze
+  HOVERED_COLOR_TEXT = {r: 0, g: 0, b: 0}.freeze
+  NORMAL_COLOR_TEXT = {r: 0, g: 0, b: 0}.freeze
+  CLICKED_COLOR_BG = {r: 245, g: 121, b: 58}.freeze
+  HOVERED_COLOR_BG = {r: 128, g: 128, b: 128}.freeze
+  NORMAL_COLOR_BG = {r: 0, g: 0, b: 0}.freeze
 
   def self.text_dimensions(string)
     $gtk.calcstringbox(string,TEXT_SIZE,'app/Eighty-Four.ttf')
@@ -29,6 +36,13 @@ module GameOutput
   def self.render_buttons(buttons, _gtk)
     primitives = []
     primitives << buttons
+    buttons.each_with_index.map do |b, idx|
+      if b[:clicked] || b[:hovered]
+        primitives << b.clone.merge(
+          b[:clicked] ? CLICKED_COLOR_BG : (b[:hovered] ? HOVERED_COLOR_BG : NORMAL_COLOR_BG)
+        ).solid
+      end
+    end
     primitives << buttons.each_with_index.map do |b, idx|
       {
          x: b.x + b.w.half,
@@ -36,8 +50,9 @@ module GameOutput
          text: idx+1,
          size_enum: TEXT_SIZE,
          alignment_enum: 1,
-         r: 0, g: 0, b: 0,
-         font: "app/Eighty-Four.ttf" }.label
+         font: "app/Eighty-Four.ttf" }.merge(
+           b[:clicked] ? CLICKED_COLOR_TEXT : (b[:hovered] ? HOVERED_COLOR_TEXT : NORMAL_COLOR_TEXT)
+         ).label
     end
     primitives
   end
@@ -48,12 +63,12 @@ module GameOutput
     primitives << {
        x: 0,
        y: gtk.grid.top - text_height * 0,
-       text: game[:target_buffer].join(' '),
+       text: game[:current_level][:display_target].join(' '),
        size_enum: TEXT_SIZE,
        alignment_enum: 1,
        r: 0, g: 0, b: 0,
        font: "app/Eighty-Four.ttf" }.label
-    input_display = game[:target_buffer].each_with_index.map do |n,i|
+    input_display = game[:current_level][:target_buffer].each_with_index.map do |n,i|
       if game[:input_buffer][i].nil?
         n.to_s.chars.map { '_' }.join
       else
