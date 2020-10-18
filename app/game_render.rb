@@ -23,7 +23,7 @@ module GameOutput
   NORMAL_COLOR_BG = {r: 0, g: 0, b: 0}.freeze
 
   def self.text_dimensions(string)
-    $gtk.calcstringbox(string,TEXT_SIZE,'app/Eighty-Four.ttf')
+    $gtk.calcstringbox(string,TEXT_SIZE)
   end
 
   def self.render(game, gtk)
@@ -46,11 +46,10 @@ module GameOutput
     primitives << buttons.each_with_index.map do |b, idx|
       {
          x: b.x + b.w.half,
-         y: b.y + b.h.half.half*3.5,
-         text: idx,
+         y: b.y + b.h.half.half*3.5 - 10,
+         text: idx < 10 ? idx : '←',
          size_enum: TEXT_SIZE,
-         alignment_enum: 1,
-         font: "app/Eighty-Four.ttf" }.merge(
+         alignment_enum: 1 }.merge(
            b[:clicked] ? CLICKED_COLOR_TEXT : (b[:hovered] ? HOVERED_COLOR_TEXT : NORMAL_COLOR_TEXT)
          ).label
     end
@@ -62,12 +61,11 @@ module GameOutput
     text_height = text_dimensions('0123456789_').y
     primitives << {
        x: 0,
-       y: gtk.grid.top - text_height * 0,
+       y: gtk.grid.top - text_height * 0 - 20,
        text: game[:current_level][:display_target].join(' '),
        size_enum: TEXT_SIZE,
        alignment_enum: 1,
-       r: 0, g: 0, b: 0,
-       font: "app/Eighty-Four.ttf" }.label
+       r: 0, g: 0, b: 0 }.label
     input_display = game[:current_level][:target_buffer].each_with_index.map do |n,i|
       if game[:input_buffer][i].nil?
         n.to_s.chars.map { '_' }.join
@@ -77,12 +75,11 @@ module GameOutput
     end.join(' ')
     primitives << {
        x: 0,
-       y: gtk.grid.top - text_height * 1,
+       y: gtk.grid.top - text_height * 1 - 20,
        text: input_display,
        size_enum: TEXT_SIZE,
        alignment_enum: 1,
-       r: 0, g: 0, b: 0,
-       font: "app/Eighty-Four.ttf" }.label
+       r: 0, g: 0, b: 0 }.label
     primitives
   end
 end

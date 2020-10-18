@@ -162,7 +162,8 @@ module Game
           button6: %i[six],
           button7: %i[seven],
           button8: %i[eight],
-          button9: %i[nine]
+          button9: %i[nine],
+          button10: %i[backspace]
         }
       }
     }
@@ -185,6 +186,13 @@ module Game
         }
       end
     end
+    game[:buttons] << {
+      x: -1.5*text_dimensions.x.half + 2*1.5*text_dimensions.x,
+      y: -1.5*text_dimensions.y.half + 1*1.5*text_dimensions.y - 60,
+      w: 1.5*text_dimensions.x,
+      h: 1.5*text_dimensions.y,
+      primitive_marker: :border
+    }
     puts game
     game
   end

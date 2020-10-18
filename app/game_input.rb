@@ -66,6 +66,10 @@ module GameInput
         intents << 'button_via_kb'
         intents << 'button 9'
       end
+      if keymaps[:Game][:button10].include?(truth)
+        intents << 'button_via_kb'
+        intents << 'button 10'
+      end
     end
 
     held_keys.each do |truth|
