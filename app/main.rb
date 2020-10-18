@@ -48,7 +48,7 @@ def tick(gtk)
   gtk.state.game[:mouse] ||= {}
   gtk.state.game[:mouse][:position] = gtk.inputs.mouse.position 
   gtk.state.game[:mouse][:prev_click] = gtk.inputs.mouse.previous_click
-  gtk.state.game[:mouse][:last_click] = gtk.inputs.mouse.click
+  gtk.state.game[:mouse][:last_click] = gtk.inputs.mouse.click if gtk.inputs.mouse.click
   meta_intents = input.meta_input(
     gtk.inputs,
     gtk.state.game[:keymaps]

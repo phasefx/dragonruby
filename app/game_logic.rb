@@ -49,7 +49,7 @@ module GameLogic
       if intents.include?("button #{i}")
         b[:clicked] = true
         b[:hovered] = false
-      elsif intents.include?('standard_action') && [gs[:mouse][:last_click][:x], gs[:mouse][:last_click][:y]].inside_rect?(b)
+      elsif intents.include?('standard_action') && [gs[:mouse][:last_click].x, gs[:mouse][:last_click].y].inside_rect?(b)
         b[:clicked] = true
         b[:hovered] = false
         intents << "button #{i}"
