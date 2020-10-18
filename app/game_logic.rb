@@ -46,15 +46,18 @@ module GameLogic
   def self.game_logic(state, intents)
     gs = Game.deep_clone state.game
     gs[:buttons].each_with_index do |b,i|
-      if intents.include?('standard_action') && [gs[:mouse][:last_click][:x], gs[:mouse][:last_click][:y]].inside_rect?(b)
+      if intents.include?("button #{i}")
         b[:clicked] = true
         b[:hovered] = false
-        intents << "button #{i+1}"
+      elsif intents.include?('standard_action') && [gs[:mouse][:last_click][:x], gs[:mouse][:last_click][:y]].inside_rect?(b)
+        b[:clicked] = true
+        b[:hovered] = false
+        intents << "button #{i}"
       elsif gs[:mouse][:position].inside_rect? b
-        b[:clicked] = false if intents.include?('standard_action')
+        b[:clicked] = false if intents.include?('standard_action') || intents.include?('button_via_kb') 
         b[:hovered] = true
       else
-        b[:clicked] = false if intents.include?('standard_action')
+        b[:clicked] = false if intents.include?('standard_action') || intents.include?('button_via_kb')
         b[:hovered] = false
       end
     end

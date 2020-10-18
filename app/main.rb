@@ -167,6 +167,13 @@ module Game
       }
     }
     text_dimensions = GameOutput::text_dimensions('123')
+    game[:buttons] << {
+      x: -1.5*text_dimensions.x.half + -2*1.5*text_dimensions.x,
+      y: -1.5*text_dimensions.y.half + -1*1.5*text_dimensions.y - 60,
+      w: 1.5*text_dimensions.x,
+      h: 1.5*text_dimensions.y,
+      primitive_marker: :border
+    }
     [-1, 0, 1].map do |shift_y|
       [-1, 0, 1].map do |shift_x|
         game[:buttons] << {

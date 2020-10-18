@@ -47,7 +47,7 @@ module GameOutput
       {
          x: b.x + b.w.half,
          y: b.y + b.h.half.half*3.5,
-         text: idx+1,
+         text: idx,
          size_enum: TEXT_SIZE,
          alignment_enum: 1,
          font: "app/Eighty-Four.ttf" }.merge(
