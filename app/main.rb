@@ -10,6 +10,8 @@ module HexModule
 
   # toward conversion of hex coordinates to screen coordinates
   class Orientation
+    attr_accessor :f0, :f1, :f2, :f3, :b0, :b1, :b2, :b3, :start_angle
+
     # rubocop: disable Style/ParameterLists
     def initialize(f0_, f1_, f2_, f3_, b0_, b1_, b2_, b3_, start_angle)
       # rubocop: enable Style/ParameterLists
@@ -25,19 +27,21 @@ module HexModule
     end
   end
 
-  # for converting hex coordinates to screen cordinates
+  # for converting hex coordinates to screen coordinates
   class Layout
+    attr_accessor :orientation, :size, :origin
+
     def initialize(orientation, size, origin)
       @orientation = orientation
       @size = size
-      @orgin = origin
+      @origin = origin
     end
 
     # rubocop: disable Metrics/AbcSize
     def hex_to_pixel(hex)
       x = (@orientation.f0 * hex.q + @orientation.f1 * hex.r) * @size.x
       y = (@orientation.f2 * hex.q + @orientation.f3 * hex.r) * @size.y
-      [x + @origin.x, y + @origin.y]
+      [x + @origin[0], y + @origin[1]]
     end
     # rubocop: enable Metrics/AbcSize
   end
@@ -54,7 +58,7 @@ module HexModule
     end
 
     def serialize
-      { q: @q, r: @r, s: @r }
+      { q: @q, r: @r, s: @s }
     end
 
     def inspect
@@ -163,7 +167,7 @@ end
 
 # let's put this stuff to use
 class Game
-  attr_accessor :layout, :hex
+  attr_accessor :layout, :hexes
 
   include HexModule
 
@@ -171,11 +175,11 @@ class Game
     @args = gtk
     gtk.grid.origin_center!
     @layout = Layout.new(LAYOUT_FLAT, [100, 100], [0, 0])
-    @hex = Hex.new(0, 0, 0)
+    @hexes = [Hex.new(0, 0, 0), Hex.new(1, -1, 0)]
   end
 
   def serialize
-    { hex: @hex }
+    { hexes: @hexes }
   end
 
   def inspect
@@ -187,10 +191,15 @@ class Game
   end
 end
 
+# rubocop: disable Metrics/AbcSize
 def tick(args)
   args.state.game ||= Game.new(args)
-  args.outputs.labels << [100, 100, args.state.tick_count]
+  args.outputs.labels << args.state.game.hexes.map do |h|
+    coord = args.state.game.layout.hex_to_pixel(h)
+    [coord[0], coord[1], h.to_s]
+  end
 end
+# rubocop: enable Metrics/AbcSize
 
 # rubocop: disable Style/GlobalVars
 $gtk.reset
