@@ -25,6 +25,18 @@ module HexModule
       @b3 = b3_
       @start_angle = start_angle
     end
+
+    def serialize
+      [@f0, @f1, @f2, @f3, @b0, @b1, @b2, @b3, @start_angle]
+    end
+
+    def inspect
+      serialize.to_s
+    end
+
+    def to_s
+      serialize.to_s
+    end
   end
 
   # for converting hex coordinates to screen coordinates
@@ -37,13 +49,38 @@ module HexModule
       @origin = origin
     end
 
+    def serialize
+      { orientation: @orientation, size: @size, origin: @origin }
+    end
+
+    def inspect
+      serialize.to_s
+    end
+
+    def to_s
+      serialize.to_s
+    end
+
     # rubocop: disable Metrics/AbcSize
     def hex_to_pixel(hex)
       x = (@orientation.f0 * hex.q + @orientation.f1 * hex.r) * @size.x
       y = (@orientation.f2 * hex.q + @orientation.f3 * hex.r) * @size.y
-      [x + @origin[0], y + @origin[1]]
+      [x + @origin.x, y + @origin.y]
     end
     # rubocop: enable Metrics/AbcSize
+
+    def hex_corner_offset(corner)
+      angle = 2.0 * Math::PI * (@orientation.start_angle + corner) / 6
+      [@size.x * Math.cos(angle), @size.y * Math.sin(angle)]
+    end
+
+    def polygon_corners(hex)
+      center = hex_to_pixel(hex)
+      6.times.map do |i|
+        offset = hex_corner_offset(i)
+        [center.x + offset.x, center.y + offset.y]
+      end
+    end
   end
 
   # for representing hex cube coordinates
@@ -179,7 +216,7 @@ class Game
   end
 
   def serialize
-    { hexes: @hexes }
+    { layout: @layout, hexes: @hexes }
   end
 
   def inspect
@@ -189,6 +226,12 @@ class Game
   def to_s
     serialize.to_s
   end
+
+  def polygon_corners_to_lines(corners)
+    corners.each_with_index.map do |corner, idx|
+      [corner.x, corner.y, corners[idx - 1].x, corners[idx - 1].y]
+    end
+  end
 end
 
 # rubocop: disable Metrics/AbcSize
@@ -196,7 +239,10 @@ def tick(args)
   args.state.game ||= Game.new(args)
   args.outputs.labels << args.state.game.hexes.map do |h|
     coord = args.state.game.layout.hex_to_pixel(h)
-    [coord[0], coord[1], h.to_s]
+    [coord.x, coord.y, h.to_s]
+  end
+  args.outputs.lines << args.state.game.hexes.map do |h|
+    args.state.game.polygon_corners_to_lines(args.state.game.layout.polygon_corners(h))
   end
 end
 # rubocop: enable Metrics/AbcSize
