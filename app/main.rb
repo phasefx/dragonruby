@@ -256,6 +256,7 @@ def tick(args)
   args.outputs.lines << args.state.game.hexes.map do |h|
     args.state.game.polygon_corners_to_lines(args.state.game.layout.polygon_corners(h))
   end
+  args.state.game.hexes[1] = args.state.game.hexes[1].rotate_left
 end
 # rubocop: enable Metrics/AbcSize
 
