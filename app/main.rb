@@ -12,9 +12,7 @@ module HexModule
   class Orientation
     attr_accessor :f0, :f1, :f2, :f3, :b0, :b1, :b2, :b3, :start_angle
 
-    # rubocop: disable Style/ParameterLists
     def initialize(f0_, f1_, f2_, f3_, b0_, b1_, b2_, b3_, start_angle)
-      # rubocop: enable Style/ParameterLists
       @f0 = f0_
       @f1 = f1_
       @f2 = f2_
@@ -61,7 +59,6 @@ module HexModule
       serialize.to_s
     end
 
-    # rubocop: disable Metrics/AbcSize
     def pixel_to_hex(point)
       pt = [
         (point.x - @origin.x) / @size.x,
@@ -71,22 +68,17 @@ module HexModule
       y = @orientation.b2 * pt.x + @orientation.b3 * pt.y
       Hex.new(x, y, -x - y)
     end
-    # rubocop: enable Metrics/AbcSize
 
     def pixel_to_existing_hex(point)
       h = pixel_to_hex(point).round
-      # rubocop: disable Style/GlobalVars
       $gtk.args.state.hex[h.q][h.r][h.s]
-      # rubocop: enable Style/GlobalVars
     end
 
-    # rubocop: disable Metrics/AbcSize
     def hex_to_pixel(hex)
       x = (@orientation.f0 * hex.q + @orientation.f1 * hex.r) * @size.x
       y = (@orientation.f2 * hex.q + @orientation.f3 * hex.r) * @size.y
       [x + @origin.x, y + @origin.y]
     end
-    # rubocop: enable Metrics/AbcSize
 
     def hex_corner_offset(corner)
       angle = 2.0 * Math::PI * (@orientation.start_angle + corner) / 6
@@ -104,7 +96,7 @@ module HexModule
 
   # for representing hex cube coordinates
   class Hex
-    attr_accessor :q, :r, :s, :hover
+    attr_accessor :q, :r, :s, :hover, :index
 
     def initialize(q__, r__, s__ = nil)
       @hover = false
@@ -135,7 +127,17 @@ module HexModule
     end
 
     def clear_mouse_hover
-      @hover = false
+      if @hover
+        @hover = false
+        yield
+      end
+    end
+
+    def set_mouse_hover
+      unless @hover
+        @hover = true
+        yield
+      end
     end
 
     def ==(other)
@@ -143,9 +145,7 @@ module HexModule
     end
 
     def !=(other)
-      # rubocop: disable Style/InverseMethods
       !(self == other)
-      # rubocop: enable Style/InverseMethods
     end
 
     def +(other)
@@ -172,8 +172,6 @@ module HexModule
       add(direction(dir))
     end
 
-    # rubocop: disable Metrics/MethodLength
-    # rubocop: disable Metrics/AbcSize
     def round
       iq = @q.round
       ir = @r.round
@@ -190,8 +188,6 @@ module HexModule
       end
       Hex.new(iq, ir, is)
     end
-    # rubocop: enable Metrics/AbcSize
-    # rubocop: enable Metrics/MethodLength
 
     def _lerp(a__, b__, t__)
       a__ * (1 - t__) + b__ * t__
@@ -245,10 +241,35 @@ class Game
     gtk.grid.origin_center!
     flat_layout
     populate_hexes
+    mass_static_render
+  end
+
+  def hex_label(h)
+    coord = @layout.hex_to_pixel(h)
+    {
+      x: coord.x - 25, y: coord.y + 10, text: h.brief.join(','),
+      r: h.hover ? 255 : 0,
+      g: 0,
+      b: 0
+    }
+  end
+
+  def hex_lines(h)
+    polygon_corners_to_lines(@layout.polygon_corners(h))
+  end
+
+  def mass_static_render
+    @args.outputs.static_labels << @hexes.each_with_index.map do |h, i|
+      h.index = i
+      hex_label(h)
+    end
+    @args.outputs.static_lines << @hexes.map do |h|
+      hex_lines(h)
+    end
   end
 
   def populate_hexes
-    # flat array, but also populating a map in @args.state
+    # flat array, but also vivicating a map in @args.state
     @hexes = (-4..4).map do |q|
       (-4..4).map do |r|
         h = Hex.new(q, r)
@@ -296,17 +317,17 @@ class Game
   end
 end
 
-# rubocop: disable Metrics/AbcSize
-# rubocop: disable Metrics/MethodLength
-# rubocop: disable Metrics/CyclomaticComplexity
-# rubocop: disable Metrics/PerceivedComplexity
 def tick(args)
   # init
   args.state.game ||= Game.new(args)
 
   # clearing for tick
   intents = []
-  args.state.game.hexes.each(&:clear_mouse_hover)
+  args.state.game.hexes.each do |h|
+    h.clear_mouse_hover do
+      args.outputs.static_labels[h.index] = args.state.game.hex_label(h)
+    end
+  end
 
   # input
   down_keys = args.inputs.keyboard.key_down.truthy_keys
@@ -318,28 +339,13 @@ def tick(args)
   )
 
   # logic
-  mouse_hex.hover = true unless mouse_hex.nil?
+  mouse_hex&.set_mouse_hover do
+    args.outputs.static_labels[mouse_hex.index] = args.state.game.hex_label(mouse_hex)
+  end
   args.state.game.toggle_layout if intents.include?(:toggle_layout)
 
   # render
-  args.outputs.labels << args.state.game.hexes.map do |h|
-    coord = args.state.game.layout.hex_to_pixel(h)
-    {
-      x: coord.x - 25, y: coord.y + 10, text: h.brief.join(','),
-      r: h.hover ? 255 : 0,
-      g: 0,
-      b: 0
-    }
-  end
-  args.outputs.lines << args.state.game.hexes.map do |h|
-    args.state.game.polygon_corners_to_lines(args.state.game.layout.polygon_corners(h))
-  end
+  args.outputs.debug << [args.grid.left, args.grid.top, args.gtk.current_framerate.to_i].label
 end
-# rubocop: enable Metrics/PerceivedComplexity
-# rubocop: enable Metrics/CyclomaticComplexity
-# rubocop: enable Metrics/MethodLength
-# rubocop: enable Metrics/AbcSize
 
-# rubocop: disable Style/GlobalVars
 $gtk.reset
-# rubocop: enable Style/GlobalVars
