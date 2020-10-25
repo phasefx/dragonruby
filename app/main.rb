@@ -94,6 +94,10 @@ module HexModule
       raise 'arguments must sum 0' unless (@q + @r + @s).zero?
     end
 
+    def brief
+      [@q, @r, @s]
+    end
+
     def serialize
       { q: @q, r: @r, s: @s }
     end
@@ -211,8 +215,16 @@ class Game
   def initialize(gtk)
     @args = gtk
     gtk.grid.origin_center!
-    @layout = Layout.new(LAYOUT_FLAT, [100, 100], [0, 0])
+    flat_layout
     @hexes = [Hex.new(0, 0, 0), Hex.new(1, -1, 0)]
+  end
+
+  def flat_layout
+    @layout = Layout.new(LAYOUT_FLAT, [50, 50], [0, 0])
+  end
+
+  def pointy_layout
+    @layout = Layout.new(LAYOUT_POINTY, [50, 50], [0, 0])
   end
 
   def serialize
@@ -239,7 +251,7 @@ def tick(args)
   args.state.game ||= Game.new(args)
   args.outputs.labels << args.state.game.hexes.map do |h|
     coord = args.state.game.layout.hex_to_pixel(h)
-    [coord.x, coord.y, h.to_s]
+    [coord.x - 25, coord.y + 10, h.brief.join(',')]
   end
   args.outputs.lines << args.state.game.hexes.map do |h|
     args.state.game.polygon_corners_to_lines(args.state.game.layout.polygon_corners(h))
