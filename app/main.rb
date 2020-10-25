@@ -280,12 +280,15 @@ class Game
   end
 
   def toggle_layout
+    @args.outputs.static_labels.clear
+    @args.outputs.static_lines.clear
     case @scheme
     when :flat
       pointy_layout
     when :pointy
       flat_layout
     end
+    mass_static_render
   end
 
   def flat_layout
