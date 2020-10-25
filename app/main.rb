@@ -232,12 +232,13 @@ end
 
 # let's put this stuff to use
 class Game
-  attr_accessor :layout, :hexes
+  attr_accessor :scheme, :layout, :hexes, :show_labels
 
   include HexModule
 
   def initialize(gtk)
     @args = gtk
+    @show_labels = true
     gtk.grid.origin_center!
     flat_layout
     populate_hexes
@@ -258,14 +259,23 @@ class Game
     polygon_corners_to_lines(@layout.polygon_corners(h))
   end
 
-  def mass_static_render
-    @args.outputs.static_labels << @hexes.each_with_index.map do |h, i|
-      h.index = i
+  def mass_static_render_labels
+    return unless @show_labels
+
+    @args.outputs.static_labels << @hexes.map do |h|
       hex_label(h)
     end
+  end
+
+  def mass_static_render_lines
     @args.outputs.static_lines << @hexes.map do |h|
       hex_lines(h)
     end
+  end
+
+  def mass_static_render
+    mass_static_render_labels
+    mass_static_render_lines
   end
 
   def populate_hexes
@@ -277,6 +287,15 @@ class Game
         h
       end
     end.flatten
+    @hexes.each_with_index do |h, i|
+      h.index = i
+    end
+  end
+
+  def toggle_labels
+    @show_labels = !@show_labels
+    @args.outputs.static_labels.clear
+    mass_static_render_labels
   end
 
   def toggle_layout
@@ -328,7 +347,7 @@ def tick(args)
   intents = []
   args.state.game.hexes.each do |h|
     h.clear_mouse_hover do
-      args.outputs.static_labels[h.index] = args.state.game.hex_label(h)
+      args.outputs.static_labels[h.index] = args.state.game.hex_label(h) if args.state.game.show_labels
     end
   end
 
@@ -336,6 +355,7 @@ def tick(args)
   down_keys = args.inputs.keyboard.key_down.truthy_keys
   down_keys.each do |truth|
     intents << :toggle_layout if truth == :space
+    intents << :toggle_labels if truth == :l
   end
   mouse_hex = args.state.game.layout.pixel_to_existing_hex(
     [args.inputs.mouse.position.x, args.inputs.mouse.position.y]
@@ -343,9 +363,10 @@ def tick(args)
 
   # logic
   mouse_hex&.set_mouse_hover do
-    args.outputs.static_labels[mouse_hex.index] = args.state.game.hex_label(mouse_hex)
+    args.outputs.static_labels[mouse_hex.index] = args.state.game.hex_label(mouse_hex) if args.state.game.show_labels
   end
   args.state.game.toggle_layout if intents.include?(:toggle_layout)
+  args.state.game.toggle_labels if intents.include?(:toggle_labels)
 
   # render
   args.outputs.debug << [args.grid.left, args.grid.top, args.gtk.current_framerate.to_i].label
