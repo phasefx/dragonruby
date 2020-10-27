@@ -96,7 +96,7 @@ module HexModule
 
   # for representing hex cube coordinates
   class Hex
-    attr_accessor :q, :r, :s, :base_angle, :hover, :index
+    attr_accessor :q, :r, :s, :base_angle, :hover, :index, :label_primitive_position, :sprite_primitive_position, :lines_primitive_position
 
     def initialize(q__, r__, s__ = nil)
       @hover = false
@@ -116,7 +116,7 @@ module HexModule
     end
 
     def serialize
-      { q: @q, r: @r, s: @s, hover: @hover, index: @index }
+      { q: @q, r: @r, s: @s, hover: @hover, index: @index, label_primitive_position: @label_primitive_position, sprite_primitive_position: @sprite_primitive_position, lines_primitive_position: @lines_primitive_position }
     end
 
     def inspect
@@ -276,6 +276,9 @@ class Game
       {
         x: coord.x - 60, y: coord.y - 70,
         w: 120, h: 140, angle: h.base_angle + @rotation,
+        r: h.hover ? 255 : 255,
+        g: h.hover ? 128 : 255,
+        b: h.hover ? 128 : 255,
         path: path
       }
     when :flat
@@ -284,8 +287,8 @@ class Game
         x: coord.x - 60, y: coord.y - 70,
         w: 120, h: 140, angle: h.base_angle + @rotation,
         r: h.hover ? 255 : 255,
-        g: 255,
-        b: 255,
+        g: h.hover ? 128 : 255,
+        b: h.hover ? 128 : 255,
         path: path
       }
     end
@@ -302,11 +305,19 @@ class Game
   end
 
   def hex_lines(h)
-    polygon_corners_to_lines(@layout.polygon_corners(h))
+    polygon_corners_to_lines(@layout.polygon_corners(h)).map do |line|
+      line.merge(
+        r: h.hover ? 255 : 255,
+        g: h.hover ? 0 : 255,
+        b: h.hover ? 0 : 255,
+        a: h.hover ? 255 : 64
+      )
+    end
   end
 
   def mass_static_render_sprites
     @args.outputs.static_primitives << @hexes.each_with_index.map do |h, i|
+      h.sprite_primitive_position = @args.outputs.static_primitives.length + h.index
       hex_sprite(h, i).sprite
     end
   end
@@ -314,20 +325,21 @@ class Game
   def mass_static_render_labels
     return unless @show_labels
 
-    @args.outputs.static_labels << @hexes.map do |h|
-      hex_label(h)
+    @args.outputs.static_primitives << @hexes.map do |h|
+      h.label_primitive_position = @args.outputs.static_primitives.length + h.index
+      hex_label(h).label
     end
   end
 
   def mass_static_render_lines
     @args.outputs.static_primitives << @hexes.each_with_index.map do |h, i|
+      h.lines_primitive_position = @args.outputs.static_primitives.length + h.index * 6
       hex_lines(h).lines
     end
   end
 
   def mass_static_render
     @args.outputs.static_primitives.clear
-    @args.outputs.static_labels.clear
     mass_static_render_sprites
     mass_static_render_labels
     mass_static_render_lines
@@ -349,8 +361,7 @@ class Game
 
   def toggle_labels
     @show_labels = !@show_labels
-    @args.outputs.static_labels.clear
-    mass_static_render_labels
+    mass_static_render
   end
 
   def toggle_layout
@@ -387,7 +398,16 @@ class Game
 
   def polygon_corners_to_lines(corners)
     corners.each_with_index.map do |corner, idx|
-      [corner.x, corner.y, corners[idx - 1].x, corners[idx - 1].y]
+      {
+        x: corner.x,
+        y: corner.y,
+        x2: corners[idx - 1].x,
+        y2: corners[idx - 1].y,
+        r: 255,
+        g: 255,
+        b: 255,
+        a: 255
+      }
     end
   end
 end
@@ -400,7 +420,11 @@ def tick(args)
   intents = []
   args.state.game.hexes.each do |h|
     h.clear_mouse_hover do
-      args.outputs.static_labels[h.index] = args.state.game.hex_label(h) if args.state.game.show_labels
+      args.outputs.static_primitives[h.label_primitive_position] = args.state.game.hex_label(h).label if args.state.game.show_labels
+      args.outputs.static_primitives[h.sprite_primitive_position] = args.state.game.hex_sprite(h, h.index).sprite
+      args.state.game.hex_lines(h).each_with_index do |single_line, index|
+        args.outputs.static_primitives[h.lines_primitive_position + index] = single_line.line
+      end
     end
   end
 
@@ -419,7 +443,11 @@ def tick(args)
 
   # logic
   mouse_hex&.set_mouse_hover do
-    args.outputs.static_labels[mouse_hex.index] = args.state.game.hex_label(mouse_hex) if args.state.game.show_labels
+    args.outputs.static_primitives[mouse_hex.label_primitive_position] = args.state.game.hex_label(mouse_hex).label if args.state.game.show_labels
+    args.outputs.static_primitives[mouse_hex.sprite_primitive_position] = args.state.game.hex_sprite(mouse_hex, mouse_hex.index).sprite
+    args.state.game.hex_lines(mouse_hex).each_with_index do |single_line, index|
+      args.outputs.static_primitives[mouse_hex.lines_primitive_position + index] = single_line.line
+    end
   end
   args.state.game.toggle_layout if intents.include?(:toggle_layout)
   args.state.game.toggle_labels if intents.include?(:toggle_labels)
