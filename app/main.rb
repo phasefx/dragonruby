@@ -244,7 +244,7 @@ end
 
 # let's put this stuff to use
 class Game
-  attr_accessor :scheme, :layout, :hexes, :selected_hexes, :show_labels, :rotation, :mouse_pos
+  attr_accessor :scheme, :layout, :hexes, :selected_hexes, :show_labels, :rotation, :mouse_state, :mouse_down_position, :mouse_down_at_tick
 
   include HexModule
 
@@ -253,7 +253,7 @@ class Game
     @show_labels = false
     @rotation = 0
     @selected_hexes = []
-    @mouse_pos = :up
+    @mouse_state = :up
     gtk.grid.origin_center!
     pointy_layout
     populate_hexes
@@ -268,16 +268,6 @@ class Game
   def randomize_tiles
     _randomize_tiles
     @args.state.game.mass_static_render
-  end
-
-  def rotate_right
-    @rotation -= 30
-    mass_static_render
-  end
-
-  def rotate_left
-    @rotation += 30
-    mass_static_render
   end
 
   def hex_sprite(h, i)
@@ -434,10 +424,10 @@ class Game
 end
 
 def tick(args)
-  # init
+  ### init
   args.state.game ||= Game.new(args)
 
-  # clearing for tick
+  ### clearing for tick
   intents = []
   args.state.game.hexes.each do |h|
     h.clear_mouse_hover do
@@ -445,7 +435,7 @@ def tick(args)
     end
   end
 
-  # input
+  ### input
   down_keys = args.inputs.keyboard.key_down.truthy_keys
   down_keys.each do |truth|
     intents << :toggle_layout if truth == :space
@@ -460,15 +450,40 @@ def tick(args)
   intents << :select_neighbors if args.inputs.mouse.click
   intents << :mouse_up if args.inputs.mouse.up
   intents << :mouse_down if args.inputs.mouse.down
+  if args.inputs.mouse.moved_at > args.state.game.mouse_down_at_tick && args.state.game.mouse_state == :down
+    intents << :mouse_move
+  end
+  # puts intents if intents.length.positive?
 
-  # logic
-  args.state.game.mouse_pos = :down if intents.include?(:mouse_down)
-  args.state.game.mouse_pos = :up if intents.include?(:mouse_up)
-  if args.state.game.mouse_pos == :up
+  ### logic
+  
+  # record some things when the mouse goes down so we can calculate rotation and other logic
+  if intents.include?(:mouse_down)
+    args.state.game.mouse_state = :down
+    args.state.game.mouse_down_position = [ args.inputs.mouse.position.x, args.inputs.mouse.position.y ]
+    args.state.game.mouse_down_at_tick = args.state.tick_count
+  end
+
+  args.state.game.mouse_state = :up if intents.include?(:mouse_up)
+
+  # only hover if the mouse is up
+  if args.state.game.mouse_state == :up
     mouse_hex&.set_mouse_hover do
       args.state.game.rerender_specific_hex(mouse_hex)
     end
   end
+
+  # if mouse is down and moving, get relative angle and redraw selected neighbors
+  if args.state.game.mouse_state == :down && intents.include?(:mouse_move)
+    args.state.game.rotation = args.inputs.mouse.position.angle_from(args.state.game.mouse_down_position)
+    if args.state.game.selected_hexes
+      args.state.game.selected_hexes.each do |h|
+        args.state.game.rerender_specific_hex(h)
+      end
+    end
+  end
+
+  # clear existing neighbor selection on mouse-up and re-select
   if intents.include?(:select_neighbors) || intents.include?(:mouse_up)
     if args.state.game.selected_hexes
       args.state.game.selected_hexes.each do |h|
@@ -477,19 +492,21 @@ def tick(args)
       end
     end
   end
+
+  # select neighbors
   if intents.include?(:select_neighbors)
     args.state.game.selected_hexes = mouse_hex.select_neighbors
     args.state.game.selected_hexes.each do |h|
       args.state.game.rerender_specific_hex(h)
     end
   end
+
+  # misc
   args.state.game.toggle_layout if intents.include?(:toggle_layout)
   args.state.game.toggle_labels if intents.include?(:toggle_labels)
   args.state.game.randomize_tiles if intents.include?(:randomize_tiles)
-  args.state.game.rotate_left if intents.include?(:rotate_left)
-  args.state.game.rotate_right if intents.include?(:rotate_right)
 
-  # render
+  ### render
   args.outputs.labels << [args.grid.left, args.grid.top, "FPS #{args.gtk.current_framerate.to_i}"].label
   args.outputs.labels << [args.grid.left, args.grid.top - 21, 'R for Randomize'].label
   args.outputs.labels << [args.grid.left, args.grid.top - 42, 'C for Coordinates'].label
