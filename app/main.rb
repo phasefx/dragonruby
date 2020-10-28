@@ -3,7 +3,7 @@
 # https://www.redblobgames.com/grids/hexagons/implementation.html
 module HexModule
   def direction(dir)
-    raise 'argument should be a value inclusively between 0 and 5' unless dir.to_i.positive? && dir.to_i < 6
+    raise "argument should be a value inclusively between 0 and 5, was given #{dir}" unless dir.to_i >= 0 && dir.to_i < 6
 
     HEX_DIRECTIONS[dir.to_i]
   end
@@ -96,7 +96,9 @@ module HexModule
 
   # for representing hex cube coordinates
   class Hex
-    attr_accessor :q, :r, :s, :base_angle, :hover, :index, :label_primitive_position, :sprite_primitive_position, :lines_primitive_position
+    attr_accessor :q, :r, :s, :base_angle, :hover, :selected_around, :index, :label_primitive_position, :sprite_primitive_position, :lines_primitive_position
+
+    include HexModule
 
     def initialize(q__, r__, s__ = nil)
       @hover = false
@@ -170,7 +172,16 @@ module HexModule
     end
 
     def neighbor(dir)
-      add(direction(dir))
+      h = self.+(direction(dir))
+      $gtk.args.state.hex[h.q][h.r][h.s]
+    end
+
+    def neighbors
+      HEX_DIRECTIONS.each_with_index.map { |details,dir| neighbor(dir) }
+    end
+
+    def select_neighbors
+      neighbors.map { |h| h.selected_around = self ; h }
     end
 
     def round
@@ -233,7 +244,7 @@ end
 
 # let's put this stuff to use
 class Game
-  attr_accessor :scheme, :layout, :hexes, :show_labels, :rotation
+  attr_accessor :scheme, :layout, :hexes, :selected_hexes, :show_labels, :rotation, :mouse_pos
 
   include HexModule
 
@@ -241,6 +252,8 @@ class Game
     @args = gtk
     @show_labels = false
     @rotation = 0
+    @selected_hexes = []
+    @mouse_pos = :up
     gtk.grid.origin_center!
     pointy_layout
     populate_hexes
@@ -276,9 +289,9 @@ class Game
       {
         x: coord.x - 60, y: coord.y - 70,
         w: 120, h: 140, angle: h.base_angle + @rotation,
-        r: h.hover ? 255 : 255,
-        g: h.hover ? 128 : 255,
-        b: h.hover ? 128 : 255,
+        r: h.hover || h.selected_around ? 255 : 255,
+        g: h.hover || h.selected_around ? 128 : 255,
+        b: h.hover || h.selected_around ? 128 : 255,
         path: path
       }
     when :flat
@@ -286,9 +299,9 @@ class Game
       {
         x: coord.x - 60, y: coord.y - 70,
         w: 120, h: 140, angle: h.base_angle + @rotation,
-        r: h.hover ? 255 : 255,
-        g: h.hover ? 128 : 255,
-        b: h.hover ? 128 : 255,
+        r: h.hover || h.selected_around ? 255 : 255,
+        g: h.hover || h.selected_around ? 128 : 255,
+        b: h.hover || h.selected_around ? 128 : 255,
         path: path
       }
     end
@@ -343,6 +356,14 @@ class Game
     mass_static_render_sprites
     mass_static_render_labels
     mass_static_render_lines
+  end
+
+  def rerender_specific_hex(h)
+      @args.outputs.static_primitives[h.label_primitive_position] = hex_label(h).label if @show_labels
+      @args.outputs.static_primitives[h.sprite_primitive_position] = hex_sprite(h, h.index).sprite
+      @args.state.game.hex_lines(h).each_with_index do |single_line, index|
+        @args.outputs.static_primitives[h.lines_primitive_position + index] = single_line.line
+      end
   end
 
   def populate_hexes
@@ -420,11 +441,7 @@ def tick(args)
   intents = []
   args.state.game.hexes.each do |h|
     h.clear_mouse_hover do
-      args.outputs.static_primitives[h.label_primitive_position] = args.state.game.hex_label(h).label if args.state.game.show_labels
-      args.outputs.static_primitives[h.sprite_primitive_position] = args.state.game.hex_sprite(h, h.index).sprite
-      args.state.game.hex_lines(h).each_with_index do |single_line, index|
-        args.outputs.static_primitives[h.lines_primitive_position + index] = single_line.line
-      end
+      args.state.game.rerender_specific_hex(h)
     end
   end
 
@@ -440,13 +457,30 @@ def tick(args)
   mouse_hex = args.state.game.layout.pixel_to_existing_hex(
     [args.inputs.mouse.position.x, args.inputs.mouse.position.y]
   )
+  intents << :select_neighbors if args.inputs.mouse.click
+  intents << :mouse_up if args.inputs.mouse.up
+  intents << :mouse_down if args.inputs.mouse.down
 
   # logic
-  mouse_hex&.set_mouse_hover do
-    args.outputs.static_primitives[mouse_hex.label_primitive_position] = args.state.game.hex_label(mouse_hex).label if args.state.game.show_labels
-    args.outputs.static_primitives[mouse_hex.sprite_primitive_position] = args.state.game.hex_sprite(mouse_hex, mouse_hex.index).sprite
-    args.state.game.hex_lines(mouse_hex).each_with_index do |single_line, index|
-      args.outputs.static_primitives[mouse_hex.lines_primitive_position + index] = single_line.line
+  args.state.game.mouse_pos = :down if intents.include?(:mouse_down)
+  args.state.game.mouse_pos = :up if intents.include?(:mouse_up)
+  if args.state.game.mouse_pos == :up
+    mouse_hex&.set_mouse_hover do
+      args.state.game.rerender_specific_hex(mouse_hex)
+    end
+  end
+  if intents.include?(:select_neighbors) || intents.include?(:mouse_up)
+    if args.state.game.selected_hexes
+      args.state.game.selected_hexes.each do |h|
+        h.selected_around = nil
+        args.state.game.rerender_specific_hex(h)
+      end
+    end
+  end
+  if intents.include?(:select_neighbors)
+    args.state.game.selected_hexes = mouse_hex.select_neighbors
+    args.state.game.selected_hexes.each do |h|
+      args.state.game.rerender_specific_hex(h)
     end
   end
   args.state.game.toggle_layout if intents.include?(:toggle_layout)
