@@ -273,12 +273,26 @@ class Game
   def hex_sprite(h, i)
     coord = @layout.hex_to_pixel(h)
     path = "media/grass_1#{@random[i]}.png"
+    angle = h.selected_around.nil? ? 0 : @rotation
+    x = coord.x - 60
+    y = coord.y - 70
+    unless h.selected_around.nil?
+      pivot_coord = @layout.hex_to_pixel(h.selected_around)
+      x -= pivot_coord.x - 60
+      y -= pivot_coord.y - 70
+      s = Math.sin(angle.to_radians)
+      c = Math.cos(angle.to_radians)
+      rx = x * c - y * s
+      ry = x * s - y * c
+      x = rx + pivot_coord.x
+      y = ry + pivot_coord.y
+    end
     case @scheme
     when :pointy
       h.base_angle = 0
       {
-        x: coord.x - 60, y: coord.y - 70,
-        w: 120, h: 140, angle: h.base_angle + @rotation,
+        x: x, y: y,
+        w: 120, h: 140, angle: h.base_angle + angle,
         r: h.hover || h.selected_around ? 255 : 255,
         g: h.hover || h.selected_around ? 128 : 255,
         b: h.hover || h.selected_around ? 128 : 255,
@@ -287,8 +301,8 @@ class Game
     when :flat
       h.base_angle = 30
       {
-        x: coord.x - 60, y: coord.y - 70,
-        w: 120, h: 140, angle: h.base_angle + @rotation,
+        x: x, y: y,
+        w: 120, h: 140, angle: h.base_angle + angle,
         r: h.hover || h.selected_around ? 255 : 255,
         g: h.hover || h.selected_around ? 128 : 255,
         b: h.hover || h.selected_around ? 128 : 255,
