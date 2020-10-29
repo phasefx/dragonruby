@@ -278,14 +278,14 @@ class Game
     y = coord.y - 70
     unless h.selected_around.nil?
       pivot_coord = @layout.hex_to_pixel(h.selected_around)
-      x -= pivot_coord.x - 60
-      y -= pivot_coord.y - 70
+      x = -(coord.x - pivot_coord.x)
+      y = -(coord.y - pivot_coord.y)
       s = Math.sin(angle.to_radians)
       c = Math.cos(angle.to_radians)
       rx = x * c - y * s
       ry = x * s - y * c
-      x = rx + pivot_coord.x
-      y = ry + pivot_coord.y
+      x = rx + pivot_coord.x - 60
+      y = ry + pivot_coord.y - 70
     end
     case @scheme
     when :pointy
@@ -401,12 +401,12 @@ class Game
 
   def flat_layout
     @scheme = :flat
-    @layout = Layout.new(LAYOUT_FLAT, [70, 70], [0, 0])
+    @layout = Layout.new(LAYOUT_FLAT, [69, 69], [0, 0])
   end
 
   def pointy_layout
     @scheme = :pointy
-    @layout = Layout.new(LAYOUT_POINTY, [70, 70], [0, 0])
+    @layout = Layout.new(LAYOUT_POINTY, [69, 69], [0, 0])
   end
 
   def serialize
@@ -499,6 +499,7 @@ def tick(args)
 
   # clear existing neighbor selection on mouse-up and re-select
   if intents.include?(:select_neighbors) || intents.include?(:mouse_up)
+    args.state.game.rotation = 0
     if args.state.game.selected_hexes
       args.state.game.selected_hexes.each do |h|
         h.selected_around = nil
@@ -521,7 +522,7 @@ def tick(args)
   args.state.game.randomize_tiles if intents.include?(:randomize_tiles)
 
   ### render
-  args.outputs.labels << [args.grid.left, args.grid.top, "FPS #{args.gtk.current_framerate.to_i}"].label
+  args.outputs.labels << [args.grid.left, args.grid.top, "FPS #{args.gtk.current_framerate.to_i} Rotation #{args.state.game.rotation} Mouse #{args.inputs.mouse.position}"].label
   args.outputs.labels << [args.grid.left, args.grid.top - 21, 'R for Randomize'].label
   args.outputs.labels << [args.grid.left, args.grid.top - 42, 'C for Coordinates'].label
   args.outputs.labels << [args.grid.left, args.grid.top - 63, 'Space for Orientation'].label
