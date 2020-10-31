@@ -484,9 +484,11 @@ def tick(args)
     end
   end
 
-  # if mouse is down and moving (or arrow keys are used while mouse down), get relative angle and redraw selected neighbors
-  if args.state.game.mouse_state == :down && (intents.include?(:mouse_move) || intents.include?(:rotate_right) || intents.include?(:rotate_left))
+
+  # conditions for rotating neighbors
+  if args.state.game.mouse_state == :down && (intents.include?(:mouse_move) || intents.include?(:rotate_right) || intents.include?(:rotate_left) || args.inputs.mouse.button_right)
     args.state.game.rotation = args.inputs.mouse.position.angle_from(args.state.game.mouse_down_position) if intents.include?(:mouse_move)
+    args.state.game.rotation += 1 if args.inputs.mouse.button_right
     if args.state.game.selected_hexes
       args.state.game.selected_hexes.each do |h|
         args.state.game.rerender_specific_hex(h)
