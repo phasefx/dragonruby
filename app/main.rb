@@ -271,28 +271,22 @@ class Game
   end
 
   def hex_sprite(h, i)
-    coord = @layout.hex_to_pixel(h)
+    point = @layout.hex_to_pixel(h)
     path = "media/grass_1#{@random[i]}.png"
-    angle = h.selected_around.nil? ? 0 : @rotation
-    x = coord.x - 60
-    y = coord.y - 70
+    theta = h.selected_around.nil? ? 0 : @rotation
+    x = point.x
+    y = point.y
     unless h.selected_around.nil?
-      pivot_coord = @layout.hex_to_pixel(h.selected_around)
-      x = -(coord.x - pivot_coord.x)
-      y = -(coord.y - pivot_coord.y)
-      s = Math.sin(angle.to_radians)
-      c = Math.cos(angle.to_radians)
-      rx = x * c - y * s
-      ry = x * s - y * c
-      x = rx + pivot_coord.x - 60
-      y = ry + pivot_coord.y - 70
+      pivot = @layout.hex_to_pixel(h.selected_around)
+      x = pivot.x + (point.x - pivot.x) * Math.cos(theta.to_radians) - (point.y - pivot.y) * Math.sin(theta.to_radians)
+      y = pivot.y + (point.x - pivot.x) * Math.sin(theta.to_radians) + (point.y - pivot.y) * Math.cos(theta.to_radians)
     end
     case @scheme
     when :pointy
       h.base_angle = 0
       {
-        x: x, y: y,
-        w: 120, h: 140, angle: h.base_angle + angle,
+        x: x - 60, y: y - 70,
+        w: 120, h: 140, angle: h.base_angle + theta,
         r: h.hover || h.selected_around ? 255 : 255,
         g: h.hover || h.selected_around ? 128 : 255,
         b: h.hover || h.selected_around ? 128 : 255,
@@ -301,8 +295,8 @@ class Game
     when :flat
       h.base_angle = 30
       {
-        x: x, y: y,
-        w: 120, h: 140, angle: h.base_angle + angle,
+        x: x - 60, y: y - 70,
+        w: 120, h: 140, angle: h.base_angle + theta,
         r: h.hover || h.selected_around ? 255 : 255,
         g: h.hover || h.selected_around ? 128 : 255,
         b: h.hover || h.selected_around ? 128 : 255,
@@ -478,6 +472,9 @@ def tick(args)
     args.state.game.mouse_down_at_tick = args.state.tick_count
   end
 
+  args.state.game.rotation -= 15 if intents.include?(:rotate_right)
+  args.state.game.rotation += 15 if intents.include?(:rotate_left)
+
   args.state.game.mouse_state = :up if intents.include?(:mouse_up)
 
   # only hover if the mouse is up
@@ -487,9 +484,9 @@ def tick(args)
     end
   end
 
-  # if mouse is down and moving, get relative angle and redraw selected neighbors
-  if args.state.game.mouse_state == :down && intents.include?(:mouse_move)
-    args.state.game.rotation = args.inputs.mouse.position.angle_from(args.state.game.mouse_down_position)
+  # if mouse is down and moving (or arrow keys are used while mouse down), get relative angle and redraw selected neighbors
+  if args.state.game.mouse_state == :down && (intents.include?(:mouse_move) || intents.include?(:rotate_right) || intents.include?(:rotate_left))
+    args.state.game.rotation = args.inputs.mouse.position.angle_from(args.state.game.mouse_down_position) if intents.include?(:mouse_move)
     if args.state.game.selected_hexes
       args.state.game.selected_hexes.each do |h|
         args.state.game.rerender_specific_hex(h)
