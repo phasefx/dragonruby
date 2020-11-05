@@ -30,7 +30,22 @@ module GameOutput
     primitives = []
     primitives << render_buttons(game[:buttons], gtk)
     primitives << render_display(game, gtk)
-    primitives
+    
+    audio = Hash[
+      game[:buttons].each_with_index.map do |b, idx|
+        if b[:audible] && !game[:canonical_audio][idx].nil?
+          b[:audible] = false
+          [idx, game[:canonical_audio][idx].clone]
+        else
+          []
+        end
+      end.reject { |a| a.length.zero? }
+    ]
+
+    {
+      primitives: primitives,
+      audio: audio
+    }
   end
 
   def self.render_buttons(buttons, _gtk)

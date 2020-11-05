@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "app/extra_keys.rb"
 require 'app/game_input.rb'
 require 'app/game_logic.rb'
 require 'app/game_render.rb'
@@ -71,10 +72,16 @@ def tick(gtk)
 
   # output
   gtk.outputs.background_color = GameOutput::BACKGROUND_COLOR
-  gtk.outputs.primitives << output.render(
+  outputs = output.render(
     gtk.state.game,
     gtk
   )
+  gtk.outputs.primitives << outputs[:primitives]
+  outputs[:audio].each do |idx, audio|
+    if gtk.audio[idx].nil?
+      gtk.audio[idx] = audio
+    end
+  end
 
   gtk.gtk.reset if meta_intents.include?('reset')
   if gtk.state.game[:desire_pause]
@@ -133,6 +140,78 @@ module Game
       desire_next_level: true,
       input_buffer: [],
       buttons: [],
+      canonical_audio: [
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 1.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 2.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 3.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 4.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 5.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 6.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 7.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 8.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 9.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 10.to_f,
+          looping: false,
+          paused: false
+        }
+      ],
       levels: [
         { target_buffer: [1,2,3,4], display_target: [1,2,3,'_'] }
       ],
@@ -153,16 +232,16 @@ module Game
           reset: %i[r],
           load: %i[l],
           save: %i[m],
-          button0: %i[zero],
-          button1: %i[one],
-          button2: %i[two],
-          button3: %i[three],
-          button4: %i[four],
-          button5: %i[five],
-          button6: %i[six],
-          button7: %i[seven],
-          button8: %i[eight],
-          button9: %i[nine],
+          button0: %i[zero num_0],
+          button1: %i[one num_1],
+          button2: %i[two num_2],
+          button3: %i[three num_3],
+          button4: %i[four num_4],
+          button5: %i[five num_5],
+          button6: %i[six num_6],
+          button7: %i[seven num_7],
+          button8: %i[eight num_8],
+          button9: %i[nine num_9],
           button10: %i[backspace]
         }
       }

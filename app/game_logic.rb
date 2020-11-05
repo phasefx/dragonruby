@@ -60,6 +60,7 @@ module GameLogic
         b[:clicked] = false if intents.include?('standard_action') || intents.include?('button_via_kb')
         b[:hovered] = false
       end
+      b[:audible] = b[:clicked]
     end
     gs
   end
