@@ -78,9 +78,10 @@ def tick(gtk)
   )
   gtk.outputs.primitives << outputs[:primitives]
   outputs[:audio].each do |idx, audio|
-    if gtk.audio[idx].nil?
-      gtk.audio[idx] = audio
-    end
+    sub_index = 0
+    sub_index +=1 until gtk.audio["#{idx}-#{sub_index}"].nil?
+    gtk.audio["#{idx}-#{sub_index}"] = audio
+    puts "#{idx}-#{sub_index} = #{audio}"
   end
 
   gtk.gtk.reset if meta_intents.include?('reset')
@@ -144,20 +145,6 @@ module Game
         {
           filename: 'app/C3.wav',
           gain: 1.0,
-          pitch: 1.to_f,
-          looping: false,
-          paused: false
-        },
-        {
-          filename: 'app/C3.wav',
-          gain: 1.0,
-          pitch: 2.to_f,
-          looping: false,
-          paused: false
-        },
-        {
-          filename: 'app/C3.wav',
-          gain: 1.0,
           pitch: 3.to_f,
           looping: false,
           paused: false
@@ -208,6 +195,27 @@ module Game
           filename: 'app/C3.wav',
           gain: 1.0,
           pitch: 10.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 11.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 12.to_f,
+          looping: false,
+          paused: false
+        },
+        {
+          filename: 'app/C3.wav',
+          gain: 1.0,
+          pitch: 13.to_f,
           looping: false,
           paused: false
         }

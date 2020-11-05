@@ -34,7 +34,6 @@ module GameOutput
     audio = Hash[
       game[:buttons].each_with_index.map do |b, idx|
         if b[:audible] && !game[:canonical_audio][idx].nil?
-          b[:audible] = false
           [idx, game[:canonical_audio][idx].clone]
         else
           []
