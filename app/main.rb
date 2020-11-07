@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "app/extra_keys.rb"
+require 'app/extra_keys.rb'
 require 'app/game_input.rb'
 require 'app/game_logic.rb'
 require 'app/game_render.rb'
@@ -47,7 +47,7 @@ def tick(gtk)
 
   # input
   gtk.state.game[:mouse] ||= {}
-  gtk.state.game[:mouse][:position] = gtk.inputs.mouse.position 
+  gtk.state.game[:mouse][:position] = gtk.inputs.mouse.position
   gtk.state.game[:mouse][:prev_click] = gtk.inputs.mouse.previous_click
   gtk.state.game[:mouse][:last_click] = gtk.inputs.mouse.click if gtk.inputs.mouse.click
   meta_intents = input.meta_input(
@@ -79,23 +79,22 @@ def tick(gtk)
   gtk.outputs.primitives << outputs[:primitives]
   outputs[:audio].each do |idx, audio|
     sub_index = 0
-    sub_index +=1 until gtk.audio["#{idx}-#{sub_index}"].nil?
+    sub_index += 1 until gtk.audio["#{idx}-#{sub_index}"].nil?
     gtk.audio["#{idx}-#{sub_index}"] = audio
     puts "#{idx}-#{sub_index} = #{audio}"
   end
 
   gtk.gtk.reset if meta_intents.include?('reset')
-  if gtk.state.game[:desire_pause]
-    gtk.state.game[:desire_pause] = false
-    gtk.gtk.pause!
-  end
+  return unless gtk.state.game[:desire_pause]
+
+  gtk.state.game[:desire_pause] = false
+  gtk.gtk.pause!
 end
 
 # housekeeping
 module Game
   # rubocop:disable Security/Eval
   def self.deep_clone(obj)
-
     # using $gtk is just too convenient to pass up here
 
     return obj if $gtk.production # for performance
@@ -221,7 +220,7 @@ module Game
         }
       ],
       levels: [
-        { target_buffer: [1,2,3,4], display_target: [1,2,3,'_'] }
+        { target_buffer: [1, 2, 3, 4], display_target: [1, 2, 3, '_'] }
       ],
       show_fps: true,
       mousemaps: {
@@ -254,30 +253,30 @@ module Game
         }
       }
     }
-    text_dimensions = GameOutput::text_dimensions('123')
+    text_dimensions = GameOutput.text_dimensions('123')
     game[:buttons] << {
-      x: -1.5*text_dimensions.x.half + -2*1.5*text_dimensions.x,
-      y: -1.5*text_dimensions.y.half + -1*1.5*text_dimensions.y - 60,
-      w: 1.5*text_dimensions.x,
-      h: 1.5*text_dimensions.y,
+      x: -1.5 * text_dimensions.x.half + -2 * 1.5 * text_dimensions.x,
+      y: -1.5 * text_dimensions.y.half + -1 * 1.5 * text_dimensions.y - 60,
+      w: 1.5 * text_dimensions.x,
+      h: 1.5 * text_dimensions.y,
       primitive_marker: :border
     }
     [-1, 0, 1].map do |shift_y|
       [-1, 0, 1].map do |shift_x|
         game[:buttons] << {
-          x: -1.5*text_dimensions.x.half + shift_x*1.5*text_dimensions.x,
-          y: -1.5*text_dimensions.y.half + shift_y*1.5*text_dimensions.y - 60,
-          w: 1.5*text_dimensions.x,
-          h: 1.5*text_dimensions.y,
+          x: -1.5 * text_dimensions.x.half + shift_x * 1.5 * text_dimensions.x,
+          y: -1.5 * text_dimensions.y.half + shift_y * 1.5 * text_dimensions.y - 60,
+          w: 1.5 * text_dimensions.x,
+          h: 1.5 * text_dimensions.y,
           primitive_marker: :border
         }
       end
     end
     game[:buttons] << {
-      x: -1.5*text_dimensions.x.half + 2*1.5*text_dimensions.x,
-      y: -1.5*text_dimensions.y.half + 1*1.5*text_dimensions.y - 60,
-      w: 1.5*text_dimensions.x,
-      h: 1.5*text_dimensions.y,
+      x: -1.5 * text_dimensions.x.half + 2 * 1.5 * text_dimensions.x,
+      y: -1.5 * text_dimensions.y.half + 1 * 1.5 * text_dimensions.y - 60,
+      w: 1.5 * text_dimensions.x,
+      h: 1.5 * text_dimensions.y,
       primitive_marker: :border
     }
     puts game
