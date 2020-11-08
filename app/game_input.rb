@@ -70,6 +70,16 @@ module GameInput
         intents << 'button_via_kb'
         intents << 'button 10'
       end
+      if keymaps[:Game][:button11].include?(truth)
+        intents << 'button_via_kb'
+        intents << 'button 11'
+        intents << 'mute_audio'
+      end
+      if keymaps[:Game][:button12].include?(truth)
+        intents << 'button_via_kb'
+        intents << 'button 12'
+        intents << 'unmute_audio'
+      end
     end
 
     held_keys.each do |truth|
@@ -84,7 +94,7 @@ module GameInput
     intents << 'mouse_up' if inputs.mouse.up
     intents << 'mouse_down' if inputs.mouse.down
 
-    puts intents if intents.length.positive?
+    # puts intents if intents.length.positive?
     intents
   end
 end

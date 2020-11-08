@@ -56,6 +56,8 @@ module GameLogic
         b[:audible] = b[:clicked]
         b[:hovered] = false
         intents << "button #{i}"
+        intents << 'mute_audio' if i == 11
+        intents << 'unmute_audio' if i == 12
       elsif gs[:mouse][:position].inside_rect? b
         b[:clicked] = false if intents.include?('standard_action') || intents.include?('button_via_kb') 
         b[:audible] = false
@@ -66,6 +68,9 @@ module GameLogic
         b[:hovered] = false
       end
     end
+    puts intents if intents.length.positive?
+    gs[:sound] = false if intents.include?('mute_audio')
+    gs[:sound] = true if intents.include?('unmute_audio')
     gs
   end
 end

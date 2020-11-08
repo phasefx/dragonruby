@@ -77,11 +77,13 @@ def tick(gtk)
     gtk
   )
   gtk.outputs.primitives << outputs[:primitives]
-  outputs[:audio].each do |idx, audio|
-    sub_index = 0
-    sub_index += 1 until gtk.audio["#{idx}-#{sub_index}"].nil?
-    gtk.audio["#{idx}-#{sub_index}"] = audio
-    puts "#{idx}-#{sub_index} = #{audio}"
+  if gtk.state.game[:sound]
+    outputs[:audio].each do |idx, audio|
+      sub_index = 0
+      sub_index += 1 until gtk.audio["#{idx}-#{sub_index}"].nil?
+      gtk.audio["#{idx}-#{sub_index}"] = audio
+      puts "#{idx}-#{sub_index} = #{audio}"
+    end
   end
 
   gtk.gtk.reset if meta_intents.include?('reset')
@@ -140,6 +142,7 @@ module Game
       desire_next_level: true,
       input_buffer: [],
       buttons: [],
+      sound: false,
       canonical_audio: [
         {
           filename: 'app/C3.wav',
@@ -249,7 +252,9 @@ module Game
           button7: %i[seven num_7],
           button8: %i[eight num_8],
           button9: %i[nine num_9],
-          button10: %i[backspace]
+          button10: %i[backspace],
+          button11: %i[num_hyphen],
+          button12: %i[num_plus]
         }
       }
     }
@@ -275,6 +280,20 @@ module Game
     game[:buttons] << {
       x: -1.5 * text_dimensions.x.half + 2 * 1.5 * text_dimensions.x,
       y: -1.5 * text_dimensions.y.half + 1 * 1.5 * text_dimensions.y - 60,
+      w: 1.5 * text_dimensions.x,
+      h: 1.5 * text_dimensions.y,
+      primitive_marker: :border
+    }
+    game[:buttons] << {
+      x: -1.5 * text_dimensions.x.half + 2 * 1.5 * text_dimensions.x,
+      y: -1.5 * text_dimensions.y.half + 0 * 1.5 * text_dimensions.y - 60,
+      w: 1.5 * text_dimensions.x,
+      h: 1.5 * text_dimensions.y,
+      primitive_marker: :border
+    }
+    game[:buttons] << {
+      x: -1.5 * text_dimensions.x.half + 2 * 1.5 * text_dimensions.x,
+      y: -1.5 * text_dimensions.y.half + -1 * 1.5 * text_dimensions.y - 60,
       w: 1.5 * text_dimensions.x,
       h: 1.5 * text_dimensions.y,
       primitive_marker: :border
