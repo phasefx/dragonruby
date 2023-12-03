@@ -24,7 +24,7 @@ class Game
 
     $game_milestone = :game_init
 
-    $gtk.set_window_title 'Dewey Decimate System'
+    # $gtk.set_window_title 'Dewey Decimate System'
 
     @gtk_args = args
     @gtk_inputs = args.inputs
