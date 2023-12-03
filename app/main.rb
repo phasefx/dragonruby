@@ -7,7 +7,7 @@ class Game
 
   def initialize args
 
-    $gtk.set_window_title 'Game of Life'
+    #$gtk.set_window_title 'Game of Life'
 
     @gtk_args = args
     @gtk_inputs = args.inputs
