@@ -96,15 +96,21 @@ module Game
     gtk.gtk.reset
   end
 
-  # rubocop:disable Security/Eval
   def self.deep_clone(obj)
     # using $gtk is just too convenient to pass up here
 
     return obj if $gtk.production # for performance
 
-    eval $gtk.serialize_state obj
+    # well, if the above works and the following doesn't:
+    #
+    #  eval $gtk.serialize_state obj
+    #
+    # then let's just return the object then. I'm not sure
+    # why I was trying to clone here; maybe an experiment
+    # in using pure functional programming
+
+    return obj
   end
-  # rubocop:enable Security/Eval
 
   def self.v_add(*vectors)
     sum = []
@@ -190,7 +196,7 @@ module Game
 
   def self.init(gtk)
     # some side-effects...
-    gtk.gtk.set_window_title(':-)')
+    #gtk.gtk.set_window_title(':-)')
     gtk.grid.origin_center!
     # and what we're really after, the game model/state
     game = {

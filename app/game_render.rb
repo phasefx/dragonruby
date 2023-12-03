@@ -5,10 +5,13 @@ module GameOutput
   # Create type with ALL sprite properties AND primitive_marker
   class Sprite
     attr_accessor :x, :y, :w, :h, :path, :angle, :a, :r, :g, :b,
-                  :source_x, :source_y, :source_w, :source_h,
-                  :tile_x, :tile_y, :tile_w, :tile_h,
-                  :flip_horizontally, :flip_vertically,
-                  :angle_anchor_x, :angle_anchor_y
+      :flip_horizontally, :flip_vertically,
+      :angle_anchor_x, :angle_anchor_y,
+      :blendmode_enum,
+      :anchor_x, :anchor_y,
+      :tile_x, :tile_y, :tile_w, :tile_h,
+      :source_x, :source_y, :source_w, :source_h,
+      :source_x2, :source_y2, :source_x3, :source_y3, :x2, :y2, :x3, :y3
 
     def primitive_marker
       :sprite
@@ -40,10 +43,10 @@ module GameOutput
 
   # more performant than arrays or hashes
   class Solid
-    attr_accessor :x, :y, :w, :h, :r, :g, :b, :a
+    attr_accessor :x, :y, :w, :h, :r, :g, :b, :a, :anchor_x, :anchor_y, :blendmode_enum
 
     def serialize
-      [@x, @y, @w, @h, @r, @g, @b, @a]
+      [@x, @y, @w, @h, @r, @g, @b, @a, @anchor_x, @anchor_y, @blendmode_enum]
     end
 
     def inspect
@@ -78,10 +81,10 @@ module GameOutput
 
   # more performant than arrays or hashes
   class Label
-    attr_accessor :x, :y, :text, :size_enum, :alignment_enum, :r, :g, :b, :a, :font, :text_size
+    attr_accessor :x, :y, :text, :size_enum, :alignment_enum, :r, :g, :b, :a, :font, :vertical_alignment_enum, :blendmode_enum, :text_size
 
     def serialize
-      [@x, @y, @text, @size_enum, @alignment_enum, @r, @g, @b, @a, @font]
+      [@x, @y, @text, @size_enum, @alignment_enum, @r, @g, @b, @a, @font, @vertical_alignment_enum, @blendmode_enum]
     end
 
     def inspect

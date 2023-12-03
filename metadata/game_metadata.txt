@@ -2,5 +2,5 @@ devid=phasefx
 devtitle=Jason Etheridge
 gameid=cloud-miner
 gametitle=Cloud Miner
-version=0.9
+version=0.91
 icon=metadata/icon.png
